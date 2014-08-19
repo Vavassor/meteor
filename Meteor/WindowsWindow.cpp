@@ -785,9 +785,9 @@ LRESULT CALLBACK WindowsWindow::WindowProc(HWND hWnd, UINT uiMsg, WPARAM wParam,
 	return DefWindowProc(hWnd, uiMsg, wParam, lParam);
 }
 
-#define EXCEPTION_CASE(code)		\
-	case code:						\
-	exceptionString = L"" #code;	\
+#define EXCEPTION_CASE(code)	\
+	case code:					\
+	exceptionString = L#code;	\
 	break;
 
 LONG WINAPI UnhandledException(LPEXCEPTION_POINTERS exceptionInfo)

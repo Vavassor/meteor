@@ -1,8 +1,36 @@
+# Build directories
+[Dd]ebug*/
+[Rr]elease*/
+
+# Log files
+*log_file.txt
+
+# Windows and Mac OS X Temp Cache Files
+[Tt]humbs.db
+*.DS_Store
+
 # Eclipse files
 .settings/
 .cproject
 .project
 
-# Build directories
-Debug/
-Release/
+# Visual Studio files
+Meteor/Debug/
+Meteor/Release/
+obj/
+*.vcxproj
+*.filters
+*.user
+*.sdf
+*.opensdf
+*.sln
+*.sln.docstates
+*.suo
+
+# Visual C++ cache files
+ipch/
+*.aps
+*.ncb
+*.opensdf
+*.sdf
+*.cachefile

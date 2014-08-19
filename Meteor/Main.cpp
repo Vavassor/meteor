@@ -1,5 +1,9 @@
 #if defined(_WIN32)
 
+#if defined(_MSC_VER)
+#include <eh.h>
+#endif
+
 #include "WindowsWindow.h"
 
 #include "Logging.h"
