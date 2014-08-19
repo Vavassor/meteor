@@ -13,7 +13,7 @@ int32_t get_next_power_of_two(int32_t x)
     return x + 1;
 }
 
-inline uint32_t count_set_bits(uint32_t i)
+uint32_t count_set_bits(uint32_t i)
 {
     i -= i >> 1 & 0x55555555;
     i = (i & 0x33333333) + (i >> 2 & 0x33333333);

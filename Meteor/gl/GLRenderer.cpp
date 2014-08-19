@@ -39,12 +39,8 @@ namespace GLRenderer
 		BINDING_OBJECT,
 	};
 
-	HDC device = NULL;
-	HGLRC context = NULL;
 	GLuint fbo;
 	GLuint colorBuffer, depthBuffer;
-
-	bool enableVerticalSynchronization = false;
 
 	int width, height;
 	mat4x4 screenViewProjection;
@@ -73,98 +69,15 @@ namespace GLRenderer
 	void RenderFinal();
 }
 
-bool GLRenderer::Initialize(HDC hDC, bool createForwardCompatibleContext)
+bool GLRenderer::Initialize()
 {
-	device = hDC;
-
-	// setup pixel format
-	PIXELFORMATDESCRIPTOR pfd = {};
-	pfd.nSize = sizeof pfd;
-	pfd.nVersion = 1;
-	pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-	pfd.iPixelType = PFD_TYPE_RGBA;
-	pfd.cColorBits = 32;
-	pfd.cDepthBits = 24;
-	pfd.iLayerType = PFD_MAIN_PLANE;
-
-	int PixelFormat;
-	if((PixelFormat = ChoosePixelFormat(hDC, &pfd)) == 0)
-	{
-		Log::Add(Log::ERR, "%s", "ChoosePixelFormat failed!");
-		return false;
-	}
-
-	static int MSAAPixelFormat = 0;
-	if(SetPixelFormat(hDC, MSAAPixelFormat == 0 ? PixelFormat : MSAAPixelFormat, &pfd) == FALSE)
-	{
-		Log::Add(Log::ERR, "%s", "SetPixelFormat failed!");
-		return false;
-	}
-
-	// create context and initialize glew
-	if((context = wglCreateContext(hDC)) == NULL)
-	{
-		Log::Add(Log::ERR, "%s", "wglCreateContext failed!");
-		return false;
-	}
-
-	if(wglMakeCurrent(hDC, context) == FALSE)
-	{
-		Log::Add(Log::ERR, "%s", "wglMakeCurrent failed!");
-		return false;
-	}
-
-	/*	glewExperimental needed for GL3.2+ forward-compatible context to prevent 
-		glewInit's call to glGetString(GL_EXTENSIONS) which can cause 
-		the error GL_INVALID_ENUM */
-	glewExperimental = GL_TRUE;
-	if(glewInit() != GLEW_OK)
-	{
-		Log::Add(Log::ERR, "%s", "glewInit failed!");
-		return false;
-	}
-
 	// get OpenGL version info
 	int major, minor;
 	sscanf((char*)glGetString(GL_VERSION), "%d.%d", &major, &minor);
-
 	gl_version = major * 10 + minor;
 
 	sscanf((char*)glGetString(GL_SHADING_LANGUAGE_VERSION), "%d.%d", &major, &minor);
 	glsl_version = major * 100 + minor;
-
-	// create forward compatible context if desired/possible
-	if(createForwardCompatibleContext && gl_version >= 30 && WGLEW_ARB_create_context)
-	{
-		wglDeleteContext(context);
-
-		int GLFCRCAttribs[] =
-		{
-			WGL_CONTEXT_MAJOR_VERSION_ARB, major,
-			WGL_CONTEXT_MINOR_VERSION_ARB, minor,
-			WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
-			0
-		};
-
-		if((context = wglCreateContextAttribsARB(hDC, 0, GLFCRCAttribs)) == NULL)
-		{
-			Log::Add(Log::ERR, "%s", "wglCreateContextAttribsARB failed!");
-			return false;
-		}
-
-		if(wglMakeCurrent(hDC, context) == FALSE)
-		{
-			Log::Add(Log::ERR, "%s", "wglMakeCurrent failed!");
-			return false;
-		}
-
-		wgl_context_forward_compatible = true;
-	}
-	else
-	{
-		Log::Add(Log::INFO, "%s", "WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB is not set");
-		wgl_context_forward_compatible = false;
-	}
 
 	// get OpenGL metrics
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &gl_max_texture_size);
@@ -296,8 +209,6 @@ void GLRenderer::Terminate()
 	glDeleteTextures(1, &colorBuffer);
 	glDeleteTextures(1, &depthBuffer);
 	glDeleteFramebuffers(1, &fbo);
-
-	wglDeleteContext(context);
 }
 
 void GLRenderer::Resize(int dimX, int dimY)
@@ -341,16 +252,6 @@ void GLRenderer::Resize(int dimX, int dimY)
 	GUI::Resize(dimX, dimY);
 }
 
-void GLRenderer::SetVSync(bool enable)
-{
-	enableVerticalSynchronization = enable;
-	// set swap interval based on V-Sync setting
-	if(WGLEW_EXT_swap_control)
-	{
-		wglSwapIntervalEXT(enable ? 1 : 0);
-	}
-}
-
 void GLRenderer::SetCameraState(const CameraData& camera)
 {
 	if(camera.isOrtho != cameraData.isOrtho)
@@ -378,8 +279,6 @@ void GLRenderer::Render()
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	RenderFinal();
-
-	SwapBuffers(device);
 }
 
 struct CompareMeshes

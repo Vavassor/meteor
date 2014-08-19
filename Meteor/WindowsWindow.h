@@ -1,15 +1,15 @@
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef WINDOWS_WINDOW_H
+#define WINDOWS_WINDOW_H
 
 #include <windows.h>
 
-class Window
+class WindowsWindow
 {
 public:
 	bool paused, isFullscreen, isBorderless, enableVSync, isAltDown;
 
-	Window();
-	~Window();
+	WindowsWindow();
+	~WindowsWindow();
 
 	bool Create(HINSTANCE hInstance);
 	void Show(bool maximized = false);
@@ -45,6 +45,8 @@ private:
 	HCURSOR oldCursor;
 	bool isCursorHidden, showFPS, mouseModeRelative;
 	double lastTickTime;
+
+	HDC device;
 	const char* deviceName;
 	RenderMode renderMode;
 

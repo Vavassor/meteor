@@ -3,19 +3,13 @@
 
 #include "GLInfo.h"
 
-#include <Windows.h>
-
-#include <gl/wglew.h>
-#include <gl/wglext.h>
-
 #include "../CameraData.h"
 
 namespace GLRenderer
 {
-	bool Initialize(HDC hDC, bool createForwardCompatibleContext);
+	bool Initialize();
 	void Terminate();
 
-	void SetVSync(bool enable);
 	void Resize(int dimX, int dimY);
 	void SetCameraState(const CameraData& camera);
 	void Render();

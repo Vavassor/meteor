@@ -1,5 +1,7 @@
 #include "X11Window.h"
 
+#include "Logging.h"
+
 namespace
 {
 	Atom wmDeleteMessage;
