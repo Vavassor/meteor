@@ -1,0 +1,19 @@
+#ifndef UTF8_UTILS_H
+#define UTF8_UTILS_H
+
+#include <stddef.h>
+
+#include "CharTypes.h"
+
+wchar_t* utf8_to_wcs(wchar_t* buffer, const char* ostr, int n);
+char* wcs_to_utf8(char* buffer, const wchar_t* str, int n);
+
+size_t utf8_to_utf16(char16_t** data, const char* str);
+size_t utf16_to_utf8(char** data, const char16_t* str);
+
+size_t utf8_surrogate_count(const char* s);
+size_t utf16_octet_count(const char16_t* s);
+size_t utf8_codepoint_count(const char* s);
+size_t utf32_octet_count(const char32_t* s, size_t n);
+
+#endif

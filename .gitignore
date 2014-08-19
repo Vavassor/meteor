@@ -1,0 +1,8 @@
+# Eclipse files
+.settings/
+.cproject
+.project
+
+# Build directories
+Debug/
+Release/
