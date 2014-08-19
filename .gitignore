@@ -26,6 +26,8 @@ obj/
 *.sln
 *.sln.docstates
 *.suo
+*.tmp
+*.tmp_proj
 
 # Visual C++ cache files
 ipch/
