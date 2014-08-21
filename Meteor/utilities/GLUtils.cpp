@@ -1,8 +1,5 @@
 #include "GLUtils.h"
 
-#include <gl/gl.h>
-#include <gl/glext.h>
-
 const char* glerr_text(GLenum errorCode)
 {
 	switch(errorCode)

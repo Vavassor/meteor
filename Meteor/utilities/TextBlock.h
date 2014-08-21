@@ -1,7 +1,7 @@
 #ifndef TEXTBLOCK_H
 #define TEXTBLOCK_H
 
-#include "BString.h"
+#include "String.h"
 #include "AutoArray.h"
 #include "GLMath.h"
 

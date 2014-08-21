@@ -1,9 +1,10 @@
 #ifndef GL_MESH_H
 #define GL_MESH_H
 
-#include "DataTypes.h"
 #include "GLInfo.h"
-#include "GLMath.h"
+
+#include "utilities/GLMath.h"
+#include "utilities/DataTypes.h"
 
 struct ObjectBlock
 {

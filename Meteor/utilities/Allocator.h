@@ -1,11 +1,11 @@
 #ifndef ALLOCATOR_H
 #define ALLOCATOR_H
 
-#include <stddef.h>
+#include "Alignment.h"
 
 #include <new>
 
-#include "Alignment.h"
+#include <stddef.h>
 
 namespace slab_allocator
 {

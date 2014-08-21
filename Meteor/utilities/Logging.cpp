@@ -1,7 +1,8 @@
 #include "Logging.h"
 
-#include <time.h>
-#include <stdarg.h>
+#include "String.h"
+#include "FileHandling.h"
+#include "Conversion.h"
 
 #if defined(_MSC_VER) && defined(_WIN32)
 #include <Windows.h>
@@ -9,9 +10,8 @@
 #include <cstdio>
 #endif
 
-#include "BString.h"
-#include "FileHandling.h"
-#include "Conversion.h"
+#include <time.h>
+#include <stdarg.h>
 
 #define LOG_FILE_NAME "log_file.txt"
 

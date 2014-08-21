@@ -1,11 +1,10 @@
 #include "GLTexture.h"
 
-#include "../GlobalInfo.h"
+#include "utilities/Logging.h"
+#include "utilities/Maths.h"
+#include "utilities/stb_image.h"
 
-#include "stb_image.h"
-
-#include "Logging.h"
-#include "Maths.h"
+#include "GlobalInfo.h"
 
 GLTexture::TextureRecord GLTexture::loadedTextures[MAX_NUM_TEXTURES];
 

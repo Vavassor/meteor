@@ -1,7 +1,6 @@
 #include "MeshLoading.h"
 
-#include <cstring>
-#include <cstdlib>
+#include "Logging.h"
 
 #include <map>
 #include <iostream>
@@ -9,7 +8,9 @@
 #include <sstream>
 #include <string>
 
-#include "Logging.h"
+#include <math.h>
+#include <cstring>
+#include <cstdlib>
 
 using namespace std;
 

@@ -1,5 +1,7 @@
 #include "Color.h"
 
+#include <math.h>
+
 inline uint8_t get_alpha(uint32_t color)
 {
 	return color >> 24 & 0xFF;

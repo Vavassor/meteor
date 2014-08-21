@@ -1,11 +1,11 @@
 #include "GLGUI.h"
 
-#include "Macros.h"
-
 #include "GLFont.h"
 #include "GLPrimitives.h"
 #include "GLShader.h"
 #include "GLTexture.h"
+
+#include "utilities/Macros.h"
 
 using namespace std;
 

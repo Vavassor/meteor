@@ -1,7 +1,7 @@
 #ifndef CAMERA_DATA_H
 #define CAMERA_DATA_H
 
-#include "GLMath.h"
+#include "utilities/GLMath.h"
 
 struct CameraData
 {

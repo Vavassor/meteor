@@ -2,12 +2,12 @@
 
 #include <cstring>
 
-#include "FileHandling.h"
-
 #define BUFFER_SIZE 256
 
 FileStream::FileStream(const char* filePath):
-	fileOffset(0)
+	fileOffset(0),
+	bufferOffset(0),
+	bufferFilled(0)
 {
 	fileHandle = open_file_stream(filePath);
 	buffer = new char[BUFFER_SIZE];

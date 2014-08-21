@@ -1,10 +1,11 @@
 #include "Conversion.h"
 
-#include <math.h>
-#include <float.h>
+#include "Maths.h"
+
 #include <cstdlib>
 
-#include "Maths.h"
+#include <math.h>
+#include <float.h>
 
 #define NAN_TEXT		"NaN"
 #define INFINITY_TEXT	"infinity"

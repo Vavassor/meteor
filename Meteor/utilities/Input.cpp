@@ -1,8 +1,18 @@
 #include "Input.h"
 
-#include <windows.h>
+#include "Logging.h"
+
+#if defined(_WIN32)
 #include <XInput.h>
 #pragma comment(lib, "XInput.lib")
+#include <windows.h>
+
+#elif defined(X11)
+#define XK_LATIN1
+#define XK_MISCELLANY
+#include <X11/keysymdef.h>
+#include <X11/Xlib.h>
+#endif
 
 #include <math.h>
 
@@ -14,16 +24,30 @@ namespace Input
 	int numDevices = 1;
 	int playerDevices[MAX_PLAYERS];
 
-	WORD keyBindings[NUM_BUTTONS + NUM_MAPPINGS];
+	unsigned short keyBindings[NUM_BUTTONS + NUM_MAPPINGS];
 
 	int mousePosition[2];
 	float mouseDelta[2];
 	float mouseSensitivity = 16.0f;
 	bool isMouseRelative = true;
 
+	Display* display;
+
 	void PollKeyboardAndMouse(bool buttonsPressed[]);
 	void PollXInputGamepad(int index, bool buttonsPressed[]);
 	void PollJoystickGamepad(bool buttonsPressed[]);
+
+	unsigned short GetScanCode(int virtualKey);
+	void PollKeyboard(char* keyboardState);
+}
+
+unsigned short Input::GetScanCode(int virtualKey)
+{
+#if defined(_WIN32)
+	return MapVirtualKey(virtualKey, MAPVK_VK_TO_VSC);
+#elif defined(X11)
+	return XKeysymToKeycode(display, virtualKey);
+#endif
 }
 
 void Input::Initialize()
@@ -31,31 +55,59 @@ void Input::Initialize()
 	for(int i = 0; i < MAX_PLAYERS; ++i)
 		playerDevices[i] = 0;
 
-	keyBindings[A] = VK_SPACE;
-	keyBindings[B] = 'X';
-	keyBindings[X] = 'E';
-	keyBindings[Y] = 'R';
-	keyBindings[START] = VK_ESCAPE;
-	keyBindings[SELECT] = VK_RETURN;
-	keyBindings[L_SHOULDER] = VK_OEM_MINUS;
-	keyBindings[R_SHOULDER] = VK_OEM_PLUS;
-	keyBindings[D_RIGHT] = VK_END;
-	keyBindings[D_UP] = VK_PRIOR;
-	keyBindings[D_LEFT] = VK_HOME;
-	keyBindings[D_DOWN] = VK_NEXT;
-
-	keyBindings[NUM_BUTTONS + L_TRIGGER] = VK_OEM_4;
-	keyBindings[NUM_BUTTONS + R_TRIGGER] = VK_OEM_6;
-	keyBindings[NUM_BUTTONS + A_RIGHT] = 'D';
-	keyBindings[NUM_BUTTONS + A_UP] = 'W';
-	keyBindings[NUM_BUTTONS + A_LEFT] = 'A';
-	keyBindings[NUM_BUTTONS + A_DOWN] = 'S';
-
 	mousePosition[0] = mousePosition[1] = 0;
+
+#if defined(_WIN32)
+	keyBindings[A] = GetScanCode(VK_SPACE);
+	keyBindings[B] = GetScanCode('X');
+	keyBindings[X] = GetScanCode('E');
+	keyBindings[Y] = GetScanCode('R');
+	keyBindings[START] = GetScanCode(VK_ESCAPE);
+	keyBindings[SELECT] = GetScanCode(VK_RETURN);
+	keyBindings[L_SHOULDER] = GetScanCode(VK_OEM_MINUS);
+	keyBindings[R_SHOULDER] = GetScanCode(VK_OEM_PLUS);
+	keyBindings[D_RIGHT] = GetScanCode(VK_END);
+	keyBindings[D_UP] = GetScanCode(VK_PRIOR);
+	keyBindings[D_LEFT] = GetScanCode(VK_HOME);
+	keyBindings[D_DOWN] = GetScanCode(VK_NEXT);
+
+	keyBindings[NUM_BUTTONS + L_TRIGGER] = GetScanCode(VK_OEM_4);
+	keyBindings[NUM_BUTTONS + R_TRIGGER] = GetScanCode(VK_OEM_6);
+	keyBindings[NUM_BUTTONS + A_RIGHT] = GetScanCode('D');
+	keyBindings[NUM_BUTTONS + A_UP] = GetScanCode('W');
+	keyBindings[NUM_BUTTONS + A_LEFT] = GetScanCode('A');
+	keyBindings[NUM_BUTTONS + A_DOWN] = GetScanCode('S');
+
+#elif defined(X11)
+	display = XOpenDisplay(NULL);
+
+	keyBindings[A] = GetScanCode(XK_space);
+	keyBindings[B] = GetScanCode('X');
+	keyBindings[X] = GetScanCode('E');
+	keyBindings[Y] = GetScanCode('R');
+	keyBindings[START] = GetScanCode(XK_Escape);
+	keyBindings[SELECT] = GetScanCode(XK_Return);
+	keyBindings[L_SHOULDER] = GetScanCode(XK_minus);
+	keyBindings[R_SHOULDER] = GetScanCode(XK_plus);
+	keyBindings[D_RIGHT] = GetScanCode(XK_End);
+	keyBindings[D_UP] = GetScanCode(XK_Prior);
+	keyBindings[D_LEFT] = GetScanCode(XK_Home);
+	keyBindings[D_DOWN] = GetScanCode(XK_Next);
+
+	keyBindings[NUM_BUTTONS + L_TRIGGER] = GetScanCode(XK_bracketleft);
+	keyBindings[NUM_BUTTONS + R_TRIGGER] = GetScanCode(XK_bracketright);
+	keyBindings[NUM_BUTTONS + A_RIGHT] = GetScanCode('D');
+	keyBindings[NUM_BUTTONS + A_UP] = GetScanCode('W');
+	keyBindings[NUM_BUTTONS + A_LEFT] = GetScanCode('A');
+	keyBindings[NUM_BUTTONS + A_DOWN] = GetScanCode('S');
+#endif
 }
 
 void Input::Terminate()
 {
+#if defined(X11)
+	XCloseDisplay(display);
+#endif
 }
 
 void Input::GetMousePosition(int point[2])
@@ -80,6 +132,7 @@ void Input::DetectDevices()
 {
 	numDevices = 1;
 
+#if defined(_WIN32)
 	// detect XInput gamepads
 	for(DWORD i = 0; i < XUSER_MAX_COUNT; i++)
 	{
@@ -92,6 +145,7 @@ void Input::DetectDevices()
 		InputDevice& pad = devices[numDevices++];
 		pad.type = GAMEPAD_XINPUT;
 	}
+#endif
 }
 
 void Input::Poll()
@@ -123,24 +177,45 @@ void Input::Poll()
 	}
 
 	// mouse position handling
+#if defined(WIN32)
 	POINT mouseScreenPosition;
 	if(GetCursorPos(&mouseScreenPosition))
 	{
 		mousePosition[0] = mouseScreenPosition.x;
 		mousePosition[1] = mouseScreenPosition.y;
 	}
+#endif
 }
+
+void Input::PollKeyboard(char* keyboardState)
+{
+#if defined(WIN32)
+	GetKeyboardState(keyboardState);
+#elif defined(X11)
+	XQueryKeymap(display, keyboardState);
+#endif
+}
+
+#if defined(WIN32)
+#define GET_KEY_STATE(code, keyboard) keyboard[(code)] & 0x8000;
+#elif defined(X11)
+#define GET_KEY_STATE(code, keyboard) keyboard[(code) >> 3] >> ((code) & 0x07) & 0x01;
+#endif
 
 void Input::PollKeyboardAndMouse(bool buttonsPressed[])
 {
 	// poll keyboard and mouse buttons
+	char keys[256];
+	PollKeyboard(keys);
+
 	for(int i = 0; i < NUM_BUTTONS; ++i)
-		buttonsPressed[i] = GetKeyState(keyBindings[i]) & 0x8000;
+		buttonsPressed[i] = GET_KEY_STATE(keyBindings[i], keys);
 
 	bool mappingsPressed[NUM_MAPPINGS];
 	for(int i = 0; i < NUM_MAPPINGS; ++i)
-		mappingsPressed[i] = GetKeyState(keyBindings[NUM_BUTTONS + i]) & 8000;
+		mappingsPressed[i] = GET_KEY_STATE(keyBindings[NUM_BUTTONS + i], keys);
 
+	// update device and buttons with polled values
 	InputDevice& device = devices[0];
 	if(mappingsPressed[L_TRIGGER])	device.leftTrigger = 1.0f;
 	if(mappingsPressed[R_TRIGGER])	device.rightTrigger = 1.0f;
@@ -166,6 +241,8 @@ void Input::PollKeyboardAndMouse(bool buttonsPressed[])
 
 void Input::PollXInputGamepad(int index, bool buttonsPressed[])
 {
+#if defined(_WIN32)
+
 	XINPUT_STATE state;
 	ZeroMemory(&state, sizeof state);
 
@@ -260,6 +337,8 @@ void Input::PollXInputGamepad(int index, bool buttonsPressed[])
 	buttonsPressed[D_LEFT] = (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT) != 0;
 	buttonsPressed[D_DOWN] = (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN) != 0;
 	buttonsPressed[D_RIGHT] = (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT) != 0;
+
+#endif
 }
 
 void Input::PollJoystickGamepad(bool buttonsPressed[])

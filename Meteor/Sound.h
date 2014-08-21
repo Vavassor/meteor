@@ -1,9 +1,9 @@
 #ifndef SOUND_H
 #define SOUND_H
 
-#include <fmod.h>
+#include "utilities/String.h"
 
-#include "BString.h"
+#include <fmod.h>
 
 class Sound
 {

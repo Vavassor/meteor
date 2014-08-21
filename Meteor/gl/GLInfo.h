@@ -2,10 +2,10 @@
 #define GL_INFO
 
 #define GLEW_STATIC
-#include <gl/glew.h>
+#include <GL/glew.h>
 
-#include <gl/gl.h>
-#include <gl/glext.h>
+#include <GL/gl.h>
+#include <GL/glext.h>
 
 extern bool wgl_context_forward_compatible;
 extern int gl_version, gl_max_texture_size;

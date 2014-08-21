@@ -1,9 +1,9 @@
 #ifndef COMPONENT_H
 #define COMPONENT_H
 
-#include <string>
+#include "utilities/TextBlock.h"
 
-#include "Textblock.h"
+#include <string>
 
 class Component;
 #include "ComponentRegistry.h"

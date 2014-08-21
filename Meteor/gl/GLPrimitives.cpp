@@ -1,9 +1,10 @@
 #include "GLPrimitives.h"
 
-#include <cstring>
-
 #include "GLInfo.h"
-#include "Maths.h"
+
+#include "utilities/Maths.h"
+
+#include <cstring>
 
 namespace GLPrimitives
 {

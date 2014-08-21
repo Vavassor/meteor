@@ -1,11 +1,11 @@
 #ifndef GL_MODEL_H
 #define GL_MODEL_H
 
-#include "../RenderPhase.h"
-
 #include "GLInfo.h"
 #include "GLTexture.h"
 #include "GLShader.h"
+
+#include "RenderPhase.h"
 
 struct GLMaterial
 {

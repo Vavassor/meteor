@@ -1,12 +1,12 @@
 #include "GLFont.h"
 
+#include "utilities/Logging.h"
+
+#include "GlobalInfo.h"
+
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
-
-#include "../GlobalInfo.h"
-
-#include "Logging.h"
 
 using namespace std;
 

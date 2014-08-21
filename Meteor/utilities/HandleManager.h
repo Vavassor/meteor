@@ -1,9 +1,9 @@
 #ifndef HANDLE_MANAGER_H
 #define HANDLE_MANAGER_H
 
-#include <stddef.h>
-
 #include "DataTypes.h"
+
+#include <stddef.h>
 
 struct Handle
 {

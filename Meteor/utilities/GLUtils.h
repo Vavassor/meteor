@@ -1,9 +1,10 @@
 #ifndef GL_UTILS_H
 #define GL_UTILS_H
 
-#include <stddef.h>
+#include <GL/gl.h>
+#include <GL/glext.h>
 
-#include <gl/glew.h>
+#include <stddef.h>
 
 const char* glerr_text(GLenum errorCode);
 const char* gl_fbstatus_text(GLenum errorCode);

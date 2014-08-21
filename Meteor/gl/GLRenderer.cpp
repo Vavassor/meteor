@@ -1,22 +1,20 @@
 #include "GLRenderer.h"
 
-#include "Macros.h"
-
-#include "Logging.h"
-#include "GLMath.h"
 #include "GLInfo.h"
-#include "GLUtils.h"
 #include "GLPrimitives.h"
 #include "GLGUI.h"
-
-#include "DenseArray.h"
 #include "GLMesh.h"
 #include "GLModel.h"
 #include "GLUniformBuffer.h"
 #include "GLShader.h"
-
-#include "Collision.h"
 #include "Terrain.h"
+
+#include "utilities/Macros.h"
+#include "utilities/Logging.h"
+#include "utilities/GLMath.h"
+#include "utilities/GLUtils.h"
+#include "utilities/DenseArray.h"
+#include "utilities/Collision.h"
 
 int gl_version, gl_max_texture_size;
 float gl_max_texture_max_anisotropy_ext;

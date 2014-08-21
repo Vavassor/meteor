@@ -1,6 +1,7 @@
 #include "Terrain.h"
-#include "GLMath.h"
-#include "Noise.h"
+
+#include "utilities/GLMath.h"
+#include "utilities/Noise.h"
 
 namespace Terrain
 {

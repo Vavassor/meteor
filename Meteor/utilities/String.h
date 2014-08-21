@@ -1,8 +1,9 @@
 #ifndef STRING_H
 #define STRING_H
 
-#include <stddef.h>
 #include "CharTypes.h"
+
+#include <stddef.h>
 
 class String
 {

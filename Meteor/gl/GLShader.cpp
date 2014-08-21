@@ -1,10 +1,10 @@
 #include "GLShader.h"
 
+#include "utilities/Logging.h"
+
+#include "GlobalInfo.h"
+
 #include <cstdio>
-
-#include "../GlobalInfo.h"
-
-#include "Logging.h"
 
 GLShader::GLShader():
 	vertexShader(0),

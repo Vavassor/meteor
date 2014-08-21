@@ -1,20 +1,22 @@
 #include "WindowsWindow.h"
 
-#include <stddef.h>
-#include <wchar.h>
-
 #include "resource.h"
 
-// open and save file dialogs
-#include <string>
-#include <stdio.h>
-#include <Commdlg.h>
-
-// input devices
-#include <Dbt.h>
-#include "DeviceGUID.h"
+// utilities
+#include "utilities/Textblock.h"
+#include "utilities/UnicodeUtils.h"
+#include "utilities/Logging.h"
+#include "utilities/Macros.h"
+#include "utilities/Benaphore.h"
+#include "utilities/Timer.h"
 
 // engine
+#include "GlobalInfo.h"
+#include "Input.h"
+#include "Sound.h"
+#include "Game.h"
+#include "ThreadMessages.h"
+
 #if defined(GRAPHICS_OPENGL)
 #include "gl/GLRenderer.h"
 
@@ -26,19 +28,18 @@
 #include "dx/DXRenderer.h"
 #endif
 
-#include "GlobalInfo.h"
-#include "Input.h"
-#include "Sound.h"
-#include "Game.h"
+// input devices
+#include <Dbt.h>
+#include "DeviceGUID.h"
 
-// utilities
-#include "Textblock.h"
-#include "UnicodeUtils.h"
-#include "Logging.h"
-#include "Macros.h"
-#include "Benaphore.h"
-#include "Timer.h"
-#include "ThreadMessages.h"
+// open and save file dialogs
+#include <string>
+#include <stdio.h>
+#include <Commdlg.h>
+
+// general
+#include <stddef.h>
+#include <wchar.h>
 
 const char* module_directory;
 bool enable_capture_render_statistics;

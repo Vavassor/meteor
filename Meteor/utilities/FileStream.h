@@ -1,12 +1,14 @@
 #ifndef FILE_STREAM_H
 #define FILE_STREAM_H
 
+#include "FileHandling.h"
+
 #include <stddef.h>
 
 class FileStream
 {
 public:
-	void* fileHandle;
+	file_handle_t fileHandle;
 	size_t fileOffset;
 
 	const char* buffer;

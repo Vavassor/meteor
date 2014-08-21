@@ -1,6 +1,9 @@
 #include "X11Window.h"
 
-#include "Logging.h"
+#include "utilities/Logging.h"
+
+const char* module_directory;
+float texture_anisotropy;
 
 namespace
 {
@@ -29,7 +32,7 @@ bool X11Window::Create()
 	}
 	else
 	{
-		Log::Add(Log::INFO, "%s%p%s", "\n\tvisual ", (void*) visual->visualid, "selected\n");
+		Log::Add(Log::INFO, "%s%u%s", "\n\tvisual ", (void*) visual->visualid, "selected\n");
 	}
 
 	Colormap colorMap = XCreateColormap(display, root, visual->visual, AllocNone);
@@ -97,17 +100,4 @@ void X11Window::Destroy()
 
 	XDestroyWindow(display, window);
 	XCloseDisplay(display);
-}
-
-int main(int argc, const char* argv[])
-{
-	X11Window window;
-	if(window.Create())
-	{
-		window.MessageLoop();
-	}
-
-	window.Destroy();
-
-	return 0;
 }

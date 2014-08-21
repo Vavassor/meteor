@@ -31,7 +31,7 @@ public:
 		buffer[next] = element;
 	}
 
-	void Dequeue()
+	void Dequeue(T* element)
 	{
 		if(front == rear) return;
 		front = (front + 1) % capacity;

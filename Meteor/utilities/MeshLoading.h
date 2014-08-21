@@ -1,10 +1,10 @@
 #ifndef MESH_LOADING_H
 #define MESH_LOADING_H
 
-#include <vector>
-
-#include "BString.h"
+#include "String.h"
 #include "GLMath.h"
+
+#include <vector>
 
 struct MaterialInfo
 {

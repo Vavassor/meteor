@@ -1,14 +1,20 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <stddef.h>
-
 #include "Message.h"
 #include "CameraData.h"
 
+#include <stddef.h>
+
+#if defined(_WIN32)
+#define THREAD_RETURN_TYPE unsigned long __stdcall
+#elif defined(__unix__)
+#define THREAD_RETURN_TYPE void*
+#endif
+
 namespace Game
 {
-	unsigned long __stdcall Main(void* param);
+	THREAD_RETURN_TYPE Main(void* param);
 	void Signal();
 	void Quit();
 	bool PumpMessage(Message& message);

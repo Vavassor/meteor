@@ -1,10 +1,11 @@
 #ifndef GL_GUI_H
 #define GL_GUI_H
 
-#include <string>
-
-#include "GLMath.h"
 #include "GLTexture.h"
+
+#include "utilities/GLMath.h"
+
+#include <string>
 
 namespace GUI
 {

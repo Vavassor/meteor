@@ -4,6 +4,7 @@
 namespace Timer
 {
 	double GetTime();
+	unsigned long GetMilliseconds();
 }
 
 #endif

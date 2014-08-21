@@ -1,22 +1,22 @@
 #include "FileHandling.h"
 
+#include "UnicodeUtils.h"
+#include "Logging.h"
+
 #if defined(_WIN32)
 #include <Windows.h>
 
 #elif defined(__unix__)
-#include <errno.h>
-#include <cstring>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <fcntl.h>
 #include <unistd.h>
 
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <errno.h>
+#include <cstring>
 
 #endif
-
-#include "UnicodeUtils.h"
-#include "Logging.h"
 
 #if defined(_WIN32)
 
@@ -200,29 +200,24 @@ static int open_file(const char* filePath, FileWriteMode openMode)
 	{
 		case FILE_MODE_OVERWRITE:
 		{
-			flags = O_WRONLY | O_EXLOCK |
-					O_CREAT |
-					O_TRUNC;
+			flags = O_WRONLY | O_CREAT | O_TRUNC;
 			mode = 0666;
 			break;
 		}
 		case FILE_MODE_APPEND:
 		{
-			flags = O_WRONLY |
-					O_CREAT |
-					O_APPEND;
+			flags = O_WRONLY | O_CREAT | O_APPEND;
 			mode = 0666;
 			break;
 		}
 		case FILE_MODE_CLEAR:
 		{
-			flags = O_WRONLY | O_EXLOCK |
-					O_TRUNC;
+			flags = O_WRONLY | O_TRUNC;
 			break;
 		}
 		case FILE_MODE_READ:
 		{
-			flags = O_RDONLY | O_SHLOCK;
+			flags = O_RDONLY;
 			break;
 		}
 	}
@@ -287,6 +282,26 @@ void clear_file(const char* filePath)
 {
 	int file = open_file(filePath, FILE_MODE_CLEAR);
 	close(file);
+}
+
+void save_text_file(const char* data, size_t size, const char* filePath, FileWriteMode writeMode)
+{
+
+}
+
+file_handle_t open_file_stream(const char* filePath)
+{
+	return open_file(filePath, FILE_MODE_READ);
+}
+
+void close_file_stream(file_handle_t stream)
+{
+	close(stream);
+}
+
+size_t read_file_stream(file_handle_t file, unsigned long long readOffset, void* buffer, size_t size)
+{
+	return 0;
 }
 
 #endif

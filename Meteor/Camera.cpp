@@ -1,6 +1,8 @@
 #include "Camera.h"
 
-#include "Maths.h"
+#include "utilities/Maths.h"
+
+#include <math.h>
 
 Camera::Camera():
 	mode(PERSPECTIVE),

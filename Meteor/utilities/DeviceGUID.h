@@ -1,6 +1,7 @@
 #ifndef DEVICE_GUID_H
 #define DEVICE_GUID_H
 
+#if defined(_WIN32)
 #include <Windows.h>
 
 const GUID GUID_DEVINTERFACE_HID =
@@ -27,5 +28,7 @@ const GUID GUID_DEVINTERFACE_KEYBOARD =
 #ifndef HID_USAGE_GENERIC_KEYBOARD
 #define HID_USAGE_GENERIC_KEYBOARD	((USHORT) 0x06)
 #endif
+
+#endif // defined(_WIN32)
 
 #endif

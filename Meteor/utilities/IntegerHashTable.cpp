@@ -1,8 +1,8 @@
 #include "IntegerHashTable.h"
 
-#include <cstring>
-
 #include "BitManipulation.h"
+
+#include <cstring>
 
 static inline uint32_t murmur_hash_32(uint32_t h)
 {

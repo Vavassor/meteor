@@ -1,20 +1,19 @@
 #include "Game.h"
 
-#include <assert.h>
-
-#if defined(_WIN32)
-#include <Windows.h>
-#endif
-
-#include "Benaphore.h"
-#include "Mutex.h"
-#include "Timer.h"
-#include "LinkedQueue.h"
 #include "ThreadMessages.h"
-#include "Input.h"
 #include "Camera.h"
 #include "CameraData.h"
-#include "Maths.h"
+
+#include "utilities/Benaphore.h"
+#include "utilities/Mutex.h"
+#include "utilities/Timer.h"
+#include "utilities/LinkedQueue.h"
+#include "utilities/Input.h"
+#include "utilities/Maths.h"
+
+#include <assert.h>
+#include <cstring>
+#include <cstdio>
 
 namespace Game
 {
@@ -49,7 +48,7 @@ void Game::Terminate()
 	Input::Terminate();
 }
 
-unsigned long __stdcall Game::Main(void* param)
+THREAD_RETURN_TYPE Game::Main(void* param)
 {
 	Initialize();
 
@@ -62,19 +61,23 @@ unsigned long __stdcall Game::Main(void* param)
 		updateSignal.Lock();
 
 		// update time counters
-		static DWORD lastFPSTime = GetTickCount();
+		static unsigned long lastFPSTime = Timer::GetMilliseconds();
 		static int fps = 0;
 		static int fpsSample = 0;
 
-		DWORD time = GetTickCount();
+		unsigned long time = Timer::GetMilliseconds();
 
 		if(time - lastFPSTime > 1000)
 		{
-			#if defined(_WIN32) && defined(_DEBUG)
+			#if defined(_DEBUG)
 			{
-				wchar_t out[64];
-				wsprintf(out, L"Game Thread : %i TPS\n", fpsSample);
-				OutputDebugString(out);
+				#if defined(_MSC_VER) && defined(_WIN32)
+					wchar_t out[64];
+					wsprintf(out, L"Game Thread : %i TPS\n", fpsSample);
+					OutputDebugString(out);
+				#else
+					printf("Game Thread : %i TPS\n", fpsSample);
+				#endif
 			}
 			#endif
 

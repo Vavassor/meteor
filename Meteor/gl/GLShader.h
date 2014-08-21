@@ -1,9 +1,10 @@
 #ifndef GL_SHADER_H
 #define GL_SHADER_H
 
-#include "GLMath.h"
 #include "GLInfo.h"
 #include "GLTexture.h"
+
+#include "utilities/GLMath.h"
 
 class GLShader
 {

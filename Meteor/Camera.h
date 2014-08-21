@@ -1,7 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "GLMath.h"
+#include "utilities/GLMath.h"
 
 class Camera
 {

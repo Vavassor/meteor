@@ -1,9 +1,10 @@
 #include "GLEmitter.h"
 
-#include <cstring>
-
 #include "GLInfo.h"
-#include "Maths.h"
+
+#include "utilities/Maths.h"
+
+#include <cstring>
 
 GLEmitter::GLEmitter()
 {

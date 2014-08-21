@@ -2,6 +2,8 @@
 
 #include "Maths.h"
 
+#include <math.h>
+
 enum FrustumPlanes
 {
 	FRUSTUM_TOP, FRUSTUM_BOTTOM,

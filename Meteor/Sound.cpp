@@ -1,9 +1,10 @@
 #include "Sound.h"
 
-#include <cstring>
+#include "utilities/Logging.h"
 
 #include "GlobalInfo.h"
-#include "Logging.h"
+
+#include <cstring>
 
 Sound* Sound::sounds[Sound::MAX_SOUNDS];
 int Sound::numSounds = 0;

@@ -1,11 +1,12 @@
 #ifndef GL_EMITTER_H
 #define GL_EMITTER_H
 
-#include "../RenderPhase.h"
-
-#include "GLMath.h"
 #include "GLTexture.h"
 #include "GLShader.h"
+
+#include "utilities/GLMath.h"
+
+#include "RenderPhase.h"
 
 struct Particle
 {

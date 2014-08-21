@@ -1,11 +1,11 @@
 #include "GLModel.h"
 
+#include "utilities/String.h"
+#include "utilities/MeshLoading.h"
+
+#include "GlobalInfo.h"
+
 #include <vector>
-
-#include "../GlobalInfo.h"
-
-#include "String.h"
-#include "MeshLoading.h"
 
 using namespace std;
 

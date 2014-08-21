@@ -1,13 +1,14 @@
 #if defined(_WIN32)
 
+#include "windows/WindowsWindow.h"
+
+#include "utilities/Logging.h"
+
+#include "Game.h"
+
 #if defined(_MSC_VER)
 #include <eh.h>
 #endif
-
-#include "WindowsWindow.h"
-
-#include "Logging.h"
-#include "Game.h"
 
 namespace
 {
@@ -84,7 +85,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR sCmdLin
 
 #if defined(X11)
 
-#include "X11Window.h"
+#include "x11/X11Window.h"
 
 int main(int argc, const char* argv[])
 {

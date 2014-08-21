@@ -3,6 +3,12 @@
 
 #include <stddef.h>
 
+#if defined(_WIN32)
+typedef void* file_handle_t;
+#else
+typedef int file_handle_t;
+#endif
+
 enum FileWriteMode
 {
 	FILE_MODE_OVERWRITE,
@@ -18,8 +24,8 @@ void clear_file(const char* filePath);
 
 void save_text_file(const char* data, size_t size, const char* filePath, FileWriteMode writeMode = FILE_MODE_OVERWRITE);
 
-void* open_file_stream(const char* filePath);
-void close_file_stream(void* fileHandle);
-size_t read_file_stream(void* fileHandle, unsigned long long readOffset, void* buffer, size_t size);
+file_handle_t open_file_stream(const char* filePath);
+void close_file_stream(file_handle_t file);
+size_t read_file_stream(file_handle_t file, unsigned long long readOffset, void* buffer, size_t size);
 
 #endif

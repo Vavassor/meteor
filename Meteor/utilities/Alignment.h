@@ -29,7 +29,7 @@
 
 #if defined(__GNUC__)
 
-#define ALIGNOF(type) alignof(type)
+#define ALIGNOF(type) __alignof__(type)
 
 #else
 

@@ -1,4 +1,4 @@
-#include "BString.h"
+#include "String.h"
 
 #include "UnicodeUtils.h"
 
@@ -44,7 +44,7 @@ void String::Set(const char* s)
 void String::Set(const char* s, size_t n)
 {
 	Reserve(n);
-	for(int i = 0; i < n; ++i)
+	for(size_t i = 0; i < n; ++i)
 		sequence[i] = s[i];
 	sequence[n] = '\0';
 	size = n;
@@ -115,7 +115,7 @@ bool String::operator != (const String& other) const
 void String::Append(const char* s, size_t n)
 {
 	Reserve(size + n);
-	for(int i = 0; i < n; ++i)
+	for(size_t i = 0; i < n; ++i)
 		sequence[size + i] = s[i];
 	size += n;
 	sequence[size] = '\0';
@@ -172,7 +172,7 @@ void String::Reserve(size_t newSize)
 
 	if(prevSequence != nullptr)
 	{
-		for(int i = 0; i < size; ++i)
+		for(size_t i = 0; i < size; ++i)
 			sequence[i] = prevSequence[i];
 	}
 	delete[] prevSequence;
