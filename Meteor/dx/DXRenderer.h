@@ -2,7 +2,8 @@
 #define DX_RENDERER_H
 
 #include "DXInfo.h"
-#include "GLMath.h"
+
+#include "utilities/GLMath.h"
 
 namespace DXRenderer
 {

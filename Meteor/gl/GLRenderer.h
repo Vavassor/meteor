@@ -3,7 +3,7 @@
 
 #include "GLInfo.h"
 
-#include "../CameraData.h"
+#include "CameraData.h"
 
 namespace GLRenderer
 {

@@ -17,7 +17,7 @@
 
 // MEMORY_FENCE
 #if _MSC_VER
-#include <WinNT.h>
+#include <Windows.h>
 #define MEMORY_FENCE()	MemoryBarrier()
 
 #elif __GNUC__

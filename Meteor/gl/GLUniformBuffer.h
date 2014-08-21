@@ -1,9 +1,9 @@
 #ifndef GL_UNIFORM_BUFFER_H
 #define GL_UNIFORM_BUFFER_H
 
-#include <stddef.h>
-
 #include "GLInfo.h"
+
+#include <stddef.h>
 
 namespace GLUniformBuffer
 {

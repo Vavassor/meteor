@@ -1,6 +1,10 @@
 #ifndef GL_UTILS_H
 #define GL_UTILS_H
 
+#if defined(_MSC_VER)
+#include <Windows.h>
+#endif
+
 #include <GL/gl.h>
 #include <GL/glext.h>
 

@@ -2,7 +2,8 @@
 #define DX_TEXTURE_H
 
 #include "DXInfo.h"
-#include "BString.h"
+
+#include "utilities/String.h"
 
 class DXTexture
 {

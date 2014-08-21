@@ -4,6 +4,16 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 
+/* Windows SDK version of gl.h and other gl headers requires Windows.h
+ * to be included first because it uses windows types and macros.
+ * Only compilers using the Windows SDK version of OpenGL such as
+ * Visual Studio have this dependency.
+ * MinGW on Windows uses alternate versions of the gl headers.
+ */
+#if defined(_MSC_VER)
+#include <Windows.h>
+#endif
+
 #include <GL/gl.h>
 #include <GL/glext.h>
 

@@ -1,11 +1,12 @@
 #ifndef DX_SHADER_H
 #define DX_SHADER_H
 
-#include "GLMath.h"
 #include "DXInfo.h"
 #include "ShaderConstant.h"
 #include "DXTexture.h"
-#include "String.h"
+
+#include "utilities/GLMath.h"
+#include "utilities/String.h"
 
 class DXShader
 {

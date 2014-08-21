@@ -1,8 +1,8 @@
 #include "DXUtils.h"
 
-#include <DxErr.h>
+#include "utilities/UnicodeUtils.h"
 
-#include "UnicodeUtils.h"
+#include <DxErr.h>
 
 String dxerr_text(HRESULT hr)
 {

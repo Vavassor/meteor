@@ -1,9 +1,9 @@
 #ifndef GL_TEXTURE_H
 #define GL_TEXTURE_H
 
-#include "utilities/String.h"
-
 #include "GLInfo.h"
+
+#include "utilities/String.h"
 
 class GLTexture
 {

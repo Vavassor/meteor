@@ -1,7 +1,8 @@
 #include "DXEmitter.h"
 
-#include "Logging.h"
 #include "DXUtils.h"
+
+#include "utilities/Logging.h"
 
 DXEmitter::DXEmitter()
 {

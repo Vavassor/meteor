@@ -11,6 +11,10 @@
 #include "utilities/Input.h"
 #include "utilities/Maths.h"
 
+#if defined(_MSC_VER) && defined(_WIN32)
+#include <Windows.h>
+#endif
+
 #include <assert.h>
 #include <cstring>
 #include <cstdio>

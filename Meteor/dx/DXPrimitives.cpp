@@ -1,10 +1,10 @@
 #include "DXPrimitives.h"
 
 #include "DXInfo.h"
-#include "Logging.h"
 #include "DXUtils.h"
 
-#include "Maths.h"
+#include "utilities/Logging.h"
+#include "utilities/Maths.h"
 
 namespace DXPrimitives
 {

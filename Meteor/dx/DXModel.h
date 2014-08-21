@@ -1,11 +1,12 @@
 #ifndef DX_MODEL_H
 #define DX_MODEL_H
 
-#include "../RenderPhase.h"
-
-#include "GLMath.h"
 #include "DXShader.h"
-#include "String.h"
+
+#include "utilities/GLMath.h"
+#include "utilities/String.h"
+
+#include "RenderPhase.h"
 
 enum ModelUsage
 {

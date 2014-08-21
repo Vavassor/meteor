@@ -1,7 +1,7 @@
 #ifndef DX_PRIMITIVES_H
 #define DX_PRIMITIVES_H
 
-#include "GLMath.h"
+#include "utilities/GLMath.h"
 
 namespace DXPrimitives
 {

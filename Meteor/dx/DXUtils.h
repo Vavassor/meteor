@@ -1,10 +1,11 @@
 #ifndef DX_UTILS_H
 #define DX_UTILS_H
 
-#include <Windows.h>
-
 #include "DXInfo.h"
-#include "BString.h"
+
+#include "utilities/String.h"
+
+#include <Windows.h>
 
 String dxerr_text(HRESULT hr);
 String hresult_text(HRESULT hr);

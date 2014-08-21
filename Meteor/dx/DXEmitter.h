@@ -1,12 +1,13 @@
 #ifndef DX_EMITTER_H
 #define DX_EMITTER_H
 
-#include "../RenderPhase.h"
-
-#include "GLMath.h"
 #include "DXInfo.h"
 #include "DXShader.h"
 #include "DXTexture.h"
+
+#include "utilities/GLMath.h"
+
+#include "RenderPhase.h"
 
 struct Particle
 {

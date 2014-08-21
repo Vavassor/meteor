@@ -1,12 +1,13 @@
 #include "DXModel.h"
 
-#include <vector>
-
-#include "../GlobalInfo.h"
-
-#include "MeshLoading.h"
-#include "Logging.h"
 #include "DXUtils.h"
+
+#include "utilities/MeshLoading.h"
+#include "utilities/Logging.h"
+
+#include "GlobalInfo.h"
+
+#include <vector>
 
 using namespace std;
 

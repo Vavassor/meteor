@@ -1,20 +1,20 @@
 #include "DXRenderer.h"
 
-#include <sstream>
+#include "DXUtils.h"
+#include "DXShader.h"
+#include "DXModel.h"
+#include "DXPrimitives.h"
+
+#include "utilities/Macros.h"
+#include "utilities/Logging.h"
+
+#include "CameraData.h"
 
 #if _DEBUG
 #include <D3D11SDKLayers.h>
 #endif
 
-#include "Macros.h"
-#include "Logging.h"
-
-#include "../CameraData.h"
-
-#include "DXUtils.h"
-#include "DXShader.h"
-#include "DXModel.h"
-#include "DXPrimitives.h"
+#include <sstream>
 
 D3D_FEATURE_LEVEL dx_feature_level;
 ID3D11DeviceContext* _DeviceContext;
