@@ -9,10 +9,10 @@
 #include "utilities/Macros.h"
 #include "utilities/Benaphore.h"
 #include "utilities/Timer.h"
+#include "utilities/Input.h"
 
 // engine
 #include "GlobalInfo.h"
-#include "Input.h"
 #include "Sound.h"
 #include "Game.h"
 #include "ThreadMessages.h"
@@ -30,7 +30,7 @@
 
 // input devices
 #include <Dbt.h>
-#include "DeviceGUID.h"
+#include "utilities/DeviceGUID.h"
 
 // open and save file dialogs
 #include <string>

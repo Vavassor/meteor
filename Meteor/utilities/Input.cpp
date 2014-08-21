@@ -31,7 +31,9 @@ namespace Input
 	float mouseSensitivity = 16.0f;
 	bool isMouseRelative = true;
 
+#if defined(X11)
 	Display* display;
+#endif
 
 	void PollKeyboardAndMouse(bool buttonsPressed[]);
 	void PollXInputGamepad(int index, bool buttonsPressed[]);
@@ -190,7 +192,7 @@ void Input::Poll()
 void Input::PollKeyboard(char* keyboardState)
 {
 #if defined(WIN32)
-	GetKeyboardState(keyboardState);
+	GetKeyboardState((PBYTE) keyboardState);
 #elif defined(X11)
 	XQueryKeymap(display, keyboardState);
 #endif
