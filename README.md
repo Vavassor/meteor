@@ -2,7 +2,7 @@ METEOR
 ======
 
 This is a simple cross-platform game framework developed in c++ 
-by Vavassor (http://vavassor.tumblr.com)
+by [Vavassor](http://vavassor.tumblr.com)
 
 It is built to use either OpenGL or DirectX for rendering, 
 and FMOD Ex for sound. Also uses XInput on windows for gamepads,
@@ -27,7 +27,7 @@ provide, but generally as follows:
     GRAPHICS_OPENGL or GRAPHICS_DIRECTX for compiling the code related
     to those api's.
 -   Dependencies, headers and static libraries (.lib or .a) needed for all:
-      * GLEW openGL Extension Wrangler ( http://glew.sourceforge.net/ )
+      * [GLEW](http://glew.sourceforge.net/) openGL Extension Wrangler
       * DirectX SDK for any windows build that wishes to render using it
       * FMOD Ex for Sound.h and Sound.cpp
       * XInput for controller input on Windows
