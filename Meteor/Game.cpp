@@ -10,6 +10,7 @@
 #include "utilities/LinkedQueue.h"
 #include "utilities/Input.h"
 #include "utilities/Maths.h"
+#include "utilities/Assert.h"
 
 #if defined(_MSC_VER) && defined(_WIN32)
 #ifndef WIN32_LEAN_AND_MEAN
@@ -18,7 +19,6 @@
 #include <Windows.h>
 #endif
 
-#include <assert.h>
 #include <cstring>
 #include <cstdio>
 
@@ -127,7 +127,7 @@ bool Game::PumpMessage(Message& message)
 
 void Game::GiveMessage(int type, void* data, size_t dataSize)
 {
-	assert(dataSize <= SIZE_MESSAGE);
+	DEBUG_ASSERT(dataSize <= SIZE_MESSAGE);
 
 	Message message = {};
 	message.type = type;
@@ -138,7 +138,7 @@ void Game::GiveMessage(int type, void* data, size_t dataSize)
 
 void Game::OutMessage(int type, void* data, size_t dataSize)
 {
-	assert(dataSize <= SIZE_MESSAGE);
+	DEBUG_ASSERT(dataSize <= SIZE_MESSAGE);
 
 	Message message = {};
 	message.type = type;

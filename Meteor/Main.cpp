@@ -7,6 +7,7 @@
 #include "Game.h"
 
 #if defined(_MSC_VER)
+#include <stdlib.h>
 #include <eh.h>
 #endif
 

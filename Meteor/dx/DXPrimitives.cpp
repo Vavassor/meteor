@@ -33,7 +33,7 @@ void DXPrimitives::Initialize()
 	hr = _Device->CreateBuffer(&vertexBufferDesc, NULL, &buffer);
 	if(FAILED(hr))
 	{
-		Log::Add(Log::ERR, "%s%s%s", "DIRECTX ERROR: ", dxerr_text(hr), " - could not create Primitives vertex buffer!");
+		Log::Add(Log::ISSUE, "DIRECTX ERROR: %s - could not create Primitives vertex buffer", dxerr_text(hr));
 		return;
 	}
 }

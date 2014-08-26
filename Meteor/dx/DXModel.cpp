@@ -142,7 +142,7 @@ void DXModel::BufferData(const vec4* vertices, const vec2* texcoords, const unsi
 	delete[] vertexDataBuffer;
 	if(FAILED(hr))
 	{
-		Log::Add(Log::ERR, "%s%s%s", "DIRECTX ERROR: ", dxerr_text(hr), " - could not buffer vertex data");
+		Log::Add(Log::ISSUE, "%s%s%s", "DIRECTX ERROR: %s - could not buffer vertex data", dxerr_text(hr));
 		return;
 	}
 
@@ -163,7 +163,7 @@ void DXModel::BufferData(const vec4* vertices, const vec2* texcoords, const unsi
 	hr = _Device->CreateBuffer(&indexBufferDesc, &indexBufferData, &indexBuffer);
 	if(FAILED(hr))
 	{
-		Log::Add(Log::ERR, "%s%s%s", "DIRECTX ERROR: ", dxerr_text(hr), " - could not buffer index data");
+		Log::Add(Log::ISSUE, "DIRECTX ERROR: %s - could not buffer index data", dxerr_text(hr));
 		return;
 	}
 

@@ -43,8 +43,8 @@ bool DXShader::Load(const String& vertexFileName, const String& pixelFileName)
 	if(FAILED(hr))
 	{
 		delete[] vBuffer;
-		Log::Add(Log::ERR, "%s%s%s%s", "DIRECTX ERROR: ", dxerr_text(hr), 
-			" - failed to load vertex shader: ", vertexFileName);
+		Log::Add(Log::ISSUE, "DIRECTX ERROR: %s - failed to load vertex shader: %s",
+			dxerr_text(hr), vertexFileName);
 		return false;
 	}
 
@@ -68,8 +68,8 @@ bool DXShader::Load(const String& vertexFileName, const String& pixelFileName)
 	delete[] vBuffer;
 	if(FAILED(hr))
 	{
-		Log::Add(Log::ERR, "%s%s%s%s", "DIRECTX ERROR: ", dxerr_text(hr), 
-			" - failed to create input layout for vertex shader: ", vertexFileName);
+		Log::Add(Log::ISSUE, "DIRECTX ERROR: %s - failed to create input layout "
+			"for vertex shader: %s", dxerr_text(hr), vertexFileName);
 		return false;
 	}
 
@@ -80,8 +80,8 @@ bool DXShader::Load(const String& vertexFileName, const String& pixelFileName)
 	delete[] psBuffer;
 	if(FAILED(hr))
 	{
-		Log::Add(Log::ERR, "%s%s%s%s", "DIRECTX ERROR: ", dxerr_text(hr),
-			" - failed to load pixel shader: ", pixelFileName);
+		Log::Add(Log::ISSUE, "DIRECTX ERROR: %s - failed to load pixel shader: %s",
+			dxerr_text(hr), pixelFileName);
 		return false;
 	}
 
@@ -124,9 +124,8 @@ bool DXShader::Load(const String& vertexFileName, const String& pixelFileName)
     _Device->CreateBuffer(&constantBufferDesc, nullptr, &vertCB);
 	if(FAILED(hr))
 	{
-		Log::Add(Log::ERR, "%s%s%s%s%s%s", "DIRECTX ERROR: ", dxerr_text(hr), 
-			" - failed to create constant buffer for shaders: ",
-			vertexFileName, " and ", pixelFileName);
+		Log::Add(Log::ISSUE, "DIRECTX ERROR: %s - failed to create constant buffer "
+			"for shaders: %s and %s", dxerr_text(hr), vertexFileName, pixelFileName);
 		return false;
 	}
 
@@ -142,9 +141,8 @@ bool DXShader::Load(const String& vertexFileName, const String& pixelFileName)
 	_Device->CreateBuffer(&pixelCBDesc, nullptr, &pixelCB);
 	if(FAILED(hr))
 	{
-		Log::Add(Log::ERR, "%s%s%s%s%s%s", "DIRECTX ERROR: ", dxerr_text(hr), 
-			" - failed to create pixel constant buffer for shaders: ",
-			vertexFileName, " and ", pixelFileName);
+		Log::Add(Log::ISSUE, "DIRECTX ERROR: %s - failed to create pixel constant buffer "
+			"for shaders: %s and %s", dxerr_text(hr), vertexFileName, pixelFileName);
 		return false;
 	}
 	return true;

@@ -36,7 +36,7 @@ void DXEmitter::Load()
 	hr = _Device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &vertexBuffer);
 	if(FAILED(hr))
 	{
-		Log::Add(Log::ERR, "%s%s%s", "DIRECTX ERROR: ", dxerr_text(hr), " - could not buffer vertex data");
+		Log::Add(Log::ISSUE, "DIRECTX ERROR: %s - could not buffer vertex data", dxerr_text(hr));
 		return;
 	}
 
@@ -64,7 +64,7 @@ void DXEmitter::Load()
 	hr = _Device->CreateBuffer(&indexBufferDesc, &indexBufferData, &indexBuffer);
 	if(FAILED(hr))
 	{
-		Log::Add(Log::ERR, "%s%s%s", "DIRECTX ERROR: ", dxerr_text(hr), " - could not buffer index data");
+		Log::Add(Log::ISSUE, "DIRECTX ERROR: %s - could not buffer index data", dxerr_text(hr));
 	}
 	delete[] indices;
 }

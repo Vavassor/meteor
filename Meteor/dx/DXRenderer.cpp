@@ -744,5 +744,5 @@ void DXRenderer::SetBlendState(BlendState state)
 
 void DXRenderer::DXError(HRESULT hr, const char* errorString)
 {
-	Log::Add(Log::ERR, "%s%s%s%s", "DIRECTX ERROR: ", dxerr_text(hr), " - ", errorString);
+	Log::Add(Log::ISSUE, "DIRECTX ERROR: %s - %s", dxerr_text(hr), errorString);
 }

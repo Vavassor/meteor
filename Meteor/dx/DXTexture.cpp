@@ -89,7 +89,7 @@ bool DXTexture::LoadTextureData(const String& fileName)
 	FILE* file = fopen(filePath.Data(), "rb");
 	if(file == nullptr)
 	{
-		Log::Add(Log::ERR, "%s%s", errorText.Data(), "file could not be opened");
+		Log::Add(Log::ISSUE, "%s file could not be opened", errorText.Data());
 		fclose(file);
 		return false;
 	}
@@ -98,7 +98,7 @@ bool DXTexture::LoadTextureData(const String& fileName)
 	unsigned char* data = stbi_load_from_file(file, &imageWidth, &imageHeight, &numComponents, 4);
 	if(data == nullptr)
 	{
-		Log::Add(Log::ERR, "%s%s%s", errorText.Data(), "STB IMAGE ERROR: ", stbi_failure_reason());
+		Log::Add(Log::ISSUE, "%s -STB IMAGE ERROR: %s", errorText.Data(), stbi_failure_reason());
 		fclose(file);
 		return false;
 	}
@@ -137,8 +137,8 @@ bool DXTexture::LoadDataToDX(BYTE* data, int bpp, int pitch, const String& error
 		
 	if(format == DXGI_FORMAT_UNKNOWN)
 	{
-		Log::Add(Log::ERR, "%s%s%s%s", errorText.Data(), "DIRECTX ERROR: ", dxerr_text(hr),
-			"bit format of image not supported!");
+		Log::Add(Log::ISSUE, "%s DIRECTX ERROR: %s bit format of image not supported!",
+			errorText.Data(), dxerr_text(hr));
 		return false;
 	}
 
@@ -160,8 +160,8 @@ bool DXTexture::LoadDataToDX(BYTE* data, int bpp, int pitch, const String& error
 	hr = _Device->CreateTexture2D(&textureDesc, NULL, &texture);
 	if(FAILED(hr))
 	{
-		Log::Add(Log::ERR, "%s%s%s%s", errorText.Data(), "DIRECTX ERROR: ", dxerr_text(hr),
-			"texture could not be created!");
+		Log::Add(Log::ISSUE, "%s DIRECTX ERROR: %s texture could not be created!",
+			errorText.Data(), dxerr_text(hr));
 		return false;
 	}
 	_DeviceContext->UpdateSubresource(texture, 0, NULL, data, pitch, 0);
@@ -176,8 +176,8 @@ bool DXTexture::LoadDataToDX(BYTE* data, int bpp, int pitch, const String& error
 	hr = _Device->CreateShaderResourceView(texture, &textureViewDesc, &textureView);
 	if(FAILED(hr))
 	{
-		Log::Add(Log::ERR, "%s%s%s%s", errorText.Data(), "DIRECTX ERROR: ", dxerr_text(hr),
-			"shader resource view could not be made");
+		Log::Add(Log::ISSUE, "%s DIRECTX ERROR: %s shader resource view could not be made",
+			errorText.Data(), dxerr_text(hr));
 		return false;
 	}
 	_DeviceContext->GenerateMips(textureView);
@@ -207,8 +207,8 @@ bool DXTexture::LoadDataToDX(BYTE* data, int bpp, int pitch, const String& error
 	hr = _Device->CreateSamplerState(&samplerDesc, &sampler);
 	if(FAILED(hr))
 	{
-		Log::Add(Log::ERR, "%s%s%s%s", errorText.Data(), "DIRECTX ERROR: ", dxerr_text(hr),
-			"sampler could not be made for texture");
+		Log::Add(Log::ISSUE, "%s DIRECTX ERROR: %s sampler could not be made for texture",
+			errorText.Data(), dxerr_text(hr));
 		return false;
 	}
 	return true;
