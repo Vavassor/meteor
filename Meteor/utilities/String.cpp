@@ -126,6 +126,11 @@ void String::Append(const char* s)
 	Append(s, string_size(s));
 }
 
+void String::Append(const char* first, const char* last)
+{
+	Append(first, last - first);
+}
+
 void String::Append(const char32_t* s, size_t n)
 {
 	size_t sizeUTF8 = utf32_octet_count(s, n);

@@ -5,7 +5,11 @@
 #include "Conversion.h"
 
 #if defined(_MSC_VER) && defined(_WIN32)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 #include <Windows.h>
+
 #else
 #include <cstdio>
 #endif
@@ -22,11 +26,17 @@ namespace Log
 
 	enum ParseSizeParameter
 	{
-		PARSE_NORMAL,
+		PARSE_MEDIAN,
 		PARSE_BYTE,
 		PARSE_SHORT,
 		PARSE_LONG,
 		PARSE_LONG_LONG,
+	};
+
+	enum ParseMode
+	{
+		MODE_APPEND,
+		MODE_INSERT,
 	};
 }
 
@@ -64,7 +74,7 @@ static const char* log_level_name(Log::LogLevel level)
 {
 	switch(level)
 	{
-		case Log::ERR:		return "ERROR";
+		case Log::ISSUE:	return "ERROR";
 		case Log::INFO:		return "INFO";
 		case Log::DEBUG:	return "DEBUG";
 	}
@@ -84,7 +94,7 @@ void Log::Add(LogLevel level, const char* format, ...)
 	// append log header to line
 	stream += "LOG-";
 
-	time_t signature = time(NULL);
+	time_t signature = time(nullptr);
 	tm* t = localtime(&signature);
 
 	char timeStr[20];
@@ -111,82 +121,114 @@ void Log::Add(LogLevel level, const char* format, ...)
 	va_list arguments;
 	va_start(arguments, format);
 
-	ParseSizeParameter sizeType = PARSE_NORMAL;
+	ParseMode mode = MODE_APPEND;
+	ParseSizeParameter sizeType = PARSE_MEDIAN;
 
 	char* s = (char*) format;
+	char* f = s;
 	while(*s)
 	{
-		// number types
-		if(*s == 'i')
+		switch(mode)
 		{
-			char str[20];
-			switch(sizeType)
+			case MODE_APPEND:
 			{
-				LOG_CASE(PARSE_BYTE, char, int_to_string)
-				LOG_CASE(PARSE_SHORT, short, int_to_string)
-				LOG_CASE(PARSE_NORMAL, int, int_to_string)
-				LOG_CASE(PARSE_LONG, long, int_to_string)
-				LOG_CASE(PARSE_LONG_LONG, long long, int_to_string)
-			}
-			stream.Append(str, 20);
-		}
-		else if(*s == 'u')
-		{
-			char str[20];
-			switch(sizeType)
-			{
-				LOG_CASE(PARSE_BYTE, unsigned char, int_to_string)
-				LOG_CASE(PARSE_SHORT, unsigned short, int_to_string)
-				LOG_CASE(PARSE_NORMAL, unsigned int, int_to_string)
-				LOG_CASE(PARSE_LONG, unsigned long, int_to_string)
-				LOG_CASE(PARSE_LONG_LONG, unsigned long long, int_to_string)
-			}
-		}
-		else if(*s == 'f')
-		{
-			char str[32];
-			switch(sizeType)
-			{
-				case PARSE_BYTE:
-				case PARSE_SHORT:
-				case PARSE_NORMAL:
+				// go through string until '%' is found, which
+				// signifies a sequence to be replaced
+				if(*s == '%')
 				{
-					float param = va_arg(arguments, float);
-					float_to_string(param, str);
-					break;
+					if(s != f)
+					{
+						stream.Append(f, s);
+					}
+					mode = MODE_INSERT;
+					sizeType = PARSE_MEDIAN;
 				}
-				case PARSE_LONG:
-				case PARSE_LONG_LONG:
-				{
-					double param = va_arg(arguments, double);
-					float_to_string(param, str);
-					break;
-				}
+				break;
 			}
-			stream.Append(str, 32);
-		}
-		// text types
-		else if(*s == 's')
-		{
-			const char* param = va_arg(arguments, const char*);
-			stream.Append(param);
-		}
-		// size specifiers
-		else if(*s == '.')
-		{
 
+			case MODE_INSERT:
+			{
+				// determine type of argument in parameter list and replace
+				// the '%' sub-sequence with the parsed string as directed
+
+				// size specifiers
+				if(*s == '.')
+				{
+
+				}
+				else if(*s == 'h')
+					sizeType = (sizeType == PARSE_SHORT) ? PARSE_BYTE : PARSE_SHORT;
+				else if(*s == 'l')
+					sizeType = (sizeType == PARSE_LONG) ? PARSE_LONG : PARSE_LONG_LONG;
+
+				// number types
+				if(*s == 'i')
+				{
+					char str[20];
+					switch(sizeType)
+					{
+						LOG_CASE(PARSE_BYTE, char, int_to_string)
+						LOG_CASE(PARSE_SHORT, short, int_to_string)
+						LOG_CASE(PARSE_MEDIAN, int, int_to_string)
+						LOG_CASE(PARSE_LONG, long, int_to_string)
+						LOG_CASE(PARSE_LONG_LONG, long long, int_to_string)
+					}
+					stream.Append(str);
+				}
+				else if(*s == 'u')
+				{
+					char str[20];
+					switch(sizeType)
+					{
+						LOG_CASE(PARSE_BYTE, unsigned char, int_to_string)
+						LOG_CASE(PARSE_SHORT, unsigned short, int_to_string)
+						LOG_CASE(PARSE_MEDIAN, unsigned int, int_to_string)
+						LOG_CASE(PARSE_LONG, unsigned long, int_to_string)
+						LOG_CASE(PARSE_LONG_LONG, unsigned long long, int_to_string)
+					}
+					stream.Append(str);
+				}
+				else if(*s == 'f')
+				{
+					char str[32];
+					switch(sizeType)
+					{
+						case PARSE_BYTE:
+						case PARSE_SHORT:
+						case PARSE_MEDIAN:
+						case PARSE_LONG:
+						case PARSE_LONG_LONG:
+						{
+							double param = va_arg(arguments, double);
+							float_to_string(param, str);
+							break;
+						}
+					}
+					stream.Append(str);
+				}
+				// text types
+				else if(*s == 's')
+				{
+					const char* param = va_arg(arguments, const char*);
+					stream.Append(param);
+				}
+
+				f = s + 1;
+				mode = MODE_APPEND;
+
+				break;
+			}
 		}
-		else if(*s == 'h')
-			sizeType = (sizeType == PARSE_SHORT) ? PARSE_BYTE : PARSE_SHORT;
-		else if(*s == 'l')
-			sizeType = (sizeType == PARSE_LONG) ? PARSE_LONG : PARSE_LONG_LONG;
-		else if(*s == '%')
-			sizeType = PARSE_NORMAL;
 
 		++s;
 	}
 
 	va_end(arguments);
+
+	if(s != f)
+	{
+		stream.Append(f, s);
+	}
 
 	stream += "\n";
 }

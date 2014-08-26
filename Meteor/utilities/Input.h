@@ -22,7 +22,7 @@ namespace Input
 
 	InputDevice* GetDevice(PlayerSlot slot);
 	void GetMousePosition(int point[2]);
-	void SetMouseDelta(int delta[2]);
+	void SetMouseMode(bool relative);
 
 	void DetectDevices();
 	void Poll();

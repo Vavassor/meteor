@@ -12,6 +12,9 @@
 #include "utilities/Maths.h"
 
 #if defined(_MSC_VER) && defined(_WIN32)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 #include <Windows.h>
 #endif
 
@@ -165,12 +168,6 @@ void Game::ThreadMessageLoop()
 				ViewportData* viewport = (ViewportData*) message.data;
 				camera.Resize(viewport->width, viewport->height);
 				camera.ResetZoom();
-				break;
-			}
-			case MESSAGE_MOUSE:
-			{
-				MouseData* mouse = (MouseData*) message.data;
-				Input::SetMouseDelta(mouse->delta);
 				break;
 			}
 		}

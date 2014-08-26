@@ -47,16 +47,16 @@ static bool get_similar_vertex_index(
 
 int load_obj(
 	const char* filename,
-	vector<vec4> &vertices, 
+	vector<vec4> &vertices,
 	vector<vec3> &normals,
-	vector<vec2> &texcoords, 
-	vector<unsigned short> &elements, 
-	MaterialInfo* materials) 
+	vector<vec2> &texcoords,
+	vector<unsigned short> &elements,
+	MaterialInfo* materials)
 {
 	ifstream in(filename, ios::in);
 	if(!in)
 	{
-		Log::Add(Log::ERR, "%s%s", "Cannot open ", filename);
+		Log::Add(Log::ISSUE, "Cannot open %s", filename);
 		return 0;
 	}
 
@@ -197,8 +197,8 @@ int load_obj(
 	ifstream matIn(mtlPath, ios::in);
 	if(!matIn)
 	{
-		Log::Add(Log::ERR, "%s%s%s%s%s", "material file: ", mtlPath.c_str()," for model ",
-			filename, " failed to load!");
+		Log::Add(Log::ISSUE, "material file: %s for model %s failed to load!",
+			mtlPath.c_str(), filename);
 	}
 
 	int matInd = 0;

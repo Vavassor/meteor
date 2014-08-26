@@ -5,7 +5,7 @@ namespace Log
 {
 	enum LogLevel
 	{
-		ERR,
+		ISSUE,
 		INFO,
 		DEBUG,
 	};

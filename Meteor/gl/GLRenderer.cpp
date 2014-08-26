@@ -240,7 +240,7 @@ void GLRenderer::Resize(int dimX, int dimY)
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if(status != GL_FRAMEBUFFER_COMPLETE)
 	{
-		Log::Add(Log::ERR, "%s%s", "OpenGL Error: Framebuffer Incomplete! - ", gl_fbstatus_text(status));
+		Log::Add(Log::ISSUE, "OpenGL Error: Framebuffer Incomplete! - %s", gl_fbstatus_text(status));
 	}
 
 	// resize projection in viewport block

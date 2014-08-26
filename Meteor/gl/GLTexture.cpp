@@ -87,7 +87,7 @@ bool GLTexture::LoadImageData(const String& fileName)
 	FILE* file = fopen(filePath.Data(), "rb");
 	if(file == nullptr)
 	{
-		Log::Add(Log::ERR, "%s%s", errorText.Data(), "file could not be opened");
+		Log::Add(Log::ISSUE, "%s file could not be opened", errorText.Data());
 		fclose(file);
 		return false;
 	}
@@ -96,7 +96,7 @@ bool GLTexture::LoadImageData(const String& fileName)
 	unsigned char* data = stbi_load_from_file(file, &width, &height, &numComponents, 0);
 	if(data == nullptr)
 	{
-		Log::Add(Log::ERR, "%s%s%s", errorText.Data(), "STB IMAGE ERROR: ", stbi_failure_reason());
+		Log::Add(Log::ISSUE, "%s STB IMAGE ERROR: %s", errorText.Data(), stbi_failure_reason());
 		fclose(file);
 		return false;
 	}
@@ -126,7 +126,7 @@ bool GLTexture::BufferData(GLubyte* data, int numComponents, const String& error
 {
 	if(data == NULL)
 	{
-		Log::Add(Log::ERR, "%s%s", errorText.Data(), "could not buffer: image Data is empty");
+		Log::Add(Log::ISSUE, "%s could not buffer: image Data is empty", errorText.Data());
 		return false;
 	}
 
@@ -137,7 +137,7 @@ bool GLTexture::BufferData(GLubyte* data, int numComponents, const String& error
 
 	if(Format == 0)
 	{
-		Log::Add(Log::ERR, "%s%s", errorText.Data(), "could not buffer: image Format is 0");
+		Log::Add(Log::ISSUE, "%s could not buffer: image Format is 0", errorText.Data());
 		return false;
 	}
 

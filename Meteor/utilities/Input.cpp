@@ -1,11 +1,18 @@
 #include "Input.h"
 
 #include "Logging.h"
+#include "Macros.h"
 
 #if defined(_WIN32)
+#include "DeviceGUID.h"
+
 #include <XInput.h>
-#pragma comment(lib, "XInput.lib")
-#include <windows.h>
+
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <Dbt.h>
+#include <Windows.h>
 
 #elif defined(X11)
 #define XK_LATIN1
@@ -33,6 +40,10 @@ namespace Input
 
 #if defined(X11)
 	Display* display;
+
+#elif defined(_WIN32)
+	HWND hWnd;
+	HDEVNOTIFY deviceNotification;
 #endif
 
 	void PollKeyboardAndMouse(bool buttonsPressed[]);
@@ -41,15 +52,22 @@ namespace Input
 
 	unsigned short GetScanCode(int virtualKey);
 	void PollKeyboard(char* keyboardState);
+
+#if defined(_WIN32)
+	void OnInput(HRAWINPUT input);
+	LRESULT OnDeviceChange(WPARAM eventType, LPARAM eventData);
+	void MessageLoop();
+
+	LRESULT CALLBACK WindowProc(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam);
+#endif
 }
 
 unsigned short Input::GetScanCode(int virtualKey)
 {
-#if defined(_WIN32)
-	return MapVirtualKey(virtualKey, MAPVK_VK_TO_VSC);
-#elif defined(X11)
+#if defined(X11)
 	return XKeysymToKeycode(display, virtualKey);
 #endif
+	return 0;
 }
 
 void Input::Initialize()
@@ -60,25 +78,82 @@ void Input::Initialize()
 	mousePosition[0] = mousePosition[1] = 0;
 
 #if defined(_WIN32)
-	keyBindings[A] = GetScanCode(VK_SPACE);
-	keyBindings[B] = GetScanCode('X');
-	keyBindings[X] = GetScanCode('E');
-	keyBindings[Y] = GetScanCode('R');
-	keyBindings[START] = GetScanCode(VK_ESCAPE);
-	keyBindings[SELECT] = GetScanCode(VK_RETURN);
-	keyBindings[L_SHOULDER] = GetScanCode(VK_OEM_MINUS);
-	keyBindings[R_SHOULDER] = GetScanCode(VK_OEM_PLUS);
-	keyBindings[D_RIGHT] = GetScanCode(VK_END);
-	keyBindings[D_UP] = GetScanCode(VK_PRIOR);
-	keyBindings[D_LEFT] = GetScanCode(VK_HOME);
-	keyBindings[D_DOWN] = GetScanCode(VK_NEXT);
+	// make invisible window for receiving raw input messages
+	HINSTANCE instance = GetModuleHandle(NULL);
 
-	keyBindings[NUM_BUTTONS + L_TRIGGER] = GetScanCode(VK_OEM_4);
-	keyBindings[NUM_BUTTONS + R_TRIGGER] = GetScanCode(VK_OEM_6);
-	keyBindings[NUM_BUTTONS + A_RIGHT] = GetScanCode('D');
-	keyBindings[NUM_BUTTONS + A_UP] = GetScanCode('W');
-	keyBindings[NUM_BUTTONS + A_LEFT] = GetScanCode('A');
-	keyBindings[NUM_BUTTONS + A_DOWN] = GetScanCode('S');
+	WNDCLASSEX classEx = {};
+	classEx.cbSize = sizeof classEx;
+	classEx.lpfnWndProc = WindowProc;
+	classEx.hInstance = instance;
+	classEx.lpszClassName = L"MeteorInputWindowClass";
+
+	if(RegisterClassEx(&classEx) == 0)
+	{
+		Log::Add(Log::ISSUE, "RegisterClassEx failed!");
+		return;
+	}
+
+	// create the actual window
+	hWnd = CreateWindowEx(WS_EX_APPWINDOW, classEx.lpszClassName, NULL, NULL,
+		0, 0, 0, 0, NULL, NULL, instance, NULL);
+	if(hWnd == NULL)
+	{
+		Log::Add(Log::ISSUE, "CreateWindowEx failed!");
+		return;
+	}
+
+	// set up notification for detecting gamepads
+	DEV_BROADCAST_DEVICEINTERFACE filter = {};
+	filter.dbcc_size = sizeof filter;
+	filter.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
+	filter.dbcc_classguid = GUID_DEVINTERFACE_HID;
+
+	deviceNotification = RegisterDeviceNotification(hWnd, &filter, DEVICE_NOTIFY_WINDOW_HANDLE);
+	if(deviceNotification == NULL)
+	{
+		Log::Add(Log::INFO, "Registering device notification for detecting gamepads failed!");
+	}
+
+	// set up Raw Input for mouse and keyboard controls
+	{
+		RAWINPUTDEVICE devices[2];
+
+		devices[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
+		devices[0].usUsage = HID_USAGE_GENERIC_MOUSE;
+		devices[0].dwFlags = RIDEV_NOLEGACY | RIDEV_CAPTUREMOUSE;
+		devices[0].hwndTarget = hWnd;
+
+		devices[1].usUsagePage = HID_USAGE_PAGE_GENERIC;
+		devices[1].usUsage = HID_USAGE_GENERIC_KEYBOARD;
+		devices[1].dwFlags = RIDEV_NOLEGACY | RIDEV_NOHOTKEYS;
+		devices[1].hwndTarget = hWnd;
+
+		BOOL registered = RegisterRawInputDevices(devices, ARRAY_LENGTH(devices), sizeof(RAWINPUTDEVICE));
+		if(registered == FALSE)
+		{
+			Log::Add(Log::INFO, "Registering keyboard and/or mouse as Raw Input devices failed!");
+		}
+	}
+
+	keyBindings[A] = VK_SPACE;
+	keyBindings[B] = 'X';
+	keyBindings[X] = 'E';
+	keyBindings[Y] = 'R';
+	keyBindings[START] = VK_ESCAPE;
+	keyBindings[SELECT] = VK_RETURN;
+	keyBindings[L_SHOULDER] = VK_OEM_MINUS;
+	keyBindings[R_SHOULDER] = VK_OEM_PLUS;
+	keyBindings[D_RIGHT] = VK_END;
+	keyBindings[D_UP] = VK_PRIOR;
+	keyBindings[D_LEFT] = VK_HOME;
+	keyBindings[D_DOWN] = VK_NEXT;
+
+	keyBindings[NUM_BUTTONS + L_TRIGGER] = VK_OEM_4;
+	keyBindings[NUM_BUTTONS + R_TRIGGER] = VK_OEM_6;
+	keyBindings[NUM_BUTTONS + A_RIGHT] = 'D';
+	keyBindings[NUM_BUTTONS + A_UP] = 'W';
+	keyBindings[NUM_BUTTONS + A_LEFT] = 'A';
+	keyBindings[NUM_BUTTONS + A_DOWN] = 'S';
 
 #elif defined(X11)
 	display = XOpenDisplay(NULL);
@@ -109,6 +184,28 @@ void Input::Terminate()
 {
 #if defined(X11)
 	XCloseDisplay(display);
+
+#elif defined(_WIN32)
+	// unregister from raw input mouse and keyboard events
+	{
+		RAWINPUTDEVICE devices[2];
+
+		devices[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
+		devices[0].usUsage = HID_USAGE_GENERIC_MOUSE;
+		devices[0].dwFlags = RIDEV_REMOVE;
+		devices[0].hwndTarget = NULL;
+
+		devices[1].usUsagePage = HID_USAGE_PAGE_GENERIC;
+		devices[1].usUsage = HID_USAGE_GENERIC_KEYBOARD;
+		devices[1].dwFlags = RIDEV_REMOVE;
+		devices[1].hwndTarget = NULL;
+
+		RegisterRawInputDevices(devices, ARRAY_LENGTH(devices), sizeof(RAWINPUTDEVICE));
+	}
+
+	UnregisterDeviceNotification(deviceNotification);
+
+	DestroyWindow(hWnd);
 #endif
 }
 
@@ -118,10 +215,47 @@ void Input::GetMousePosition(int point[2])
 	point[1] = mousePosition[1];
 }
 
-void Input::SetMouseDelta(int delta[2])
+void Input::SetMouseMode(bool relative)
 {
-	mouseDelta[0] = delta[0];
-	mouseDelta[1] = delta[1];
+	if(relative != isMouseRelative)
+	{
+		if(relative)
+		{
+			// capture mouse input so that stray clicks don't make the program lose focus
+			RAWINPUTDEVICE devices[1];
+			devices[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
+			devices[0].usUsage = HID_USAGE_GENERIC_MOUSE;
+			devices[0].dwFlags = RIDEV_NOLEGACY | RIDEV_CAPTUREMOUSE;
+			devices[0].hwndTarget = hWnd;
+			RegisterRawInputDevices(devices, ARRAY_LENGTH(devices), sizeof(RAWINPUTDEVICE));
+
+			// hide cursor
+			ShowCursor(FALSE);
+			SetCursor(NULL);
+		}
+		else
+		{
+			// unregister so mouse stops being captured with RIDEV_CAPTUREMOUSE
+			RAWINPUTDEVICE devices[1];
+			devices[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
+			devices[0].usUsage = HID_USAGE_GENERIC_MOUSE;
+			devices[0].dwFlags = RIDEV_REMOVE;
+			devices[0].hwndTarget = NULL;
+			RegisterRawInputDevices(devices, ARRAY_LENGTH(devices), sizeof(RAWINPUTDEVICE));
+
+			// re-register mouse for raw input without the capture
+			devices[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
+			devices[0].usUsage = HID_USAGE_GENERIC_MOUSE;
+			devices[0].dwFlags = 0;
+			devices[0].hwndTarget = hWnd;
+			RegisterRawInputDevices(devices, ARRAY_LENGTH(devices), sizeof(RAWINPUTDEVICE));
+
+			// show cursor
+			//SetCursor(oldCursor);
+			ShowCursor(TRUE);
+		}
+	}
+	isMouseRelative = relative;
 }
 
 InputDevice* Input::GetDevice(PlayerSlot slot)
@@ -152,6 +286,9 @@ void Input::DetectDevices()
 
 void Input::Poll()
 {
+	// poll input window message
+	MessageLoop();
+
 	// input device handling
 	for(int i = 0; i < numDevices; i++)
 	{
@@ -191,15 +328,15 @@ void Input::Poll()
 
 void Input::PollKeyboard(char* keyboardState)
 {
-#if defined(WIN32)
+#if defined(_WIN32)
 	GetKeyboardState((PBYTE) keyboardState);
 #elif defined(X11)
 	XQueryKeymap(display, keyboardState);
 #endif
 }
 
-#if defined(WIN32)
-#define GET_KEY_STATE(code, keyboard) keyboard[(code)] & 0x8000;
+#if defined(_WIN32)
+#define GET_KEY_STATE(code, keyboard) keyboard[(code)] & 0x80;
 #elif defined(X11)
 #define GET_KEY_STATE(code, keyboard) keyboard[(code) >> 3] >> ((code) & 0x07) & 0x01;
 #endif
@@ -345,7 +482,75 @@ void Input::PollXInputGamepad(int index, bool buttonsPressed[])
 
 void Input::PollJoystickGamepad(bool buttonsPressed[])
 {
+#if defined(_WIN32)
 
+#endif
+}
+
+LRESULT Input::OnDeviceChange(WPARAM eventType, LPARAM eventData)
+{
+	if (eventType != DBT_DEVICEARRIVAL &&
+		eventType != DBT_DEVICEREMOVECOMPLETE)
+		return TRUE;
+
+	PDEV_BROADCAST_HDR deviceBroadcast = (PDEV_BROADCAST_HDR) eventData;
+	if(deviceBroadcast->dbch_devicetype != DBT_DEVTYP_DEVICEINTERFACE)
+		return TRUE;
+
+	PDEV_BROADCAST_DEVICEINTERFACE deviceInterface = (PDEV_BROADCAST_DEVICEINTERFACE) deviceBroadcast;
+	switch(eventType)
+	{
+		case DBT_DEVICEARRIVAL:
+		case DBT_DEVICEREMOVECOMPLETE:
+			DetectDevices();
+			break;
+	}
+	return TRUE;
+}
+
+void Input::OnInput(HRAWINPUT input)
+{
+	RAWINPUT raw;
+	UINT dataSize = sizeof raw;
+
+	GetRawInputData(input, RID_INPUT, &raw, &dataSize, sizeof(RAWINPUTHEADER));
+
+	if(raw.header.dwType == RIM_TYPEMOUSE)
+	{
+		if(raw.data.mouse.usFlags == MOUSE_MOVE_RELATIVE)
+		{
+			mouseDelta[0] = raw.data.mouse.lLastX;
+			mouseDelta[1] = raw.data.mouse.lLastY;
+		}
+
+		bool buttons[2];
+		USHORT buttonFlags = raw.data.mouse.usButtonFlags;
+		buttons[0] = buttonFlags & (~RI_MOUSE_LEFT_BUTTON_UP | RI_MOUSE_LEFT_BUTTON_DOWN);
+		buttons[1] = buttonFlags & (~RI_MOUSE_RIGHT_BUTTON_UP | RI_MOUSE_RIGHT_BUTTON_DOWN);
+	}
+	else if(raw.header.dwType == RIM_TYPEKEYBOARD)
+	{
+		switch(raw.data.keyboard.Message)
+		{
+			case WM_KEYUP:
+			{
+				if(raw.data.keyboard.VKey == VK_ESCAPE)
+					SetMouseMode(!isMouseRelative);
+				break;
+			}
+		}
+	}
+}
+
+void Input::MessageLoop()
+{
+	MSG msg = {};
+	while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+	{
+		if(msg.message == WM_QUIT) break;
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
 }
 
 bool InputDevice::GetButtonDown(Input::Button button) const
@@ -373,4 +578,19 @@ void InputDevice::UpdateButtons(bool pressed[])
 		else
 			buttons[i] = RELEASED;
 	}
+}
+
+LRESULT CALLBACK Input::WindowProc(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch(uiMsg)
+	{
+		case WM_DEVICECHANGE:
+			return Input::OnDeviceChange(wParam, lParam);
+
+		// WM_INPUT requires DefWindowProc to be called after processing for cleanup
+		case WM_INPUT:
+			Input::OnInput((HRAWINPUT)lParam);
+			break;
+	}
+	return DefWindowProc(hWnd, uiMsg, wParam, lParam);
 }

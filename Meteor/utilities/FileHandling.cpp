@@ -4,6 +4,9 @@
 #include "Logging.h"
 
 #if defined(_WIN32)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 #include <Windows.h>
 
 #elif defined(__unix__)
@@ -27,7 +30,7 @@ static HANDLE open_file(const char* filePath, FileWriteMode writeMode)
 	size_t size = utf8_to_utf16((char16_t**) &widePath, filePath);
 	if(size <= 0)
 	{
-		Log::Add(Log::ERR, "%s%s", "could not convert file path to open file: ", filePath);
+		Log::Add(Log::ISSUE, "could not convert file path to open file: %s", filePath);
 
 		delete[] widePath;
 		return INVALID_HANDLE_VALUE;
@@ -75,7 +78,7 @@ static HANDLE open_file(const char* filePath, FileWriteMode writeMode)
 	HANDLE file = CreateFile(widePath, access, shareMode, NULL, disposition, flags | attributes, NULL);
 	if(file == INVALID_HANDLE_VALUE)
 	{
-		Log::Add(Log::ERR, "%s%s", "could not open file: ", filePath);
+		Log::Add(Log::ISSUE, "could not open file: %s", filePath);
 	}
 
 	delete[] widePath;
@@ -92,7 +95,7 @@ size_t load_binary_file(void** data, const char* filePath)
     BOOL gotFileInfo = GetFileInformationByHandle(file, &fileInfo);
 	if(gotFileInfo == FALSE)
 	{
-		Log::Add(Log::ERR, "%s%s", "could not obtain file info for file: ", filePath);
+		Log::Add(Log::ISSUE, "could not obtain file info for file: %s", filePath);
 
 		CloseHandle(file);
 		return 0;
@@ -105,7 +108,7 @@ size_t load_binary_file(void** data, const char* filePath)
 	BOOL fileRead = ReadFile(file, buffer, size, &numBytesRead, NULL);
 	if(fileRead == FALSE || numBytesRead == 0)
 	{
-		Log::Add(Log::ERR, "%s%s", "could not read data from file: ", filePath);
+		Log::Add(Log::ISSUE, "could not read data from file: %s", filePath);
 
 		CloseHandle(file);
 		delete[] buffer;
@@ -126,7 +129,7 @@ void save_binary_file(const void* data, size_t size, const char* filePath, FileW
 	BOOL fileWrote = WriteFile(file, data, size, &numBytesWritten, NULL);
 	if(fileWrote == FALSE || numBytesWritten == 0)
 	{
-		Log::Add(Log::ERR, "%s%s", "could not write data to file: ", filePath);
+		Log::Add(Log::ISSUE, "could not write data to file: %s", filePath);
 	}
 
 	CloseHandle(file);
@@ -148,7 +151,7 @@ void save_text_file(const char* data, size_t size, const char* filePath, FileWri
 	BOOL fileWrote = WriteFile(file, byteOrderMark, ARRAYSIZE(byteOrderMark), &numBytesWritten, NULL);
 	if(fileWrote == FALSE || numBytesWritten == 0)
 	{
-		Log::Add(Log::ERR, "%s%s", "could not write BOM to file: ", filePath);
+		Log::Add(Log::ISSUE, "could not write BOM to file: %s", filePath);
 	}
 
 	OVERLAPPED overlap = {};
@@ -158,7 +161,7 @@ void save_text_file(const char* data, size_t size, const char* filePath, FileWri
 	fileWrote = WriteFile(file, data, size, &numBytesWritten, &overlap);
 	if(fileWrote == FALSE || numBytesWritten == 0)
 	{
-		Log::Add(Log::ERR, "%s%s", "could not write text to file: ", filePath);
+		Log::Add(Log::ISSUE, "could not write text to file: %s", filePath);
 	}
 
 	CloseHandle(file);
@@ -184,7 +187,7 @@ size_t read_file_stream(void* fileHandle, unsigned long long readOffset, void* b
 	BOOL fileRead = ReadFile(fileHandle, buffer, size, &numBytesRead, &overlap);
 	if(fileRead == FALSE || numBytesRead == 0)
 	{
-		Log::Add(Log::ERR, "%s", "could not read data from file stream.");
+		Log::Add(Log::ISSUE, "could not read data from file stream.");
 	}
 
 	return numBytesRead;
@@ -225,7 +228,7 @@ static int open_file(const char* filePath, FileWriteMode openMode)
 	int file = open(filePath, flags, mode);
 	if(file < 0)
 	{
-		Log::Add(Log::ERR, "%s%s%s%s", "Error opening file ", filePath, " - ", strerror(errno));
+		Log::Add(Log::ISSUE, "Error opening file %s - %s", filePath, strerror(errno));
 		return 0;
 	}
 
@@ -241,7 +244,7 @@ size_t load_binary_file(void** data, const char* filePath)
 	int result = fstat(file, &info);
 	if(result < 0)
 	{
-		Log::Add(Log::ERR, "%s%s%s%s", "Error reading file ", filePath, " - ", strerror(errno));
+		Log::Add(Log::ISSUE, "Error reading file %s - %s", filePath, strerror(errno));
 
 		close(file);
 		return 0;
@@ -253,7 +256,7 @@ size_t load_binary_file(void** data, const char* filePath)
 	ssize_t numReadBytes = read(file, buffer, size);
 	if(numReadBytes < 0)
 	{
-		Log::Add(Log::ERR, "%s%s%s%s", "Error reading file ", filePath, " - ", strerror(errno));
+		Log::Add(Log::ISSUE, "Error reading file %s - %s", filePath, strerror(errno));
 
 		close(file);
 		return 0;
@@ -272,7 +275,7 @@ void save_binary_file(const void* data, size_t size, const char* filePath, FileW
 	ssize_t bytesWritten = write(file, data, size);
 	if(bytesWritten < 0)
 	{
-		Log::Add(Log::ERR, "%s%s%s%s", "Could not write to file ", filePath, " - ", strerror(errno));
+		Log::Add(Log::ISSUE, "Could not write to file %s - %s", filePath, strerror(errno));
 	}
 
 	close(file);

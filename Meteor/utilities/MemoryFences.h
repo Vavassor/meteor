@@ -17,6 +17,9 @@
 
 // MEMORY_FENCE
 #if _MSC_VER
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 #include <Windows.h>
 #define MEMORY_FENCE()	MemoryBarrier()
 

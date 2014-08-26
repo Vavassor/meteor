@@ -28,16 +28,8 @@
 #include "dx/DXRenderer.h"
 #endif
 
-// input devices
-#include <Dbt.h>
-#include "utilities/DeviceGUID.h"
-
-// open and save file dialogs
-#include <string>
-#include <stdio.h>
-#include <Commdlg.h>
-
 // general
+#include <cstdio>
 #include <stddef.h>
 #include <wchar.h>
 
@@ -50,7 +42,9 @@ namespace
 	bool enableDebugging;
 	ViewportData viewport;
 
+#if defined(GRAPHICS_OPENGL)
 	HGLRC context = NULL;
+#endif
 }
 
 WindowsWindow::WindowsWindow():
@@ -69,14 +63,11 @@ WindowsWindow::WindowsWindow():
 	oldCursor(NULL),
 	isCursorHidden(false),
 	showFPS(false),
-	mouseModeRelative(true),
 	lastTickTime(0.0),
 
 	device(NULL),
 	deviceName(nullptr),
-	renderMode(RENDER_GL),
-
-	deviceNotification(NULL)
+	renderMode(RENDER_GL)
 {
 	wchar_t wcsFilePath[MAX_PATH];
 	GetModuleFileName(GetModuleHandle(NULL), wcsFilePath, MAX_PATH);
@@ -154,7 +145,7 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 
 	if(RegisterClassEx(&classEx) == 0)
 	{
-		Log::Add(Log::ERR, "%s", "RegisterClassEx failed!");
+		Log::Add(Log::ISSUE, "RegisterClassEx failed!");
 		return false;
 	}
 
@@ -164,7 +155,7 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 		0, 0, width, height, NULL, NULL, hInstance, NULL);
 	if(hWnd == NULL)
 	{
-		Log::Add(Log::ERR, "%s", "CreateWindowEx failed!");
+		Log::Add(Log::ISSUE, "CreateWindowEx failed!");
 		return false;
 	}
 	SetWindowLongPtr(hWnd, 0, (LONG)this);
@@ -173,7 +164,7 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 	device = NULL;
 	if((device = GetDC(hWnd)) == NULL)
 	{
-		Log::Add(Log::ERR, "%s", "GetDC failed!");
+		Log::Add(Log::ISSUE, "GetDC failed!");
 		return false;
 	}
 
@@ -194,27 +185,27 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 		int PixelFormat;
 		if((PixelFormat = ChoosePixelFormat(device, &pfd)) == 0)
 		{
-			Log::Add(Log::ERR, "%s", "ChoosePixelFormat failed!");
+			Log::Add(Log::ISSUE, "ChoosePixelFormat failed!");
 			return false;
 		}
 
 		static int MSAAPixelFormat = 0;
 		if(SetPixelFormat(device, MSAAPixelFormat == 0 ? PixelFormat : MSAAPixelFormat, &pfd) == FALSE)
 		{
-			Log::Add(Log::ERR, "%s", "SetPixelFormat failed!");
+			Log::Add(Log::ISSUE, "SetPixelFormat failed!");
 			return false;
 		}
 
 		// create context and initialize glew
 		if((context = wglCreateContext(device)) == NULL)
 		{
-			Log::Add(Log::ERR, "%s", "wglCreateContext failed!");
+			Log::Add(Log::ISSUE, "wglCreateContext failed!");
 			return false;
 		}
 
 		if(wglMakeCurrent(device, context) == FALSE)
 		{
-			Log::Add(Log::ERR, "%s", "wglMakeCurrent failed!");
+			Log::Add(Log::ISSUE, "wglMakeCurrent failed!");
 			return false;
 		}
 
@@ -224,7 +215,7 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 		glewExperimental = GL_TRUE;
 		if(glewInit() != GLEW_OK)
 		{
-			Log::Add(Log::ERR, "%s", "glewInit failed!");
+			Log::Add(Log::ISSUE, "glewInit failed!");
 			return false;
 		}
 
@@ -248,13 +239,13 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 
 			if((context = wglCreateContextAttribsARB(device, 0, GLFCRCAttribs)) == NULL)
 			{
-				Log::Add(Log::ERR, "%s", "wglCreateContextAttribsARB failed!");
+				Log::Add(Log::ISSUE, "wglCreateContextAttribsARB failed!");
 				return false;
 			}
 
 			if(wglMakeCurrent(device, context) == FALSE)
 			{
-				Log::Add(Log::ERR, "%s", "wglMakeCurrent failed!");
+				Log::Add(Log::ISSUE, "wglMakeCurrent failed!");
 				return false;
 			}
 
@@ -262,7 +253,7 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 		}
 		else
 		{
-			Log::Add(Log::INFO, "%s", "WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB is not set");
+			Log::Add(Log::INFO, "WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB is not set");
 			wgl_context_forward_compatible = false;
 		}
 
@@ -288,40 +279,6 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 		DXRenderer::SetVSync(enableVSync);
 	}
 	#endif
-
-	// set up notification for detecting gamepads
-	DEV_BROADCAST_DEVICEINTERFACE filter;
-	ZeroMemory(&filter, sizeof filter);
-	filter.dbcc_size = sizeof filter;
-	filter.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
-	filter.dbcc_classguid = GUID_DEVINTERFACE_HID;
-
-	deviceNotification = RegisterDeviceNotification(hWnd, &filter, DEVICE_NOTIFY_WINDOW_HANDLE);
-	if(deviceNotification == NULL)
-	{
-		Log::Add(Log::INFO, "%s", "Registering device notification for detecting gamepads failed!");
-	}
-
-	// set up Raw Input for mouse and keyboard controls
-	{
-		RAWINPUTDEVICE devices[2];
-
-		devices[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
-		devices[0].usUsage = HID_USAGE_GENERIC_MOUSE;
-		devices[0].dwFlags = RIDEV_NOLEGACY | RIDEV_CAPTUREMOUSE;
-		devices[0].hwndTarget = hWnd;
-
-		devices[1].usUsagePage = HID_USAGE_PAGE_GENERIC;
-		devices[1].usUsage = HID_USAGE_GENERIC_KEYBOARD;
-		devices[1].dwFlags = RIDEV_NOLEGACY | RIDEV_NOHOTKEYS;
-		devices[1].hwndTarget = hWnd;
-
-		BOOL registered = RegisterRawInputDevices(devices, ARRAY_LENGTH(devices), sizeof(RAWINPUTDEVICE));
-		if(registered == FALSE)
-		{
-			Log::Add(Log::INFO, "%s", "Registering keyboard and/or mouse as Raw Input devices failed!");
-		}
-	}
 
 	// initialize everything else
 	oldCursor = LoadCursor(hInstance, IDC_ARROW);
@@ -416,7 +373,7 @@ void WindowsWindow::ToggleFullscreen()
 		newSettings.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
 		if(ChangeDisplaySettings(&newSettings, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
 		{
-			Log::Add(Log::ERR, "%s", "Display Mode failed! Could not enter fullscreen mode");
+			Log::Add(Log::ISSUE, "Display Mode failed! Could not enter fullscreen mode");
 		}
 
 		isBorderless = true;
@@ -436,49 +393,6 @@ void WindowsWindow::ToggleBorderlessMode()
 		| SWP_FRAMECHANGED | SWP_SHOWWINDOW);
 
 	isBorderless = !isBorderless;
-}
-
-void WindowsWindow::SetMouseMode(bool relative)
-{
-	if(relative != mouseModeRelative)
-	{
-		if(relative)
-		{
-			// capture mouse input so that stray clicks don't make the program lose focus
-			RAWINPUTDEVICE devices[1];
-			devices[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
-			devices[0].usUsage = HID_USAGE_GENERIC_MOUSE;
-			devices[0].dwFlags = RIDEV_NOLEGACY | RIDEV_CAPTUREMOUSE;
-			devices[0].hwndTarget = hWnd;
-			RegisterRawInputDevices(devices, ARRAY_LENGTH(devices), sizeof(RAWINPUTDEVICE));
-
-			// hide cursor
-			ShowCursor(FALSE);
-			SetCursor(NULL);
-		}
-		else
-		{
-			// unregister so mouse stops being captured with RIDEV_CAPTUREMOUSE
-			RAWINPUTDEVICE devices[1];
-			devices[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
-			devices[0].usUsage = HID_USAGE_GENERIC_MOUSE;
-			devices[0].dwFlags = RIDEV_REMOVE;
-			devices[0].hwndTarget = NULL;
-			RegisterRawInputDevices(devices, ARRAY_LENGTH(devices), sizeof(RAWINPUTDEVICE));
-
-			// re-register mouse for raw input without the capture
-			devices[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
-			devices[0].usUsage = HID_USAGE_GENERIC_MOUSE;
-			devices[0].dwFlags = 0;
-			devices[0].hwndTarget = hWnd;
-			RegisterRawInputDevices(devices, ARRAY_LENGTH(devices), sizeof(RAWINPUTDEVICE));
-
-			// show cursor
-			SetCursor(oldCursor);
-			ShowCursor(TRUE);
-		}
-	}
-	mouseModeRelative = relative;
 }
 
 void WindowsWindow::ThreadMessageLoop()
@@ -602,67 +516,11 @@ LRESULT WindowsWindow::OnSize(int dimX, int dimY)
 	return 0;
 }
 
-LRESULT WindowsWindow::OnDeviceChange(WPARAM eventType, LPARAM eventData)
-{
-	if (eventType != DBT_DEVICEARRIVAL &&
-		eventType != DBT_DEVICEREMOVECOMPLETE)
-		return TRUE;
-
-	PDEV_BROADCAST_HDR deviceBroadcast = (PDEV_BROADCAST_HDR) eventData;
-	if(deviceBroadcast->dbch_devicetype != DBT_DEVTYP_DEVICEINTERFACE)
-		return TRUE;
-
-	PDEV_BROADCAST_DEVICEINTERFACE deviceInterface = (PDEV_BROADCAST_DEVICEINTERFACE) deviceBroadcast;
-	switch(eventType)
-	{
-		case DBT_DEVICEARRIVAL:
-		case DBT_DEVICEREMOVECOMPLETE:
-		{
-			Input::DetectDevices();
-			break;
-		}
-	}
-	return TRUE;
-}
-
-void WindowsWindow::OnInput(HRAWINPUT input)
-{
-	RAWINPUT raw;
-	UINT dataSize = sizeof raw;
-
-	GetRawInputData(input, RID_INPUT, &raw, &dataSize, sizeof(RAWINPUTHEADER));
-
-	if(raw.header.dwType == RIM_TYPEMOUSE)
-	{
-		if(raw.data.mouse.usFlags == MOUSE_MOVE_RELATIVE)
-		{
-			MouseData mouse = {};
-			mouse.delta[0] = raw.data.mouse.lLastX;
-			mouse.delta[1] = raw.data.mouse.lLastY;
-			Game::GiveMessage(MESSAGE_MOUSE, &mouse, sizeof mouse);
-		}
-
-		bool buttons[2];
-		USHORT buttonFlags = raw.data.mouse.usButtonFlags;
-		buttons[0] = buttonFlags & (~RI_MOUSE_LEFT_BUTTON_UP | RI_MOUSE_LEFT_BUTTON_DOWN);
-		buttons[1] = buttonFlags & (~RI_MOUSE_RIGHT_BUTTON_UP | RI_MOUSE_RIGHT_BUTTON_DOWN);
-	}
-	else if(raw.header.dwType == RIM_TYPEKEYBOARD)
-	{
-		switch(raw.data.keyboard.Message)
-		{
-			case WM_KEYDOWN:	KeyDown(raw.data.keyboard.VKey);	break;
-			case WM_KEYUP:		KeyUp(raw.data.keyboard.VKey);		break;
-		}
-	}
-}
-
 void WindowsWindow::KeyDown(USHORT key)
 {
 	switch(key)
 	{
 		case VK_MENU:	isAltDown = true;					break;
-		case VK_ESCAPE:	SetMouseMode(!mouseModeRelative);	break;
 		case VK_F2:		ToggleBorderlessMode();				break;
 		case VK_F11:	ToggleFullscreen();					break;
 		case VK_RETURN:	if(isAltDown) ToggleFullscreen();	break;
@@ -714,25 +572,6 @@ void WindowsWindow::Destroy()
 
 	Sound::Terminate();
 
-	// unregister from raw input mouse and keyboard events
-	{
-		RAWINPUTDEVICE devices[2];
-
-		devices[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
-		devices[0].usUsage = HID_USAGE_GENERIC_MOUSE;
-		devices[0].dwFlags = RIDEV_REMOVE;
-		devices[0].hwndTarget = NULL;
-
-		devices[1].usUsagePage = HID_USAGE_PAGE_GENERIC;
-		devices[1].usUsage = HID_USAGE_GENERIC_KEYBOARD;
-		devices[1].dwFlags = RIDEV_REMOVE;
-		devices[1].hwndTarget = NULL;
-
-		RegisterRawInputDevices(devices, ARRAY_LENGTH(devices), sizeof(RAWINPUTDEVICE));
-	}
-
-	UnregisterDeviceNotification(deviceNotification);
-
 	delete[] deviceName;
 
 	#if defined(GRAPHICS_OPENGL)
@@ -774,14 +613,6 @@ LRESULT CALLBACK WindowsWindow::WindowProc(HWND hWnd, UINT uiMsg, WPARAM wParam,
 
 		case WM_SIZE:
 			return window->OnSize(LOWORD(lParam), HIWORD(lParam));
-
-		case WM_DEVICECHANGE:
-			return window->OnDeviceChange(wParam, lParam);
-
-		// WM_INPUT requires DefWindowProc to be called after processing for cleanup
-		case WM_INPUT:
-			window->OnInput((HRAWINPUT)lParam);
-			break;
 	}
 	return DefWindowProc(hWnd, uiMsg, wParam, lParam);
 }

@@ -60,8 +60,8 @@ bool GLShader::Load(const String& vertexFileName, const String& pixelFileName)
 			char* InfoLog = new char[InfoLogLength];
 			int CharsWritten  = 0;
 			glGetProgramInfoLog(program, InfoLogLength, &CharsWritten, InfoLog);
-			Log::Add(Log::ERR, "%s%s%s%s%s%s", "Error linking program (",
-				vertexFileName.Data(), ", ", pixelFileName.Data(), ")\n", InfoLog);
+			Log::Add(Log::ISSUE, "Error linking program (%s, %s)\n%s",
+				vertexFileName.Data(), pixelFileName.Data(), InfoLog);
 			delete[] InfoLog;
 		}
 
@@ -80,7 +80,7 @@ GLuint GLShader::LoadShaderGL(GLenum Type, const String& shaderFileName)
 	FILE* File = fopen(fileName.Data(), "rb");
 	if(File == NULL)
 	{
-		Log::Add(Log::ERR, "%s%s", "couldn't load shader file: ", shaderFileName.Data());
+		Log::Add(Log::ISSUE, "couldn't load shader file: %s", shaderFileName.Data());
 		return 0;
 	}
 
@@ -112,7 +112,7 @@ GLuint GLShader::LoadShaderGL(GLenum Type, const String& shaderFileName)
 			char* InfoLog = new char[InfoLogLength];
 			int CharsWritten  = 0;
 			glGetShaderInfoLog(Shader, InfoLogLength, &CharsWritten, InfoLog);
-			Log::Add(Log::ERR, "%s%s%s%s", "Error compiling shader ", shaderFileName.Data(), "\n", InfoLog);
+			Log::Add(Log::ISSUE, "Error compiling shader %s\n%s", shaderFileName.Data(), InfoLog);
 			delete[] InfoLog;
 		}
 

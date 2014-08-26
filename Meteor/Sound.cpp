@@ -31,8 +31,8 @@ void Sound::Initialize()
 	check_error(result);
 	if(version < FMOD_VERSION)
 	{
-		Log::Add(Log::ERR, "%s%s%u%s", "AUDIO ERROR: fmodex.dll is an older version than needed. ",
-			"FMOD version should be at least ", FMOD_VERSION, " .");
+		Log::Add(Log::ISSUE, "AUDIO ERROR: fmodex.dll is an older version than needed. "
+			"FMOD version should be at least %u.", FMOD_VERSION);
 	}
 
 	int numDrivers;
@@ -321,7 +321,7 @@ namespace
 	{
 		if(result != FMOD_OK)
 		{
-			Log::Add(Log::ERR, "%s%s", "FMOD Error: ", fmoderr_text(result));
+			Log::Add(Log::ISSUE, "FMOD Error: %s", fmoderr_text(result));
 		}
 	}
 

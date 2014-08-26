@@ -1,7 +1,10 @@
 #ifndef WINDOWS_WINDOW_H
 #define WINDOWS_WINDOW_H
 
-#include <windows.h>
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <Windows.h>
 
 class WindowsWindow
 {
@@ -22,8 +25,6 @@ public:
 	LRESULT OnSize(int width, int height);
 	LRESULT OnGainedFocus();
 	LRESULT OnLostFocus();
-	LRESULT OnDeviceChange(WPARAM eventType, LPARAM eventData);
-	void OnInput(HRAWINPUT input);
 	void KeyDown(USHORT key);
 	void KeyUp(USHORT key);
 	void ThreadMessageLoop();
@@ -43,21 +44,18 @@ private:
 	const wchar_t* windowName;
 	int width, height, samples;
 	HCURSOR oldCursor;
-	bool isCursorHidden, showFPS, mouseModeRelative;
+	bool isCursorHidden, showFPS;
 	double lastTickTime;
 
 	HDC device;
 	const char* deviceName;
 	RenderMode renderMode;
 
-	HDEVNOTIFY deviceNotification;
-
 	WINDOWPLACEMENT placement;
 };
 
 // ----------------------------------------------------------------------------------------------------------------------------
 
-LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
 LONG WINAPI UnhandledException(LPEXCEPTION_POINTERS exceptionInfo);
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR sCmdLine, int iShow);
 

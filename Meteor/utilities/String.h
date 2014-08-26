@@ -35,6 +35,7 @@ public:
 
 	void Append(const char* s, size_t n);
 	void Append(const char* str);
+	void Append(const char* first, const char* last);
 	void Append(const char32_t* s, size_t n);
 
 	void Reserve(size_t newSize);
