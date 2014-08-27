@@ -7,10 +7,6 @@
 
 #include "GlobalInfo.h"
 
-#include <vector>
-
-using namespace std;
-
 DXModel::DXModel()
 {
 	SetDefaults();
@@ -42,10 +38,10 @@ void DXModel::SetDefaults()
 
 void DXModel::LoadAsMesh(const String& fileName, ModelUsage usage)
 {
-	vector<vec4> vertices;
-	vector<vec3> normals;
-	vector<vec2> texcoords;
-	vector<unsigned short> elements;
+	AutoArray<vec4> vertices;
+	AutoArray<vec3> normals;
+	AutoArray<vec2> texcoords;
+	AutoArray<unsigned short> elements;
 
 	String filePath = module_directory + fileName;
 	MaterialInfo matInfo[MAX_MATERIALS];
@@ -59,10 +55,10 @@ void DXModel::LoadAsMesh(const String& fileName, ModelUsage usage)
 		materials[i].color = VEC4_ONE;
 	}
 
-	numVertices = vertices.size();
-	numIndices = elements.size();
+	numVertices = vertices.Count();
+	numIndices = elements.Count();
 
-	BufferData(vertices.data(), texcoords.data(), elements.data(), usage);
+	BufferData(vertices.First(), texcoords.First(), elements.First(), usage);
 
 	isLoaded = true;
 }

@@ -5,10 +5,6 @@
 
 #include "GlobalInfo.h"
 
-#include <vector>
-
-using namespace std;
-
 GLModel::GLModel()
 {
 	SetDefaults();
@@ -33,10 +29,10 @@ void GLModel::SetDefaults()
 
 void GLModel::LoadAsMesh(const String& filename)
 {
-	vector<vec4> vertices;
-	vector<vec3> normals;
-	vector<vec2> texcoords;
-	vector<unsigned short> elements;
+	AutoArray<vec4> vertices;
+	AutoArray<vec3> normals;
+	AutoArray<vec2> texcoords;
+	AutoArray<unsigned short> elements;
 
 	String filePath = module_directory + filename;
 	MaterialInfo matInfo[MAX_MATERIALS];
@@ -52,10 +48,10 @@ void GLModel::LoadAsMesh(const String& filename)
 		materials[i].texture.Load(texPath);
 	}
 
-	numVertices = vertices.size();
-	numIndices = elements.size();
+	numVertices = vertices.Count();
+	numIndices = elements.Count();
 
-	BufferData(vertices.data(), texcoords.data(), elements.data());
+	BufferData(vertices.First(), texcoords.First(), elements.First());
 
 	isLoaded = true;
 }

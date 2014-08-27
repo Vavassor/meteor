@@ -2,91 +2,103 @@
 #define AUTO_ARRAY_H
 
 #include <stddef.h>
+#include <new>
 
 template<typename T>
 class AutoArray
 {
 private:
 	T* buffer;
-	size_t last;
-	size_t capacity;
+	T* last;
+	T* end;
+
+	inline size_t Capacity()
+	{
+		return end - buffer;
+	}
 
 public:
-	explicit AutoArray(size_t initialCapacity):
-		last(0),
-		capacity(initialCapacity)
+	explicit AutoArray(size_t initialCapacity = 10)
 	{
-		buffer = new T[initialCapacity];
+		buffer = (T*) ::operator new(initialCapacity * sizeof(T));
+		last = buffer;
+		end = buffer + initialCapacity;
 	}
 
 	~AutoArray()
 	{
-		delete[] buffer;
+		for(T *it = buffer, *stop = last; it != stop; ++it)
+			it->~T();
+		delete[] (void*) buffer;
 	}
 
 	void Push(const T& element)
 	{
-		if(last + 1 >= capacity)
-			Resize(capacity << 1);
-		buffer[++last] = element;
+		if(last >= end)
+			Resize(Capacity() << 1);
+		new(last++) T(element);
 	}
 
 	bool Pop(T* element)
 	{
-		if(last == 0) return false;
-		*element = buffer[last--];
+		if(last == buffer) return false;
+		*element = *--last;
+		last->~T();
 		return true;
 	}
 
-	void Set(int index, const T& element)
+	bool Set(size_t index, const T& element)
 	{
-		if(index < 0) return;
-		if(index > last)
-			Resize(index + 1);
+		if(index >= Count())
+			return false;
 		buffer[index] = element;
+		return true;
 	}
 
 	void Clear()
 	{
-		delete[] buffer;
-		buffer = new T[capacity];
-		last = 0;
+		for(T *it = buffer, *stop = last; it != stop; ++it)
+			it->~T();
+		last = buffer;
 	}
 
 	void Resize(size_t newSize)
 	{
 		if(newSize == 0) return;
 
-		T* newArray = new T[newSize];
-		size_t minSize = (newSize < capacity) ? newSize : capacity;
-		for(size_t i = 0; i < minSize; i++)
-			newArray[i] = buffer[i];
-		delete[] buffer;
-		buffer = newArray;
-		capacity = newSize;
+		T* newArray = (T*) ::operator new(newSize * sizeof(T));
 
-		if(last >= minSize)
-			last = minSize - 1;
+		size_t count = Count();
+		size_t minSize = (newSize < count) ? newSize : count;
+		for(size_t i = 0; i < minSize; ++i)
+			new(&newArray[i]) T(buffer[i]);
+
+		delete[] (void*) buffer;
+		buffer = newArray;
+
+		// reallocation invalidated these, so reset them
+		last = buffer + minSize;
+		end = buffer + newSize;
 	}
 
 	void Contract()
 	{
-		Resize(last + 1);
+		Resize(Count());
 	}
 
-	T* Get(int index) const
+	T* Get(size_t index) const
 	{
-		if(index < 0 || index > last)
+		if(index >= Count())
 			return nullptr;
 		return buffer[index];
 	}
 
-	T& operator[](int index)
+	T& operator[](size_t index)
 	{
 		return buffer[index];
 	}
 
-	const T& operator[](int index) const
+	const T& operator[](size_t index) const
 	{
 		return buffer[index];
 	}
@@ -98,12 +110,12 @@ public:
 
 	inline T* Last() const
 	{
-		return buffer + last;
+		return last;
 	}
 
 	inline size_t Count() const
 	{
-		return last + 1;
+		return last - buffer;
 	}
 };
 

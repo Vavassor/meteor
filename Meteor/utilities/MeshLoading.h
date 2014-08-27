@@ -3,8 +3,7 @@
 
 #include "String.h"
 #include "GLMath.h"
-
-#include <vector>
+#include "AutoArray.h"
 
 struct MaterialInfo
 {
@@ -13,20 +12,11 @@ struct MaterialInfo
 	float alpha;
 };
 
-void index_VBO(
-	const std::vector<vec4>& in_vertices,
-	const std::vector<vec2>& in_uvs,
-	const std::vector<vec3>& in_normals,
-	std::vector<unsigned short> & out_indices, 
-	std::vector<vec4>& out_vertices, 
-	std::vector<vec2>& out_uvs, 
-	std::vector<vec3>& out_normals);
-
 int load_obj(const char* filename,
-	std::vector<vec4>& vertices, 
-	std::vector<vec3>& normals, 
-	std::vector<vec2>& texcoords, 
-	std::vector<unsigned short>& elements, 
+	AutoArray<vec4>& vertices,
+	AutoArray<vec3>& normals,
+	AutoArray<vec2>& texcoords,
+	AutoArray<unsigned short>& elements, 
 	MaterialInfo* materials);
 
 #endif

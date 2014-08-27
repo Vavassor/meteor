@@ -2,17 +2,22 @@
 
 #include "Logging.h"
 
+#include <vector>
 #include <map>
-#include <iostream>
+#include <string>
 #include <fstream>
 #include <sstream>
-#include <string>
 
 #include <math.h>
 #include <cstring>
 #include <cstdlib>
 
-using namespace std;
+using std::vector;
+using std::map;
+using std::string;
+
+using std::ifstream;
+using std::istringstream;
 
 struct PackedVertex
 {
@@ -45,15 +50,57 @@ static bool get_similar_vertex_index(
 	}
 }
 
+static void index_VBO(
+	const vector<vec4> & in_vertices,
+	const vector<vec2> & in_uvs,
+	const vector<vec3> & in_normals,
+	AutoArray<unsigned short> & out_indices,
+	AutoArray<vec4> & out_vertices,
+	AutoArray<vec2> & out_uvs,
+	AutoArray<vec3> & out_normals
+)
+{
+	map<PackedVertex,unsigned short> VertexToOutIndex;
+
+	// For each input vertex
+	unsigned int numVertices = in_vertices.size();
+	for (unsigned int i = 0; i < numVertices; i++)
+	{
+		PackedVertex packed;
+		packed.position = in_vertices[i];
+		packed.uv = in_uvs[i];
+		packed.normal = in_normals[i];
+		
+		// Try to find a similar vertex in out_XXXX
+		unsigned short index;
+		bool found = get_similar_vertex_index(packed, VertexToOutIndex, index);
+
+		if(found)
+		{
+			// A similar vertex is already in the VBO, use it instead !
+			out_indices.Push(index);
+		}
+		else
+		{
+			out_vertices.Push(in_vertices[i]);
+			out_uvs.Push(in_uvs[i]);
+			out_normals.Push(in_normals[i]);
+			unsigned short newindex = (unsigned short) out_vertices.Count() - 1;
+			out_indices.Push(newindex);
+			VertexToOutIndex[packed] = newindex;
+		}
+	}
+}
+
 int load_obj(
 	const char* filename,
-	vector<vec4> &vertices,
-	vector<vec3> &normals,
-	vector<vec2> &texcoords,
-	vector<unsigned short> &elements,
+	AutoArray<vec4> &vertices,
+	AutoArray<vec3> &normals,
+	AutoArray<vec2> &texcoords,
+	AutoArray<unsigned short> &elements,
 	MaterialInfo* materials)
 {
-	ifstream in(filename, ios::in);
+	ifstream in(filename, std::ios::in);
 	if(!in)
 	{
 		Log::Add(Log::ISSUE, "Cannot open %s", filename);
@@ -194,7 +241,7 @@ int load_obj(
 	string directory = filePath.substr(0, filePath.find_last_of(L'/') + 1);
 	string mtlPath = directory + matlib;
 
-	ifstream matIn(mtlPath, ios::in);
+	ifstream matIn(mtlPath, std::ios::in);
 	if(!matIn)
 	{
 		Log::Add(Log::ISSUE, "material file: %s for model %s failed to load!",
@@ -227,45 +274,4 @@ int load_obj(
 		}
 	}
 	return numMaterials;
-}
-
-void index_VBO(
-	const vector<vec4> & in_vertices,
-	const vector<vec2> & in_uvs,
-	const vector<vec3> & in_normals,
-	vector<unsigned short> & out_indices,
-	vector<vec4> & out_vertices,
-	vector<vec2> & out_uvs,
-	vector<vec3> & out_normals
-)
-{
-	map<PackedVertex,unsigned short> VertexToOutIndex;
-
-	// For each input vertex
-	unsigned int numVertices = in_vertices.size();
-	for (unsigned int i = 0; i < numVertices; i++)
-	{
-		PackedVertex packed;
-		packed.position = in_vertices[i];
-		packed.uv = in_uvs[i];
-		packed.normal = in_normals[i];
-		
-		// Try to find a similar vertex in out_XXXX
-		unsigned short index;
-		bool found = get_similar_vertex_index(packed, VertexToOutIndex, index);
-
-		if (found)
-		{ // A similar vertex is already in the VBO, use it instead !
-			out_indices.push_back(index);
-		}
-		else
-		{
-			out_vertices.push_back(in_vertices[i]);
-			out_uvs.push_back(in_uvs[i]);
-			out_normals.push_back(in_normals[i]);
-			unsigned short newindex = (unsigned short)out_vertices.size() - 1;
-			out_indices.push_back(newindex);
-			VertexToOutIndex[packed] = newindex;
-		}
-	}
 }
