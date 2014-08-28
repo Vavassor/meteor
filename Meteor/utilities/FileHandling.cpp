@@ -18,7 +18,6 @@
 
 #include <errno.h>
 #include <cstring>
-
 #endif
 
 #if defined(_WIN32)
@@ -143,15 +142,19 @@ void clear_file(const char* filePath)
 
 void save_text_file(const char* data, size_t size, const char* filePath, FileWriteMode writeMode)
 {
-	HANDLE file = open_file(filePath, FILE_MODE_OVERWRITE);
-
-	char byteOrderMark[3] = { 0xEF, 0xBB, 0xBF };
+	HANDLE file = open_file(filePath, writeMode);
 
 	DWORD numBytesWritten;
-	BOOL fileWrote = WriteFile(file, byteOrderMark, ARRAYSIZE(byteOrderMark), &numBytesWritten, NULL);
-	if(fileWrote == FALSE || numBytesWritten == 0)
+	BOOL fileWrote;
+	if(writeMode == FILE_MODE_OVERWRITE)
 	{
-		Log::Add(Log::ISSUE, "could not write BOM to file: %s", filePath);
+		unsigned char byteOrderMark[3] = { 0xEF, 0xBB, 0xBF };
+
+		fileWrote = WriteFile(file, byteOrderMark, ARRAYSIZE(byteOrderMark), &numBytesWritten, NULL);
+		if(fileWrote == FALSE || numBytesWritten == 0)
+		{
+			Log::Add(Log::ISSUE, "could not write BOM to file: %s", filePath);
+		}
 	}
 
 	OVERLAPPED overlap = {};
@@ -287,9 +290,30 @@ void clear_file(const char* filePath)
 	close(file);
 }
 
-void save_text_file(const char* data, size_t size, const char* filePath, FileWriteMode writeMode)
+void save_text_file(const char* data, size_t size, const char* filePath)
 {
+	int file = open_file(filePath, writeMode);
 
+	ssize_t bytesWritten;
+	if(writeMode == FILE_MODE_OVERWRITE)
+	{
+		unsigned char byteOrderMark[3] = { 0xEF, 0xBB, 0xBF };
+
+		bytesWritten = write(file, byteOrderMark, 3);
+		if(bytesWritten < 0)
+		{
+			Log::Add(Log::ISSUE, "could not write BOM to file %s - %s", filePath, strerror(errno));
+		}
+	}
+
+	// offset of 3 is ignored when opened with FILE_MODE_APPEND (O_APPEND)
+	bytesWritten = pwrite(file, data, size, 3);
+	if(bytesWritten < 0)
+	{
+		Log::Add(Log::ISSUE, "could not write text to file %s - %s", filePath, strerror(errno));
+	}
+
+	close(file);
 }
 
 file_handle_t open_file_stream(const char* filePath)
@@ -304,7 +328,15 @@ void close_file_stream(file_handle_t stream)
 
 size_t read_file_stream(file_handle_t file, unsigned long long readOffset, void* buffer, size_t size)
 {
-	return 0;
+	ssize_t numReadBytes = pread(file, buffer, size, readOffset);
+	if(numReadBytes < 0)
+	{
+		Log::Add(Log::ISSUE, "Error reading file %s - %s", filePath, strerror(errno));
+
+		close(file);
+		return 0;
+	}
+	return numReadBytes;
 }
 
 #endif

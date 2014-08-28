@@ -54,8 +54,8 @@ namespace Input
 	void PollKeyboard(char* keyboardState);
 
 #if defined(_WIN32)
-	void OnInput(HRAWINPUT input);
 	LRESULT OnDeviceChange(WPARAM eventType, LPARAM eventData);
+	void OnInput(HRAWINPUT input);
 	void MessageLoop();
 
 	LRESULT CALLBACK WindowProc(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam);
@@ -219,8 +219,10 @@ void Input::SetMouseMode(bool relative)
 {
 	if(relative != isMouseRelative)
 	{
+#if defined(_WIN32)
 		if(relative)
 		{
+
 			// capture mouse input so that stray clicks don't make the program lose focus
 			RAWINPUTDEVICE devices[1];
 			devices[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
@@ -254,6 +256,7 @@ void Input::SetMouseMode(bool relative)
 			//SetCursor(oldCursor);
 			ShowCursor(TRUE);
 		}
+#endif
 	}
 	isMouseRelative = relative;
 }
@@ -323,6 +326,9 @@ void Input::Poll()
 		mousePosition[0] = mouseScreenPosition.x;
 		mousePosition[1] = mouseScreenPosition.y;
 	}
+#elif defined(X11)
+	XQueryPointer(display, DefaultRootWindow(display), nullptr, nullptr,
+		nullptr, nullptr, &mousePosition[0], &mousePosition[1], nullptr);
 #endif
 }
 
@@ -487,6 +493,8 @@ void Input::PollJoystickGamepad(bool buttonsPressed[])
 #endif
 }
 
+#if defined(_WIN32)
+
 LRESULT Input::OnDeviceChange(WPARAM eventType, LPARAM eventData)
 {
 	if (eventType != DBT_DEVICEARRIVAL &&
@@ -553,6 +561,23 @@ void Input::MessageLoop()
 	}
 }
 
+LRESULT CALLBACK Input::WindowProc(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch(uiMsg)
+	{
+		case WM_DEVICECHANGE:
+			return Input::OnDeviceChange(wParam, lParam);
+
+		// WM_INPUT requires DefWindowProc to be called after processing for cleanup
+		case WM_INPUT:
+			Input::OnInput((HRAWINPUT)lParam);
+			break;
+	}
+	return DefWindowProc(hWnd, uiMsg, wParam, lParam);
+}
+
+#endif // defined(_WIN32)
+
 bool InputDevice::GetButtonDown(Input::Button button) const
 {
 	return buttons[button] == PRESSED 
@@ -578,19 +603,4 @@ void InputDevice::UpdateButtons(bool pressed[])
 		else
 			buttons[i] = RELEASED;
 	}
-}
-
-LRESULT CALLBACK Input::WindowProc(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch(uiMsg)
-	{
-		case WM_DEVICECHANGE:
-			return Input::OnDeviceChange(wParam, lParam);
-
-		// WM_INPUT requires DefWindowProc to be called after processing for cleanup
-		case WM_INPUT:
-			Input::OnInput((HRAWINPUT)lParam);
-			break;
-	}
-	return DefWindowProc(hWnd, uiMsg, wParam, lParam);
 }
