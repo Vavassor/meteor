@@ -31,11 +31,12 @@ public:
 		buffer[next] = element;
 	}
 
-	void Dequeue(T* element)
+	bool Dequeue(T* element)
 	{
-		if(front == rear) return;
+		if(front == rear) return false;
 		front = (front + 1) % capacity;
 		*element = buffer[front];
+		return true;
 	}
 
 	inline T& Front()
@@ -65,9 +66,19 @@ public:
 		return Iterator(*this, buffer + front);
 	}
 
+	ConstIterator First()
+	{
+		return ConstIterator(*this, buffer + front);
+	}
+
 	Iterator Last()
 	{
 		return Iterator(*this, buffer + rear);
+	}
+
+	ConstIterator Last()
+	{
+		return ConstIterator(*this, buffer + rear);
 	}
 
 	friend class Iterator;
@@ -78,15 +89,53 @@ public:
 		T* current;
 
 	public:
-		Iterator(Queue& queue, T* pointer) : container(queue), current(pointer) {}
-		Iterator(const Iterator& other) : container(other.container), current(other.current) {}
+		Iterator(Queue& queue, T* pointer):
+			container(queue),
+			current(pointer)
+		{}
 
-		T& operator*() { return *current; }
-		T* operator->() { return current; }
-		bool operator!=(const Iterator& other) const { return current != other.current; }
-		bool operator==(const Iterator& other) const { return current == other.current; }
+		Iterator(const Iterator& other):
+			container(other.container),
+			current(other.current)
+		{}
+
+		T& operator * () { return *current; }
+		T* operator -> () { return current; }
+		bool operator != (const Iterator& other) const { return current != other.current; }
+		bool operator == (const Iterator& other) const { return current == other.current; }
 
 		Iterator& operator++()
+		{
+			T* base = container.buffer;
+			current = base + ((current - base + 1) % container.capacity);
+			return *this;
+		}
+	};
+
+	friend class ConstIterator;
+	class ConstIterator
+	{
+	private:
+		Queue& container;
+		T* current;
+
+	public:
+		ConstIterator(Queue& queue, T* pointer):
+			container(queue),
+			current(pointer)
+		{}
+
+		ConstIterator(const ConstIterator& other):
+			container(other.container),
+			current(other.current)
+		{}
+
+		const T& operator * () const { return *current; }
+		const T* operator -> () const { return current; }
+		bool operator != (const Iterator& other) const { return current != other.current; }
+		bool operator == (const Iterator& other) const { return current == other.current; }
+
+		ConstIterator& operator++()
 		{
 			T* base = container.buffer;
 			current = base + ((current - base + 1) % container.capacity);
