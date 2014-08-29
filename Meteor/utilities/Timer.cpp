@@ -1,7 +1,5 @@
 #include "Timer.h"
 
-#include <time.h>
-
 #if defined(_WIN32)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -9,11 +7,8 @@
 #include <Windows.h>
 
 #elif defined(__unix__)
-union posix_time_t
-{
-	timespec spec;
-	long long value;
-};
+#include <time.h>
+#include <sys/time.h>
 #endif
 
 double Timer::GetTime()
@@ -28,16 +23,30 @@ double Timer::GetTime()
 
 #elif defined(__unix__)
 
-	posix_time_t frequency;
-	clock_getres(CLOCK_MONOTONIC, &frequency.spec);
-	posix_time_t time;
-	clock_gettime(CLOCK_MONOTONIC, &time.spec);
-	return double(time.value) * 1000.0 / double(frequency.value);
+	timespec resolutionSpec;
+	clock_getres(CLOCK_MONOTONIC, &resolutionSpec);
+	timespec timeSpec;
+	clock_gettime(CLOCK_MONOTONIC, &timeSpec);
+
+	long long time = timeSpec.tv_nsec + timeSpec.tv_sec * 1e9L;
+	long long resolution = resolutionSpec.tv_nsec + resolutionSpec.tv_sec * 1e9L;
+
+	return double(time) * 1000.0 / double(resolution * 1e9L);
 
 #endif
 }
 
 unsigned long Timer::GetMilliseconds()
 {
-	return clock() / CLOCKS_PER_SEC / 1000;
+#if defined(_WIN32)
+
+	return clock() / CLOCKS_PER_SEC / 1000UL;
+
+#elif defined(__unix__)
+
+	timeval time;
+	gettimeofday(&time, NULL);
+	return time.tv_sec * 1000UL + time.tv_usec / 1000UL;
+
+#endif
 }

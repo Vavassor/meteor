@@ -9,7 +9,7 @@
 #endif
 #include <Windows.h>
 
-#elif defined(__unix__)
+#elif defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -196,7 +196,7 @@ size_t read_file_stream(void* fileHandle, unsigned long long readOffset, void* b
 	return numBytesRead;
 }
 
-#elif defined(__unix__)
+#elif defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
 
 static int open_file(const char* filePath, FileWriteMode openMode)
 {
@@ -290,7 +290,7 @@ void clear_file(const char* filePath)
 	close(file);
 }
 
-void save_text_file(const char* data, size_t size, const char* filePath)
+void save_text_file(const char* data, size_t size, const char* filePath, FileWriteMode writeMode)
 {
 	int file = open_file(filePath, writeMode);
 
@@ -331,7 +331,7 @@ size_t read_file_stream(file_handle_t file, unsigned long long readOffset, void*
 	ssize_t numReadBytes = pread(file, buffer, size, readOffset);
 	if(numReadBytes < 0)
 	{
-		Log::Add(Log::ISSUE, "Error reading file %s - %s", filePath, strerror(errno));
+		Log::Add(Log::ISSUE, "Error reading file stream - %s", strerror(errno));
 
 		close(file);
 		return 0;

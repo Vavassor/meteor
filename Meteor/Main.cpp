@@ -1,22 +1,40 @@
-#if defined(_WIN32)
-
-#include "windows/WindowsWindow.h"
-
 #include "utilities/Logging.h"
 
 #include "Game.h"
+
+#if defined(_WIN32)
+
+#include "windows/WindowsWindow.h"
 
 #if defined(_MSC_VER)
 #include <stdlib.h>
 #include <eh.h>
 #endif
 
+#elif defined(X11)
+
+#include "x11/X11Window.h"
+
+#include <pthread.h>
+#include <errno.h>
+#include <string.h>
+
+#endif
+
 namespace
 {
 	static const int MAX_THREADS = 1;
+
+#if defined(_WIN32)
 	DWORD threadIDs[MAX_THREADS];
     HANDLE threads[MAX_THREADS];
+
+#elif defined(__unix__)
+    pthread_t threads[MAX_THREADS];
+#endif
 }
+
+#if defined(_WIN32)
 
 #if defined(_MSC_VER)
 __declspec(noreturn) __declspec(nothrow) void termination_handler()
@@ -86,17 +104,44 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR sCmdLin
 
 #if defined(X11)
 
-#include "x11/X11Window.h"
+typedef void* (*Thread_Start_Routine)(void*);
 
 int main(int argc, const char* argv[])
 {
+	// thread startup
+	Thread_Start_Routine startRoutines[MAX_THREADS] =
+	{
+		Game::Main,
+	};
+	for(int i = 0; i < MAX_THREADS; ++i)
+	{
+		int result = pthread_create(&threads[i], NULL, startRoutines[i], NULL);
+		if(result)
+		{
+			Log::Add(Log::ISSUE, "thread could not start - return code: %s", strerror(result));
+		}
+	}
+
+	// startup window and begin render loop
 	X11Window window;
 	if(window.Create())
 	{
 		window.MessageLoop();
 	}
 
+	// window shutdown
 	window.Destroy();
+
+	// thread shutdown
+	void (*exitRoutines[MAX_THREADS])() =
+	{
+		Game::Quit,
+	};
+	for(int i = 0; i < MAX_THREADS; ++i)
+		exitRoutines[i]();
+
+	for(int i = 0; i < MAX_THREADS; ++i)
+		pthread_join(threads[i], NULL);
 
 	return 0;
 }

@@ -290,7 +290,9 @@ void Input::DetectDevices()
 void Input::Poll()
 {
 	// poll input window message
+#if defined(_WIN32)
 	MessageLoop();
+#endif
 
 	// input device handling
 	for(int i = 0; i < numDevices; i++)
@@ -327,8 +329,8 @@ void Input::Poll()
 		mousePosition[1] = mouseScreenPosition.y;
 	}
 #elif defined(X11)
-	XQueryPointer(display, DefaultRootWindow(display), nullptr, nullptr,
-		nullptr, nullptr, &mousePosition[0], &mousePosition[1], nullptr);
+	//XQueryPointer(display, DefaultRootWindow(display), nullptr, nullptr,
+	//	nullptr, nullptr, &mousePosition[0], &mousePosition[1], nullptr);
 #endif
 }
 
