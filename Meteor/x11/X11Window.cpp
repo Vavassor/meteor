@@ -2,10 +2,14 @@
 
 #include "utilities/Logging.h"
 #include "utilities/Timer.h"
+#include "utilities/Macros.h"
 
 #include "GlobalInfo.h"
 #include "ThreadMessages.h"
 #include "Game.h"
+
+#include "XPM.h"
+#include "icon.xpm"
 
 #if defined(GRAPHICS_OPENGL)
 #include "gl/GLRenderer.h"
@@ -111,6 +115,17 @@ bool X11Window::Create()
 	wmDeleteMessage = XInternAtom(display, "WM_DELETE_WINDOW", False);
 	XSetWMProtocols(display, window, &wmDeleteMessage, 1);
 
+	// load application icon
+	{
+		unsigned long* buffer = x_pixmap::parse_image(icon_16x16_xpm, ARRAY_LENGTH(icon_16x16_xpm));
+
+		Atom wmIcon = XInternAtom(display, "_NET_WM_ICON", False);
+		Atom cardinal = XInternAtom(display, "CARDINAL", False);
+
+		XChangeProperty(display, window, wmIcon, cardinal, 32,
+			PropModeReplace, (const unsigned char*) buffer, 2 + 16 * 16);
+	}
+
 #if defined(GRAPHICS_OPENGL)
 	glContext = glXCreateContext(display, visual, NULL, GL_TRUE);
 	glXMakeCurrent(display, window, glContext);
@@ -140,6 +155,28 @@ bool X11Window::Create()
 	return true;
 }
 
+void X11Window::Destroy()
+{
+#if defined(GRAPHICS_OPENGL)
+	GLRenderer::Terminate();
+
+	glXMakeCurrent(display, None, NULL);
+	glXDestroyContext(display, glContext);
+#endif
+
+	XDestroyWindow(display, window);
+	XCloseDisplay(display);
+}
+
+void X11Window::ToggleBorderlessMode()
+{
+	if(fullscreen) return;
+
+
+
+	borderless = !borderless;
+}
+
 void X11Window::MessageLoop()
 {
 	bool running = true;
@@ -163,26 +200,6 @@ void X11Window::MessageLoop()
 			lastTickTime = Timer::GetTime();
 		}
 	}
-}
-
-bool X11Window::TranslateMessage(const XEvent& event)
-{
-	switch(event.type)
-	{
-		case ClientMessage:
-		{
-			if((Atom)event.xclient.data.l[0] == wmDeleteMessage)
-				return false;
-			break;
-		}
-		case ConfigureNotify:
-		{
-			XConfigureEvent configure = event.xconfigure;
-			OnSize(configure.width, configure.height);
-			break;
-		}
-	}
-	return true;
 }
 
 void X11Window::Update()
@@ -211,6 +228,32 @@ void X11Window::Update()
 	#endif
 }
 
+bool X11Window::TranslateMessage(const XEvent& event)
+{
+	switch(event.type)
+	{
+		case ClientMessage:
+		{
+			if((Atom)event.xclient.data.l[0] == wmDeleteMessage)
+				return false;
+			break;
+		}
+		case ConfigureNotify:
+		{
+			XConfigureEvent configure = event.xconfigure;
+			OnSize(configure.width, configure.height);
+			break;
+		}
+		case KeyPress:
+		{
+			XKeyEvent k = event.xkey;
+			OnKeyPress(k.keycode, k.state);
+			break;
+		}
+	}
+	return true;
+}
+
 void X11Window::OnSize(int dimX, int dimY)
 {
 	width = dimX;
@@ -228,15 +271,10 @@ void X11Window::OnSize(int dimX, int dimY)
 	Game::GiveMessage(MESSAGE_RESIZE, &viewport, sizeof viewport);
 }
 
-void X11Window::Destroy()
+void X11Window::OnKeyPress(unsigned int keyCode, unsigned int modifierMask)
 {
-#if defined(GRAPHICS_OPENGL)
-	GLRenderer::Terminate();
-
-	glXMakeCurrent(display, None, NULL);
-	glXDestroyContext(display, glContext);
-#endif
-
-	XDestroyWindow(display, window);
-	XCloseDisplay(display);
+	switch(keyCode)
+	{
+		case XK_F2:	ToggleBorderlessMode(); break;
+	}
 }

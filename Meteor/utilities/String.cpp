@@ -1,13 +1,7 @@
 #include "String.h"
 
 #include "UnicodeUtils.h"
-
-static size_t string_size(const char* s)
-{
-	const char* start = s;
-    while(*s++);
-    return s - start - 1;
-}
+#include "StringUtils.h"
 
 String::String():
 	sequence(nullptr),

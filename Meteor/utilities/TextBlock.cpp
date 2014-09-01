@@ -3,6 +3,7 @@
 #include "Macros.h"
 #include "FileHandling.h"
 #include "Conversion.h"
+#include "Parsing.h"
 #include "FileStream.h"
 
 Attribute::Attribute():

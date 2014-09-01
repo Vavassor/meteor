@@ -1,31 +1,13 @@
 #include "Conversion.h"
 
 #include "Maths.h"
-
-#include <cstdlib>
+#include "StringUtils.h"
 
 #include <math.h>
 #include <float.h>
 
 #define NAN_TEXT		"NaN"
 #define INFINITY_TEXT	"infinity"
-
-static inline void reverse_string(char s[], size_t length)
-{
-	char temp;
-	for(int i = 0, j = length - 1; i < j; ++i, --j)
-	{
-		temp = s[i];
-		s[i] = s[j];
-		s[j] = temp;
-	}
-}
-
-static inline void copy_string(char* to, const char* from)
-{
-	while(*from != '\0') *to++ = *from++;
-	*to = '\0';
-}
 
 void bool_to_string(bool a, char* str)
 {
@@ -246,21 +228,4 @@ void double_to_hex_string(double n, char* str)
 		if(d.exponent >= 0) *str++ = '+';
 		int_to_string(d.exponent, str, 10);
 	}
-}
-
-// ------------------------------------------------------------------------------------------------
-
-int string_to_int(const char* str)
-{
-	return atoi(str);
-}
-
-float string_to_float(const char* str)
-{
-	return atof(str);
-}
-
-double string_to_double(const char* str)
-{
-	return atof(str);
 }

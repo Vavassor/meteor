@@ -7,9 +7,9 @@
 class X11Window
 {
 public:
-	Display*	display;
-	Window		root;
-	Window		window;
+	Display* display;
+	Window root;
+	Window window;
 
 	int width, height;
 
@@ -17,10 +17,12 @@ public:
 	~X11Window();
 	bool Create();
 	void Destroy();
+	void ToggleBorderlessMode();
 	void MessageLoop();
-	bool TranslateMessage(const XEvent& event);
 	void Update();
+	bool TranslateMessage(const XEvent& event);
 	void OnSize(int dimX, int dimY);
+	void OnKeyPress(unsigned int keyCode, unsigned int modifierMask);
 
 private:
 	enum RenderMode
@@ -31,6 +33,7 @@ private:
 
 	RenderMode renderMode;
 	bool enableVSync;
+	bool fullscreen, borderless;
 
 	double lastTickTime;
 };
