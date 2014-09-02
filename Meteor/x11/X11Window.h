@@ -11,6 +11,7 @@ public:
 	Window root;
 	Window window;
 
+	const char* name;
 	int width, height;
 
 	X11Window();
@@ -18,11 +19,12 @@ public:
 	bool Create();
 	void Destroy();
 	void ToggleBorderlessMode();
+	void ToggleFullscreen();
 	void MessageLoop();
 	void Update();
 	bool TranslateMessage(const XEvent& event);
 	void OnSize(int dimX, int dimY);
-	void OnKeyPress(unsigned int keyCode, unsigned int modifierMask);
+	void OnKeyPress(unsigned long keyCode, unsigned int modifierMask);
 
 private:
 	enum RenderMode

@@ -30,6 +30,18 @@ namespace
 {
 	Atom wmDeleteMessage;
 
+	struct MotifHints {
+		unsigned long flags;
+		unsigned long functions;
+		unsigned long decorations;
+		long inputMode;
+		unsigned long status;
+	};
+
+	Atom motifWMHints;
+	Atom wmState;
+	Atom wmStateFullscreen;
+
 	ViewportData viewport;
 
 #if defined(GRAPHICS_OPENGL)
@@ -42,11 +54,14 @@ X11Window::X11Window():
 	root(None),
 	window(None),
 
+	name("METEOR"),
 	width(1280),
 	height(720),
 
 	renderMode(RENDER_GL),
 	enableVSync(true),
+	fullscreen(false),
+	borderless(false),
 
 	lastTickTime(0.0)
 {
@@ -105,12 +120,20 @@ bool X11Window::Create()
 	XSetWindowAttributes windowAttributes = {};
 	windowAttributes.colormap = colorMap;
 	windowAttributes.event_mask =  KeyPressMask | StructureNotifyMask;
-
  	window = XCreateWindow(display, root, 0, 0, width, height, 0,
  		visual->depth, InputOutput, visual->visual, CWColormap | CWEventMask, &windowAttributes);
 
 	XMapWindow(display, window);
-	XStoreName(display, window, "METEOR");
+
+	// give application name
+	{
+		XStoreName(display, window, name);
+
+		Atom wmName = XInternAtom(display, "_NET_WM_NAME", False);
+		Atom nameEncoding = XInternAtom(display, "UTF8_STRING", False);
+		XChangeProperty(display, window, wmName, nameEncoding,
+			8, PropModeReplace, (const unsigned char*) name, strlen(name));
+	}
 
 	wmDeleteMessage = XInternAtom(display, "WM_DELETE_WINDOW", False);
 	XSetWMProtocols(display, window, &wmDeleteMessage, 1);
@@ -150,6 +173,10 @@ bool X11Window::Create()
 	}
 #endif
 
+	motifWMHints = XInternAtom(display, "_MOTIF_WM_HINTS", true);
+	wmState = XInternAtom(display, "_NET_WM_STATE", False);
+	wmStateFullscreen = XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", True);
+
 	lastTickTime = Timer::GetTime();
 
 	return true;
@@ -172,9 +199,33 @@ void X11Window::ToggleBorderlessMode()
 {
 	if(fullscreen) return;
 
-
+	MotifHints hints = {};
+	hints.flags = 2;
+	hints.decorations = (borderless) ? 1 : 0;
+	XChangeProperty(display, window, motifWMHints, motifWMHints, 32,
+		PropModeReplace, (unsigned char*) &hints, 5);
+	XMapWindow(display, window);
 
 	borderless = !borderless;
+}
+
+void X11Window::ToggleFullscreen()
+{
+	XEvent event = {};
+	event.xclient.type = ClientMessage;
+	event.xclient.window = window;
+	event.xclient.message_type = wmState;
+	event.xclient.format = 32;
+	event.xclient.data.l[0] = 2; // _NET_WM_STATE_TOGGLE
+	event.xclient.data.l[1] = wmStateFullscreen;
+	event.xclient.data.l[2] = 0;
+	event.xclient.data.l[3] = 1;
+	event.xclient.data.l[4] = 0;
+
+	XSendEvent(display, DefaultRootWindow(display), False,
+		SubstructureRedirectMask | SubstructureNotifyMask, &event);
+
+	fullscreen = !fullscreen;
 }
 
 void X11Window::MessageLoop()
@@ -247,7 +298,7 @@ bool X11Window::TranslateMessage(const XEvent& event)
 		case KeyPress:
 		{
 			XKeyEvent k = event.xkey;
-			OnKeyPress(k.keycode, k.state);
+			OnKeyPress(XLookupKeysym(&k, 0), k.state);
 			break;
 		}
 	}
@@ -271,10 +322,11 @@ void X11Window::OnSize(int dimX, int dimY)
 	Game::GiveMessage(MESSAGE_RESIZE, &viewport, sizeof viewport);
 }
 
-void X11Window::OnKeyPress(unsigned int keyCode, unsigned int modifierMask)
+void X11Window::OnKeyPress(unsigned long keyCode, unsigned int modifierMask)
 {
 	switch(keyCode)
 	{
 		case XK_F2:	ToggleBorderlessMode(); break;
+		case XK_F11:	ToggleFullscreen(); break;
 	}
 }
