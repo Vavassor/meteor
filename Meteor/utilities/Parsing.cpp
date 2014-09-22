@@ -29,12 +29,16 @@ double string_to_double(const char* str)
 
 int next_unsigned_long_long(const char* str, char** endPtr, unsigned long long* value)
 {
+#if defined(_MSC_VER) && _MSC_VER < 1700
+	unsigned long long val = _strtoui64(str, endPtr, 10);
+#else
 	unsigned long long val = strtoull(str, endPtr, 10);
+#endif
 
 	errno = 0;
 	// check if value is in range
-	if((errno == ERANGE && val == ULLONG_MAX)
-		|| (errno != 0 && val == 0))
+	if (errno == ERANGE && val == ULLONG_MAX ||
+		errno != 0 && val == 0)
 	{
 		*value = 0;
 		return -2;
