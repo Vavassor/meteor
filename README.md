@@ -1,22 +1,16 @@
 METEOR
 ======
 
-This is a simple cross-platform game framework developed in c++ 
-by [Vavassor](http://vavassor.tumblr.com)
+This is a simple cross-platform game framework developed in c++ by [Vavassor](http://vavassor.tumblr.com)
 
-It is built to use either OpenGL or DirectX for rendering, 
-and FMOD Ex for sound. Also uses XInput on windows for gamepads,
-but no gamepad support on linux, yet. It has been tested on Windows
-under Visual Studio and MinGW-w64 and Linux Mint under gcc.
+It is built to use either OpenGL or DirectX for rendering, and FMOD Ex for sound. Also uses XInput on windows for gamepads, and libudev/evdev on Linux. It has been tested on Windows under Visual Studio and MinGW-w64 and Linux Mint under gcc.
 
-It will be subject to change as I intend to continue to
-develop and fork games off from it.
+It will be subject to change as I intend to continue to develop and fork games off from it.
 
 // Making/Building
 --------------
 
-Make instructions for specific compilers I currently can't
-provide, but generally as follows:
+Make instructions for specific compilers I currently can't provide, but generally as follows:
 
 -   the project directory should be in the include path.
 -   exclude source subdirectories that conflict with the platform
@@ -37,8 +31,4 @@ provide, but generally as follows:
 // Licensing
 --------------
 
-All code dependent on specific libraries is subject to their licensing
-restrictions, which are located in Content/docs/. All OTHER code is
-released under _public domain_, specifically meaning I place NO restrictions
-on its use at all, whatsoever. Take it and do a thing with it. It will
-be cool I promise. No need to credit me
+All code dependent on specific libraries is subject to their licensing restrictions, which are located in Content/docs/. All OTHER code is released under _public domain_, specifically meaning I place NO restrictions on its use at all, whatsoever. Take it and do a thing with it. It will be cool I promise. No need to credit me
