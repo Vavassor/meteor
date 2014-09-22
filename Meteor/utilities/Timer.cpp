@@ -6,6 +6,8 @@
 #endif
 #include <Windows.h>
 
+#include <ctime>
+
 #elif defined(__unix__)
 #include <time.h>
 #include <sys/time.h>

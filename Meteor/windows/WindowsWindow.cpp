@@ -9,7 +9,7 @@
 #include "utilities/Macros.h"
 #include "utilities/Benaphore.h"
 #include "utilities/Timer.h"
-#include "utilities/Input.h"
+#include "utilities/input/Input.h"
 
 // engine
 #include "GlobalInfo.h"
@@ -105,30 +105,28 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 		Textblock block;
 		Textblock::LoadFromFile("main.conf", &block);
 
-		if(block.HasAttribute("screenWidth"))
-			width = block.GetAttributeAsInt("screenWidth");
-		if(block.HasAttribute("screenHeight"))
-			height = block.GetAttributeAsInt("screenHeight");
+		block.GetAttributeAsInt("screenWidth", &width);
+		block.GetAttributeAsInt("screenHeight", &height);
 		if(block.HasAttribute("renderer"))
 		{
-			String& renderName = block.GetAttributeAsStrings("renderer")[0];
+			String* values;
+			block.GetAttributeAsStrings("renderer", &values);
+
+			String& renderName = values[0];
 			if(renderName == "DIRECTX")	renderMode = RENDER_DX;
 			if(renderName == "OPENGL")	renderMode = RENDER_GL;
 		}
-		if(block.HasAttribute("isFullscreen"))
-			isFullscreen = block.GetAttributeAsBool("isFullscreen");
-		if(block.HasAttribute("verticalSynchronization"))
-			enableVSync = block.GetAttributeAsBool("verticalSynchronization");
-		if(block.HasAttribute("textureAnisotropy"))
-			texture_anisotropy = block.GetAttributeAsFloat("textureAnisotropy");
+		block.GetAttributeAsBool("isFullscreen", &isFullscreen);
+		block.GetAttributeAsBool("verticalSynchronization", &enableVSync);
+
+		block.GetAttributeAsFloat("textureAnisotropy", &texture_anisotropy);
 		if(block.HasChild("OpenGL"))
 		{
 			Textblock* glConf = block.GetChildByName("OpenGL");
-			if(glConf->HasAttribute("createForwardCompatibleContext"))
-				createForwardCompatibleContext = glConf->GetAttributeAsBool("createForwardCompatibleContext");
+			glConf->GetAttributeAsBool("createForwardCompatibleContext",
+				&createForwardCompatibleContext);
 		}
-		if(block.HasAttribute("enableDebugging"))
-			enableDebugging = block.GetAttributeAsBool("enableDebugging");
+		block.GetAttributeAsBool("enableDebugging", &enableDebugging);
 	}
 
 	// setup window class

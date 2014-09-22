@@ -1,3 +1,5 @@
+#if defined(__linux__)
+
 #include "LinuxEvDevUtils.h"
 
 #include <linux/input.h>
@@ -209,3 +211,5 @@ const char* rel_code_text(int virtualCode)
 	}
 	return "Relative Axis Unknown";
 }
+
+#endif // defined(__linux__)
