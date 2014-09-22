@@ -21,6 +21,12 @@
 
 #endif
 
+#if defined(_DEBUG)
+#define PRINT_TO_CONSOLE true
+#else
+#define PRINT_TO_CONSOLE false
+#endif
+
 namespace
 {
 	static const int MAX_THREADS = 1;
@@ -108,6 +114,9 @@ typedef void* (*Thread_Start_Routine)(void*);
 
 int main(int argc, const char* argv[])
 {
+	// reset log file so initialization errors can be recorded
+	Log::Clear_File();
+
 	// thread startup
 	Thread_Start_Routine startRoutines[MAX_THREADS] =
 	{
@@ -118,7 +127,7 @@ int main(int argc, const char* argv[])
 		int result = pthread_create(&threads[i], NULL, startRoutines[i], NULL);
 		if(result)
 		{
-			Log::Add(Log::ISSUE, "thread could not start - return code: %s", strerror(result));
+			LOG_ISSUE("thread could not start - return code: %s", strerror(result));
 		}
 	}
 
@@ -142,6 +151,9 @@ int main(int argc, const char* argv[])
 
 	for(int i = 0; i < MAX_THREADS; ++i)
 		pthread_join(threads[i], NULL);
+
+	// flush remaining log messages
+	Log::Write(PRINT_TO_CONSOLE);
 
 	return 0;
 }

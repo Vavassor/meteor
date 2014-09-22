@@ -1,7 +1,13 @@
 #include "Input.h"
 
-#include "Logging.h"
-#include "Macros.h"
+#if defined(__linux__)
+#include "LinuxInput.h"
+#endif
+
+#include "InternalGlobals.h"
+
+#include "utilities/Logging.h"
+#include "utilities/Macros.h"
 
 #if defined(_WIN32)
 #include "DeviceGUID.h"
@@ -13,8 +19,11 @@
 #endif
 #include <Dbt.h>
 #include <Windows.h>
+#endif
 
-#elif defined(X11)
+#if defined(X11)
+#include "utilities/XLibUtils.h"
+
 #define XK_LATIN1
 #define XK_MISCELLANY
 #include <X11/keysymdef.h>
@@ -27,9 +36,10 @@ namespace Input
 {
 	enum KeyMapping { L_TRIGGER, R_TRIGGER, A_DOWN, A_LEFT, A_RIGHT, A_UP, NUM_MAPPINGS };
 
-	InputDevice devices[5];
-	int numDevices = 1;
-	int playerDevices[MAX_PLAYERS];
+	Controller controllers[5];
+	int num_controllers = 1;
+
+	int playerControllers[MAX_PLAYERS];
 
 	unsigned short keyBindings[NUM_BUTTONS + NUM_MAPPINGS];
 
@@ -38,17 +48,20 @@ namespace Input
 	float mouseSensitivity = 16.0f;
 	bool isMouseRelative = true;
 
-#if defined(X11)
-	Display* display;
-
-#elif defined(_WIN32)
+#if defined(_WIN32)
 	HWND hWnd;
 	HDEVNOTIFY deviceNotification;
 #endif
 
-	void PollKeyboardAndMouse(bool buttonsPressed[]);
-	void PollXInputGamepad(int index, bool buttonsPressed[]);
-	void PollJoystickGamepad(bool buttonsPressed[]);
+#if defined(X11)
+	Display* display;
+	Window window;
+	Cursor invisibleCursor;
+#endif
+
+	void PollKeyboardAndMouse();
+	void PollXInputGamepad(int index);
+	void PollEvDevGamepad(int index);
 
 	unsigned short GetScanCode(int virtualKey);
 	void PollKeyboard(char* keyboardState);
@@ -56,7 +69,6 @@ namespace Input
 #if defined(_WIN32)
 	LRESULT OnDeviceChange(WPARAM eventType, LPARAM eventData);
 	void OnInput(HRAWINPUT input);
-	void MessageLoop();
 
 	LRESULT CALLBACK WindowProc(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam);
 #endif
@@ -73,7 +85,7 @@ unsigned short Input::GetScanCode(int virtualKey)
 void Input::Initialize()
 {
 	for(int i = 0; i < MAX_PLAYERS; ++i)
-		playerDevices[i] = 0;
+		playerControllers[i] = 0;
 
 	mousePosition[0] = mousePosition[1] = 0;
 
@@ -89,7 +101,7 @@ void Input::Initialize()
 
 	if(RegisterClassEx(&classEx) == 0)
 	{
-		Log::Add(Log::ISSUE, "RegisterClassEx failed!");
+		LOG_ISSUE("RegisterClassEx failed!");
 		return;
 	}
 
@@ -98,7 +110,7 @@ void Input::Initialize()
 		0, 0, 0, 0, NULL, NULL, instance, NULL);
 	if(hWnd == NULL)
 	{
-		Log::Add(Log::ISSUE, "CreateWindowEx failed!");
+		LOG_ISSUE("CreateWindowEx failed!");
 		return;
 	}
 
@@ -155,8 +167,25 @@ void Input::Initialize()
 	keyBindings[NUM_BUTTONS + A_LEFT] = 'A';
 	keyBindings[NUM_BUTTONS + A_DOWN] = 'S';
 
-#elif defined(X11)
+#elif defined(__linux__)
+	RegisterMonitor();
+#endif
+
+#if defined(X11)
 	display = XOpenDisplay(NULL);
+
+	window = DefaultRootWindow(display);
+
+	// create transparent cursor for when mouse is in relative-movement mode
+	{
+		static char noData[] = { 0 };
+		XColor black = { 0 };
+		Pixmap blankBitmap = XCreateBitmapFromData(display, window, noData, 1, 1);
+
+		invisibleCursor = XCreatePixmapCursor(display, blankBitmap, blankBitmap,
+			&black, &black, 0, 0);
+		XFreePixmap(display, blankBitmap);
+	}
 
 	keyBindings[A] = GetScanCode(XK_space);
 	keyBindings[B] = GetScanCode('X');
@@ -182,10 +211,7 @@ void Input::Initialize()
 
 void Input::Terminate()
 {
-#if defined(X11)
-	XCloseDisplay(display);
-
-#elif defined(_WIN32)
+#if defined(_WIN32)
 	// unregister from raw input mouse and keyboard events
 	{
 		RAWINPUTDEVICE devices[2];
@@ -206,6 +232,15 @@ void Input::Terminate()
 	UnregisterDeviceNotification(deviceNotification);
 
 	DestroyWindow(hWnd);
+
+#elif defined(__linux__)
+	UnregisterMonitor();
+#endif
+
+#if defined(X11)
+	XFreeCursor(display, invisibleCursor);
+
+	XCloseDisplay(display);
 #endif
 }
 
@@ -222,14 +257,14 @@ void Input::SetMouseMode(bool relative)
 #if defined(_WIN32)
 		if(relative)
 		{
-
 			// capture mouse input so that stray clicks don't make the program lose focus
 			RAWINPUTDEVICE devices[1];
 			devices[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
 			devices[0].usUsage = HID_USAGE_GENERIC_MOUSE;
 			devices[0].dwFlags = RIDEV_NOLEGACY | RIDEV_CAPTUREMOUSE;
 			devices[0].hwndTarget = hWnd;
-			RegisterRawInputDevices(devices, ARRAY_LENGTH(devices), sizeof(RAWINPUTDEVICE));
+			RegisterRawInputDevices(devices, ARRAY_LENGTH(devices),
+				sizeof(RAWINPUTDEVICE));
 
 			// hide cursor
 			ShowCursor(FALSE);
@@ -243,14 +278,16 @@ void Input::SetMouseMode(bool relative)
 			devices[0].usUsage = HID_USAGE_GENERIC_MOUSE;
 			devices[0].dwFlags = RIDEV_REMOVE;
 			devices[0].hwndTarget = NULL;
-			RegisterRawInputDevices(devices, ARRAY_LENGTH(devices), sizeof(RAWINPUTDEVICE));
+			RegisterRawInputDevices(devices, ARRAY_LENGTH(devices),
+				sizeof(RAWINPUTDEVICE));
 
 			// re-register mouse for raw input without the capture
 			devices[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
 			devices[0].usUsage = HID_USAGE_GENERIC_MOUSE;
 			devices[0].dwFlags = 0;
 			devices[0].hwndTarget = hWnd;
-			RegisterRawInputDevices(devices, ARRAY_LENGTH(devices), sizeof(RAWINPUTDEVICE));
+			RegisterRawInputDevices(devices, ARRAY_LENGTH(devices),
+				sizeof(RAWINPUTDEVICE));
 
 			// show cursor
 			//SetCursor(oldCursor);
@@ -261,17 +298,17 @@ void Input::SetMouseMode(bool relative)
 	isMouseRelative = relative;
 }
 
-InputDevice* Input::GetDevice(PlayerSlot slot)
+Input::Controller* Input::GetController(PlayerSlot slot)
 {
-	if(slot >= numDevices) return nullptr;
-	return &devices[playerDevices[slot]];
+	if(slot >= num_controllers) return nullptr;
+	return &controllers[playerControllers[slot]];
 }
 
+#if defined(_WIN32)
 void Input::DetectDevices()
 {
-	numDevices = 1;
+	numControllers = 1;
 
-#if defined(_WIN32)
 	// detect XInput gamepads
 	for(DWORD i = 0; i < XUSER_MAX_COUNT; i++)
 	{
@@ -284,40 +321,41 @@ void Input::DetectDevices()
 		InputDevice& pad = devices[numDevices++];
 		pad.type = GAMEPAD_XINPUT;
 	}
-#endif
 }
+#endif
 
 void Input::Poll()
 {
-	// poll input window message
+	// poll input window messages
 #if defined(_WIN32)
-	MessageLoop();
+	MSG msg = {};
+	while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+	{
+		if(msg.message == WM_QUIT) break;
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+#elif defined(__linux__)
+	CheckMonitor();
 #endif
 
 	// input device handling
-	for(int i = 0; i < numDevices; i++)
+	for(int i = 0; i < num_controllers; ++i)
 	{
-		InputDevice& pad = devices[i];
+		Controller& pad = controllers[i];
 
-		// set device to defaults before polling
-		pad.leftAnalog[0] = pad.rightAnalog[0] = 0.0f;
-		pad.leftAnalog[1] = pad.rightAnalog[1] = 0.0f;
-		pad.leftTrigger = pad.rightTrigger = 0.0f;
-
-		bool buttonsPressed[NUM_BUTTONS] = { false };
-
-		// do polling
 		switch(pad.type)
 		{
 			case KEYBOARD_AND_MOUSE:
-				PollKeyboardAndMouse(buttonsPressed); break;
+				PollKeyboardAndMouse(); break;
 			case GAMEPAD_XINPUT:
-				PollXInputGamepad(i, buttonsPressed); break;
-			case GAMEPAD_JOYSTICK:
-				PollJoystickGamepad(buttonsPressed); break;
+				PollXInputGamepad(i); break;
+			case GAMEPAD_EVDEV:
+				PollEvDevGamepad(i); break;
 		}
 
-		pad.UpdateButtons(buttonsPressed);
+		pad.Update();
 	}
 
 	// mouse position handling
@@ -329,8 +367,18 @@ void Input::Poll()
 		mousePosition[1] = mouseScreenPosition.y;
 	}
 #elif defined(X11)
-	//XQueryPointer(display, DefaultRootWindow(display), nullptr, nullptr,
-	//	nullptr, nullptr, &mousePosition[0], &mousePosition[1], nullptr);
+	{
+		Window root, child;
+		int rootCoords[2];
+		int windowCoords[2];
+		unsigned int mask;
+
+		XQueryPointer(display, window, &root, &child,
+			&rootCoords[0], &rootCoords[1], &windowCoords[0], &windowCoords[1], &mask);
+
+		mousePosition[0] = windowCoords[0];
+		mousePosition[1] = windowCoords[1];
+	}
 #endif
 }
 
@@ -349,12 +397,23 @@ void Input::PollKeyboard(char* keyboardState)
 #define GET_KEY_STATE(code, keyboard) keyboard[(code) >> 3] >> ((code) & 0x07) & 0x01;
 #endif
 
-void Input::PollKeyboardAndMouse(bool buttonsPressed[])
+void Input::PollKeyboardAndMouse()
 {
+	// set controller to defaults before polling
+	Controller& controller = controllers[0];
+
+	for(int i = 0; i < NUM_BUTTONS; ++i)
+		controller.buttons[i] = false;
+
+	controller.leftAnalog[0] = controller.rightAnalog[0] = 0.0f;
+	controller.leftAnalog[1] = controller.rightAnalog[1] = 0.0f;
+	controller.leftTrigger = controller.rightTrigger = 0.0f;
+
 	// poll keyboard and mouse buttons
 	char keys[256];
 	PollKeyboard(keys);
 
+	bool buttonsPressed[NUM_BUTTONS];
 	for(int i = 0; i < NUM_BUTTONS; ++i)
 		buttonsPressed[i] = GET_KEY_STATE(keyBindings[i], keys);
 
@@ -362,10 +421,12 @@ void Input::PollKeyboardAndMouse(bool buttonsPressed[])
 	for(int i = 0; i < NUM_MAPPINGS; ++i)
 		mappingsPressed[i] = GET_KEY_STATE(keyBindings[NUM_BUTTONS + i], keys);
 
-	// update device and buttons with polled values
-	InputDevice& device = devices[0];
-	if(mappingsPressed[L_TRIGGER])	device.leftTrigger = 1.0f;
-	if(mappingsPressed[R_TRIGGER])	device.rightTrigger = 1.0f;
+	// update controller and buttons with polled values
+	for(int i = 0; i < NUM_BUTTONS; ++i)
+		controller.buttons[i] = buttonsPressed[i];
+
+	if(mappingsPressed[L_TRIGGER])	controller.leftTrigger = 1.0f;
+	if(mappingsPressed[R_TRIGGER])	controller.rightTrigger = 1.0f;
 
 	float dx = 0.0f, dy = 0.0f;
 	if(mappingsPressed[A_LEFT])		dx -= 1.0f;
@@ -376,17 +437,17 @@ void Input::PollKeyboardAndMouse(bool buttonsPressed[])
 	float magnitude = sqrt(dx * dx + dy * dy);
 	if(magnitude > 0.0f)
 	{
-		device.leftAnalog[0] = dx / magnitude;
-		device.leftAnalog[1] = dy / magnitude;
+		controller.leftAnalog[0] = dx / magnitude;
+		controller.leftAnalog[1] = dy / magnitude;
 	}
 
-	device.rightAnalog[0] = mouseDelta[0] / mouseSensitivity;
-	device.rightAnalog[1] = mouseDelta[1] / mouseSensitivity;
+	controller.rightAnalog[0] = mouseDelta[0] / mouseSensitivity;
+	controller.rightAnalog[1] = mouseDelta[1] / mouseSensitivity;
 
 	mouseDelta[0] = mouseDelta[1] = 0.0f;
 }
 
-void Input::PollXInputGamepad(int index, bool buttonsPressed[])
+void Input::PollXInputGamepad(int index)
 {
 #if defined(_WIN32)
 
@@ -488,10 +549,10 @@ void Input::PollXInputGamepad(int index, bool buttonsPressed[])
 #endif
 }
 
-void Input::PollJoystickGamepad(bool buttonsPressed[])
+void Input::PollEvDevGamepad(int index)
 {
-#if defined(_WIN32)
-
+#if defined(__linux__)
+	PollDevice(index - 1, &controllers[index]);
 #endif
 }
 
@@ -543,23 +604,8 @@ void Input::OnInput(HRAWINPUT input)
 		switch(raw.data.keyboard.Message)
 		{
 			case WM_KEYUP:
-			{
-				if(raw.data.keyboard.VKey == VK_ESCAPE)
-					SetMouseMode(!isMouseRelative);
-				break;
-			}
+			case WM_KEYDOWN:
 		}
-	}
-}
-
-void Input::MessageLoop()
-{
-	MSG msg = {};
-	while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-	{
-		if(msg.message == WM_QUIT) break;
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
 	}
 }
 
@@ -580,29 +626,29 @@ LRESULT CALLBACK Input::WindowProc(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM 
 
 #endif // defined(_WIN32)
 
-bool InputDevice::GetButtonDown(Input::Button button) const
+bool Input::Controller::GetButtonDown(Button button) const
 {
-	return buttons[button] == PRESSED 
-		|| buttons[button] == ONCE;
+	return buttonStates[button] == PRESSED
+		|| buttonStates[button] == ONCE;
 }
 
-bool InputDevice::GetButtonReleased(Input::Button button) const
+bool Input::Controller::GetButtonReleased(Button button) const
 {
-	return buttons[button] == RELEASED;
+	return buttonStates[button] == RELEASED;
 }
 
-bool InputDevice::GetButtonTapped(Input::Button button) const
+bool Input::Controller::GetButtonTapped(Button button) const
 {
-	return buttons[button] == ONCE;
+	return buttonStates[button] == ONCE;
 }
 
-void InputDevice::UpdateButtons(bool pressed[])
+void Input::Controller::Update()
 {
-	for(int i = 0; i < Input::NUM_BUTTONS; ++i)
+	for(int i = 0; i < NUM_BUTTONS; ++i)
 	{
-		if(pressed[i])
-			buttons[i] = (buttons[i] == RELEASED) ? ONCE : PRESSED;
+		if(buttons[i])
+			buttonStates[i] = (buttonStates[i] == RELEASED) ? ONCE : PRESSED;
 		else
-			buttons[i] = RELEASED;
+			buttonStates[i] = RELEASED;
 	}
 }

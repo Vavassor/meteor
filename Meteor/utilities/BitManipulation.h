@@ -10,4 +10,9 @@ uint32_t bit_reverse32(uint32_t n);
 
 int64_t morton_hash(int32_t x, int32_t y, int32_t z);
 
+#define CHECK_BIT(a, n)	((a) & 1 << (n))
+#define SET_BIT(a, n)	((a) |= 1 << (n))
+#define CLEAR_BIT(a, n)	((a) &= ~(1 << (n)))
+#define FLIP_BIT(a, n)	((a) ^= 1 << (n))
+
 #endif

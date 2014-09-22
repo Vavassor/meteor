@@ -28,4 +28,14 @@ inline char* copy_string(char* to, const char* from)
 	return save;
 }
 
+inline bool starts_with(const char* s, const char* token)
+{
+	while(*token)
+	{
+		if(*token++ != *s++)
+			return false;
+	}
+	return true;
+}
+
 #endif

@@ -13,17 +13,25 @@
 
 // UNIX SYSTEM STANDARDS
 //----------------------------------------------------------------------------------------------------
+#if defined(__unix__) || defined(OS_OSX)
+#include <unistd.h>
+
 #if defined(_POSIX_VERSION)
 #define STANDARDS_POSIX
+#endif
+
+#if defined(_XOPEN_VERSION)
+#define STANDARDS_XOPEN
 #endif
 
 #if defined(__LSB_VERSION__)
 #define STANDARDS_LSB
 #endif
 
+#endif
+
 // WINDOWING SYSTEMS
 //----------------------------------------------------------------------------------------------------
-
 #if defined(__linux__)
 
 #if defined(X11)

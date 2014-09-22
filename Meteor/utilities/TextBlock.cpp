@@ -60,102 +60,122 @@ bool Textblock::HasAttribute(const String& name) const
 	return GetAttribute(name) != nullptr;
 }
 
-bool Textblock::GetAttributeAsBool(const String& name) const
+bool Textblock::GetAttributeAsBool(const String& name, bool* value) const
 {
 	Attribute* attribute = GetAttribute(name);
-	if(attribute != nullptr)
-		return attribute->values[0] == "true";
+	if(attribute != nullptr && value != nullptr)
+	{
+		*value = attribute->values[0] == "true";
+		return true;
+	}
 	return false;
 }
 
-int Textblock::GetAttributeAsInt(const String& name) const
+bool Textblock::GetAttributeAsInt(const String& name, int* value) const
 {
 	Attribute* attribute = GetAttribute(name);
-	if(attribute != nullptr)
-		return string_to_int(attribute->values[0].Data());
-	return 0;
-}
-
-float Textblock::GetAttributeAsFloat(const String& name) const
-{
-	Attribute* attribute = GetAttribute(name);
-	if(attribute != nullptr)
-		return string_to_float(attribute->values[0].Data());
-	return 0.0f;
-}
-
-double Textblock::GetAttributeAsDouble(const String& name) const
-{
-	Attribute* attribute = GetAttribute(name);
-	if(attribute != nullptr)
-		return string_to_double(attribute->values[0].Data());
-	return 0.0;
-}
-
-vec2 Textblock::GetAttributeAsVec2(const String& name) const
-{
-	Attribute* attribute = GetAttribute(name);
-	if(attribute != nullptr)
+	if(attribute != nullptr && value != nullptr)
 	{
-		String* values = attribute->values;
-		return vec2(string_to_float(values[0].Data()),
-					string_to_float(values[1].Data()));
+		*value = string_to_int(attribute->values[0].Data());
+		return true;
 	}
-	return VEC2_ZERO;
+	return false;
 }
 
-vec3 Textblock::GetAttributeAsVec3(const String& name) const
+bool Textblock::GetAttributeAsFloat(const String& name, float* value) const
 {
 	Attribute* attribute = GetAttribute(name);
-	if(attribute != nullptr)
+	if(attribute != nullptr && value != nullptr)
 	{
-		String* values = attribute->values;
-		return vec3(string_to_float(values[0].Data()),
-					string_to_float(values[1].Data()),
-					string_to_float(values[2].Data()));
+		*value = string_to_float(attribute->values[0].Data());
+		return true;
 	}
-	return VEC3_ZERO;
+	return false;
 }
 
-vec4 Textblock::GetAttributeAsVec4(const String& name) const
+bool Textblock::GetAttributeAsDouble(const String& name, double* value) const
 {
 	Attribute* attribute = GetAttribute(name);
-	if(attribute != nullptr)
+	if(attribute != nullptr && value != nullptr)
 	{
-		String* values = attribute->values;
-		return vec4(string_to_float(values[0].Data()),
-					string_to_float(values[1].Data()),
-					string_to_float(values[2].Data()),
-					string_to_float(values[3].Data()));
+		*value = string_to_double(attribute->values[0].Data());
+		return true;
 	}
-	return VEC4_ZERO;
+	return false;
 }
 
-quaternion Textblock::GetAttributeAsQuaternion(const String& name) const
+bool Textblock::GetAttributeAsVec2(const String& name, vec2* value) const
 {
 	Attribute* attribute = GetAttribute(name);
-	if(attribute != nullptr)
+	if(attribute != nullptr && value != nullptr)
 	{
 		String* values = attribute->values;
-		return quaternion(
+		*value = vec2(
+			string_to_float(values[0].Data()),
+			string_to_float(values[1].Data()));
+		return true;
+	}
+	return false;
+}
+
+bool Textblock::GetAttributeAsVec3(const String& name, vec3* value) const
+{
+	Attribute* attribute = GetAttribute(name);
+	if(attribute != nullptr && value != nullptr)
+	{
+		String* values = attribute->values;
+		*value = vec3(
+			string_to_float(values[0].Data()),
+			string_to_float(values[1].Data()),
+			string_to_float(values[2].Data()));
+		return true;
+	}
+	return false;
+}
+
+bool Textblock::GetAttributeAsVec4(const String& name, vec4* value) const
+{
+	Attribute* attribute = GetAttribute(name);
+	if(attribute != nullptr && value != nullptr)
+	{
+		String* values = attribute->values;
+		*value = vec4(
 			string_to_float(values[0].Data()),
 			string_to_float(values[1].Data()),
 			string_to_float(values[2].Data()),
 			string_to_float(values[3].Data()));
+		return true;
 	}
-	return QUAT_I;
+	return false;
 }
 
-String* Textblock::GetAttributeAsStrings(const String& name, int* numValues) const
+bool Textblock::GetAttributeAsQuaternion(const String& name, quaternion* value) const
 {
 	Attribute* attribute = GetAttribute(name);
-	if(attribute != nullptr)
+	if(attribute != nullptr && value != nullptr)
+	{
+		String* values = attribute->values;
+		*value = quaternion(
+			string_to_float(values[0].Data()),
+			string_to_float(values[1].Data()),
+			string_to_float(values[2].Data()),
+			string_to_float(values[3].Data()));
+		return true;
+	}
+	return false;
+}
+
+bool Textblock::GetAttributeAsStrings(const String& name, String** values, int* numValues) const
+{
+	Attribute* attribute = GetAttribute(name);
+	if(attribute != nullptr && values != nullptr)
 	{
 		if(numValues != nullptr)
 			*numValues = attribute->numValues;
-		return attribute->values;
+		*values = attribute->values;
+		return true;
 	}
-	return nullptr;
+	return false;
 }
 
 void Textblock::AddChild(Textblock* child)

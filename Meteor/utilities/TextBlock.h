@@ -32,15 +32,15 @@ public:
 	void AddAttribute(const String& name, String values[], int numValues);
 	bool HasAttribute(const String& name) const;
 
-	bool GetAttributeAsBool(const String& name) const;
-	int GetAttributeAsInt(const String& name) const;
-	float GetAttributeAsFloat(const String& name) const;
-	double GetAttributeAsDouble(const String& name) const;
-	vec2 GetAttributeAsVec2(const String& name) const;
-	vec3 GetAttributeAsVec3(const String& name) const;
-	vec4 GetAttributeAsVec4(const String& name) const;
-	quaternion GetAttributeAsQuaternion(const String& name) const;
-	String* GetAttributeAsStrings(const String& name, int* numValues = nullptr) const;
+	bool GetAttributeAsBool(const String& name, bool* value) const;
+	bool GetAttributeAsInt(const String& name, int* value) const;
+	bool GetAttributeAsFloat(const String& name, float* value) const;
+	bool GetAttributeAsDouble(const String& name, double* value) const;
+	bool GetAttributeAsVec2(const String& name, vec2* value) const;
+	bool GetAttributeAsVec3(const String& name, vec3* value) const;
+	bool GetAttributeAsVec4(const String& name, vec4* value) const;
+	bool GetAttributeAsQuaternion(const String& name, quaternion* value) const;
+	bool GetAttributeAsStrings(const String& name, String** values, int* numValues = nullptr) const;
 
 	void AddChild(Textblock* child);
 	void RemoveChild(const String& name);

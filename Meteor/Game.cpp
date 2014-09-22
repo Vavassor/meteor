@@ -8,8 +8,9 @@
 #include "utilities/Mutex.h"
 #include "utilities/Timer.h"
 #include "utilities/LinkedQueue.h"
-#include "utilities/Input.h"
+#include "utilities/input/Input.h"
 #include "utilities/Maths.h"
+#include "utilities/Logging.h"
 #include "utilities/Assert.h"
 
 #if defined(_MSC_VER) && defined(_WIN32)
@@ -28,6 +29,7 @@ namespace Game
 	volatile bool isRunning;
 
 	double tickStartTime, tickEndTime;
+	bool paused;
 
 	LinkedQueue<Message> incomingMessages;
 	LinkedQueue<Message> outgoingMessages;
@@ -42,6 +44,7 @@ namespace Game
 	void ThreadMessageLoop();
 
 	void OutMessage(int type, void* data, size_t dataSize);
+	void TogglePause();
 }
 
 void Game::Initialize()
@@ -61,6 +64,8 @@ THREAD_RETURN_TYPE Game::Main(void* param)
 
 	tickStartTime = Timer::GetTime();
 	tickEndTime = tickStartTime - 16.0;
+
+	paused = false;
 
 	isRunning = true;
 	while(isRunning)
@@ -105,6 +110,8 @@ THREAD_RETURN_TYPE Game::Main(void* param)
 	}
 
 	Terminate();
+
+	LOG_INFO("Game thread shut down successfully");
 
 	return 0;
 }
@@ -181,7 +188,7 @@ void Game::Update(double deltaTime)
 	Input::Poll();
 
 	{
-		InputDevice* input = Input::GetDevice(Input::PLAYER_1);
+		Input::Controller* input = Input::GetController(Input::PLAYER_1);
 
 		static const float CAMERA_MOVE_SPEED = 2.0f;
 		static const float CAMERA_TURN_SPEED = M_PI / 70.0f;
@@ -193,6 +200,15 @@ void Game::Update(double deltaTime)
 
 		float zoom = input->rightTrigger - input->leftTrigger;
 		camera.Zoom(zoom);
+
+		// pause game
+		if(input->GetButtonTapped(Input::START))
+		{
+			TogglePause();
+
+			bool mouseRelative = !paused;
+			Input::SetMouseMode(mouseRelative);
+		}
 	}
 
 	camera.Tick(deltaTime);
@@ -213,4 +229,9 @@ void Game::Update(double deltaTime)
 
 		cameraMutex.Release();
 	}
+}
+
+void Game::TogglePause()
+{
+	paused = !paused;
 }

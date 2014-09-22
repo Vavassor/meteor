@@ -6,7 +6,7 @@
 #endif
 
 #define ALLOC_STRUCT(Type) (Type*) malloc(sizeof(Type))
-#define INIT_STRUCT(pointer) memset((pointer), 0, sizeof(*(pointer)))
+#define ZERO_STRUCT(pointer) memset((pointer), 0, sizeof(*(pointer)))
 
 #define FOR_EACH(item,arr) for(auto item = (arr).First(), end = (arr).Last(); item != end; ++item)
 #define for_each(iter,arr) for(auto iter = (arr).begin(), end = (arr).end(); iter != end; ++iter)

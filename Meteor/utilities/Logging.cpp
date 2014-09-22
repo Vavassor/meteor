@@ -157,9 +157,15 @@ void Log::Add(LogLevel level, const char* format, ...)
 
 				}
 				else if(*s == 'h')
+				{
 					sizeType = (sizeType == PARSE_SHORT) ? PARSE_BYTE : PARSE_SHORT;
+					break;
+				}
 				else if(*s == 'l')
+				{
 					sizeType = (sizeType == PARSE_LONG) ? PARSE_LONG : PARSE_LONG_LONG;
+					break;
+				}
 
 				// number types
 				if(*s == 'i')
@@ -186,6 +192,13 @@ void Log::Add(LogLevel level, const char* format, ...)
 						LOG_CASE(PARSE_LONG, unsigned long, int_to_string)
 						LOG_CASE(PARSE_LONG_LONG, unsigned long long, int_to_string)
 					}
+					stream.Append(str);
+				}
+				else if(*s == 'x')
+				{
+					char str[20];
+					unsigned long long param = va_arg(arguments, unsigned long long);
+					int_to_string(param, str, 16);
 					stream.Append(str);
 				}
 				else if(*s == 'f')

@@ -24,5 +24,6 @@ namespace Log
 #endif
 
 #define LOG_ISSUE(format, ...) Log::Add(Log::ISSUE, (format), ##__VA_ARGS__)
+#define LOG_INFO(format, ...) Log::Add(Log::INFO, (format), ##__VA_ARGS__)
 
 #endif

@@ -18,13 +18,7 @@ public:
 	~X11Window();
 	bool Create();
 	void Destroy();
-	void ToggleBorderlessMode();
-	void ToggleFullscreen();
 	void MessageLoop();
-	void Update();
-	bool TranslateMessage(const XEvent& event);
-	void OnSize(int dimX, int dimY);
-	void OnKeyPress(unsigned long keyCode, unsigned int modifierMask);
 
 private:
 	enum RenderMode
@@ -37,7 +31,22 @@ private:
 	bool enableVSync;
 	bool fullscreen, borderless;
 
+	bool enableDebugging;
+
 	double lastTickTime;
+
+	void ToggleBorderlessMode();
+	void ToggleFullscreen();
+	void Update();
+	bool TranslateMessage(const XEvent& event);
+	void OnSize(int dimX, int dimY);
+	void OnKeyPress(KeySym keyCode, unsigned int modifierMask);
+	void OnGainedFocus(int mode, int detail);
+	void OnLostFocus(int mode, int detail);
 };
+
+// ------------------------------------------------------------------------------------------------
+
+int XErrorFilter(Display* display, XErrorEvent* event);
 
 #endif
