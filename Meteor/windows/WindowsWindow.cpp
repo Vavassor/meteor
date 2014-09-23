@@ -113,8 +113,8 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 			block.GetAttributeAsStrings("renderer", &values);
 
 			String& renderName = values[0];
-			if(renderName == "DIRECTX")	renderMode = RENDER_DX;
-			if(renderName == "OPENGL")	renderMode = RENDER_GL;
+			if(renderName == "DIRECTX") renderMode = RENDER_DX;
+			if(renderName == "OPENGL")  renderMode = RENDER_GL;
 		}
 		block.GetAttributeAsBool("isFullscreen", &isFullscreen);
 		block.GetAttributeAsBool("verticalSynchronization", &enableVSync);
@@ -143,7 +143,7 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 
 	if(RegisterClassEx(&classEx) == 0)
 	{
-		Log::Add(Log::ISSUE, "RegisterClassEx failed!");
+		LOG_ISSUE("RegisterClassEx failed!");
 		return false;
 	}
 
@@ -153,7 +153,7 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 		0, 0, width, height, NULL, NULL, hInstance, NULL);
 	if(hWnd == NULL)
 	{
-		Log::Add(Log::ISSUE, "CreateWindowEx failed!");
+		LOG_ISSUE("CreateWindowEx failed!");
 		return false;
 	}
 	SetWindowLongPtr(hWnd, 0, (LONG)this);
@@ -162,7 +162,7 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 	device = NULL;
 	if((device = GetDC(hWnd)) == NULL)
 	{
-		Log::Add(Log::ISSUE, "GetDC failed!");
+		LOG_ISSUE("GetDC failed!");
 		return false;
 	}
 
@@ -183,27 +183,27 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 		int PixelFormat;
 		if((PixelFormat = ChoosePixelFormat(device, &pfd)) == 0)
 		{
-			Log::Add(Log::ISSUE, "ChoosePixelFormat failed!");
+			LOG_ISSUE("ChoosePixelFormat failed!");
 			return false;
 		}
 
 		static int MSAAPixelFormat = 0;
 		if(SetPixelFormat(device, MSAAPixelFormat == 0 ? PixelFormat : MSAAPixelFormat, &pfd) == FALSE)
 		{
-			Log::Add(Log::ISSUE, "SetPixelFormat failed!");
+			LOG_ISSUE("SetPixelFormat failed!");
 			return false;
 		}
 
 		// create context and initialize glew
 		if((context = wglCreateContext(device)) == NULL)
 		{
-			Log::Add(Log::ISSUE, "wglCreateContext failed!");
+			LOG_ISSUE("wglCreateContext failed!");
 			return false;
 		}
 
 		if(wglMakeCurrent(device, context) == FALSE)
 		{
-			Log::Add(Log::ISSUE, "wglMakeCurrent failed!");
+			LOG_ISSUE("wglMakeCurrent failed!");
 			return false;
 		}
 
@@ -213,7 +213,7 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 		glewExperimental = GL_TRUE;
 		if(glewInit() != GLEW_OK)
 		{
-			Log::Add(Log::ISSUE, "glewInit failed!");
+			LOG_ISSUE("glewInit failed!");
 			return false;
 		}
 
@@ -237,13 +237,13 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 
 			if((context = wglCreateContextAttribsARB(device, 0, GLFCRCAttribs)) == NULL)
 			{
-				Log::Add(Log::ISSUE, "wglCreateContextAttribsARB failed!");
+				LOG_ISSUE("wglCreateContextAttribsARB failed!");
 				return false;
 			}
 
 			if(wglMakeCurrent(device, context) == FALSE)
 			{
-				Log::Add(Log::ISSUE, "wglMakeCurrent failed!");
+				LOG_ISSUE("wglMakeCurrent failed!");
 				return false;
 			}
 
@@ -251,7 +251,7 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 		}
 		else
 		{
-			Log::Add(Log::INFO, "WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB is not set");
+			LOG_INFO("WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB is not set");
 			wgl_context_forward_compatible = false;
 		}
 
@@ -371,7 +371,7 @@ void WindowsWindow::ToggleFullscreen()
 		newSettings.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
 		if(ChangeDisplaySettings(&newSettings, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
 		{
-			Log::Add(Log::ISSUE, "Display Mode failed! Could not enter fullscreen mode");
+			LOG_ISSUE("Display Mode change failed! Could not enter fullscreen mode");
 		}
 
 		isBorderless = true;
@@ -387,7 +387,7 @@ void WindowsWindow::ToggleBorderlessMode()
 	LONG style = (isBorderless) ? WS_OVERLAPPEDWINDOW : WS_POPUP;
 	SetWindowLongPtr(hWnd, GWL_STYLE, style);
 
-	SetWindowPos(hWnd, NULL, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER
+	SetWindowPos(hWnd, NULL, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER 
 		| SWP_FRAMECHANGED | SWP_SHOWWINDOW);
 
 	isBorderless = !isBorderless;
@@ -518,10 +518,10 @@ void WindowsWindow::KeyDown(USHORT key)
 {
 	switch(key)
 	{
-		case VK_MENU:	isAltDown = true;					break;
-		case VK_F2:		ToggleBorderlessMode();				break;
-		case VK_F11:	ToggleFullscreen();					break;
-		case VK_RETURN:	if(isAltDown) ToggleFullscreen();	break;
+		case VK_MENU:   isAltDown = true;                 break;
+		case VK_F2:     ToggleBorderlessMode();           break;
+		case VK_F11:    ToggleFullscreen();               break;
+		case VK_RETURN: if(isAltDown) ToggleFullscreen(); break;
 	}
 }
 
@@ -529,7 +529,7 @@ void WindowsWindow::KeyUp(USHORT key)
 {
 	switch(key)
 	{
-		case VK_MENU:	isAltDown = false;	break;
+		case VK_MENU: isAltDown = false; break;
 		case VK_F4:
 		{
 			if(isAltDown)

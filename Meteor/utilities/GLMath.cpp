@@ -8,8 +8,8 @@
 
 mat4x4::mat4x4()
 {
-	M[0] = 1.0f; M[4] = 0.0f; M[8] = 0.0f; M[12] = 0.0f;
-	M[1] = 0.0f; M[5] = 1.0f; M[9] = 0.0f; M[13] = 0.0f;
+	M[0] = 1.0f; M[4] = 0.0f; M[8]  = 0.0f; M[12] = 0.0f;
+	M[1] = 0.0f; M[5] = 1.0f; M[9]  = 0.0f; M[13] = 0.0f;
 	M[2] = 0.0f; M[6] = 0.0f; M[10] = 1.0f; M[14] = 0.0f;
 	M[3] = 0.0f; M[7] = 0.0f; M[11] = 0.0f; M[15] = 1.0f;
 }
@@ -107,20 +107,22 @@ mat4x4 mat4x4::operator * (const mat4x4& matrix) const
 
 vec4 mat4x4::operator * (const vec4& u) const
 {
-	return vec4(M[0] * u.x + M[4] * u.y + M[8] * u.z + M[12] * u.w,
-				M[1] * u.x + M[5] * u.y + M[9] * u.z + M[13] * u.w,
-				M[2] * u.x + M[6] * u.y + M[10] * u.z + M[14] * u.w,
-				M[3] * u.x + M[7] * u.y + M[11] * u.z + M[15] * u.w);
+	return vec4(
+		M[0] * u.x + M[4] * u.y + M[8]  * u.z + M[12] * u.w,
+		M[1] * u.x + M[5] * u.y + M[9]  * u.z + M[13] * u.w,
+		M[2] * u.x + M[6] * u.y + M[10] * u.z + M[14] * u.w,
+		M[3] * u.x + M[7] * u.y + M[11] * u.z + M[15] * u.w);
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
 
 quaternion quaternion::operator * (const quaternion &rq) const
 {
-	return quaternion(w * rq.x + x * rq.w + y * rq.z - z * rq.y,
-					  w * rq.y + y * rq.w + z * rq.x - x * rq.z,
-					  w * rq.z + z * rq.w + x * rq.y - y * rq.x,
-					  w * rq.w - x * rq.x - y * rq.y - z * rq.z);
+	return quaternion(
+		w * rq.x + x * rq.w + y * rq.z - z * rq.y,
+		w * rq.y + y * rq.w + z * rq.x - x * rq.z,
+		w * rq.z + z * rq.w + x * rq.y - y * rq.x,
+		w * rq.w - x * rq.x - y * rq.y - z * rq.z);
 }
 
 quaternion& quaternion::operator *= (const quaternion &rq)
@@ -133,7 +135,7 @@ vec3 quaternion::operator * (const vec3 &v) const
 {
 	vec3 u(x, y, z);
 	float s = w;
-	return	2.0f * dot(u, v) * u
+	return  2.0f * dot(u, v) * u
 		+ (s * s - dot(u, u)) * v
 		+ 2.0f * s * cross(u, v);
 }
@@ -175,17 +177,19 @@ vec2 rotate(const vec2& u, float angle)
 {
 	float cs = cos(angle);
 	float sn = sin(angle);
-	return vec2(u.x * cs - u.y * sn,
-				u.x * sn + u.y * cs);
+	return vec2(
+		u.x * cs - u.y * sn,
+		u.x * sn + u.y * cs);
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
 
 vec3 cross(const vec3& u, const vec3& v)
 {
-	return vec3(u.y * v.z - u.z * v.y,
-				u.z * v.x - u.x * v.z,
-				u.x * v.y - u.y * v.x);
+	return vec3(
+		u.y * v.z - u.z * v.y,
+		u.z * v.x - u.x * v.z,
+		u.x * v.y - u.y * v.x);
 }
 
 float dot(const vec3& u, const vec3& v)
@@ -259,10 +263,11 @@ quaternion quat_from_axis_angle(const vec3& v, float angle)
 	vec3 vn = normalize(v);
 	float sinAngle = sin(angle);
 
-	return quaternion(vn.x * sinAngle,
-					  vn.y * sinAngle,
-					  vn.z * sinAngle,
-					  cos(angle));
+	return quaternion(
+		vn.x * sinAngle,
+		vn.y * sinAngle,
+		vn.z * sinAngle,
+		cos(angle));
 }
 
 quaternion quat_from_matrix(mat4x4& m)
@@ -311,10 +316,11 @@ quaternion invert_quat(const quaternion& quat)
 {
 	float dot = quat.x * quat.x + quat.y * quat.y + quat.z * quat.z + quat.w * quat.w;
 
-	return quaternion(-quat.x / dot,
-					  -quat.y / dot,
-					  -quat.z / dot,
-					   quat.w / dot);
+	return quaternion(
+		-quat.x / dot,
+		-quat.y / dot,
+		-quat.z / dot,
+		quat.w / dot);
 }
 
 quaternion slerp(const quaternion& from, const quaternion& to, float t)
@@ -352,8 +358,8 @@ quaternion slerp(const quaternion& from, const quaternion& to, float t)
 	}
 	else
 	{
-		// "from" and "to" quaternions are very close
-		//  ... so we can do a linear interpolation
+		// "from" and "to" quaternions are very close,
+		// so we can do a linear interpolation
 		scale0 = 1.0 - t;
 		scale1 = t;
 	}
@@ -420,10 +426,11 @@ quaternion quat_from_euler(float roll, float pitch, float yaw)
 	float cpcy = cp * cy;
 	float spsy = sp * sy;
 
-	return quaternion(sr * cpcy - cr * spsy,
-					  cr * sp * cy + sr * cp * sy,
-					  cr * cp * sy - sr * sp * cy,
-					  cr * cpcy + sr * spsy);
+	return quaternion(
+		sr * cpcy - cr * spsy,
+		cr * sp * cy + sr * cp * sy,
+		cr * cp * sy - sr * sp * cy,
+		cr * cpcy + sr * spsy);
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------

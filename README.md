@@ -25,6 +25,7 @@ Make instructions for specific compilers I currently can't provide, but generall
       * DirectX SDK for any windows build that wishes to render using it
       * FMOD Ex for Sound.h and Sound.cpp
       * XInput for controller input on Windows
+	  * libudev for controller connection notifications in Linux
 -   also the .dll or .so dynamically-linked library for FMOD Ex is needed
     either in the directory of the .exe or listed in the run configuration
 

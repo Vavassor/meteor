@@ -22,28 +22,28 @@ public:
 	vec2 operator - () const { return vec2(-x, -y); }
 	vec2* operator & () { return (vec2*)this; }
 
-	vec2& operator += (float num)		{ x += num; y += num; return *this; }
-	vec2& operator += (const vec2& u)	{ x += u.x; y += u.y; return *this; }
-	vec2& operator -= (float num)		{ x -= num; y -= num; return *this; }
-	vec2& operator -= (const vec2& u)	{ x -= u.x; y -= u.y; return *this; }
-	vec2& operator *= (float num)		{ x *= num; y *= num; return *this; }
-	vec2& operator *= (const vec2& u)	{ x *= u.x; y *= u.y; return *this; }
-	vec2& operator /= (float num)		{ x /= num; y /= num; return *this; }
-	vec2& operator /= (const vec2& u)	{ x /= u.x; y /= u.y; return *this; }
+	vec2& operator += (float num)     { x += num; y += num; return *this; }
+	vec2& operator += (const vec2& u) { x += u.x; y += u.y; return *this; }
+	vec2& operator -= (float num)     { x -= num; y -= num; return *this; }
+	vec2& operator -= (const vec2& u) { x -= u.x; y -= u.y; return *this; }
+	vec2& operator *= (float num)     { x *= num; y *= num; return *this; }
+	vec2& operator *= (const vec2& u) { x *= u.x; y *= u.y; return *this; }
+	vec2& operator /= (float num)     { x /= num; y /= num; return *this; }
+	vec2& operator /= (const vec2& u) { x /= u.x; y /= u.y; return *this; }
 
 	vec2 operator + (const vec2& u) const	{ return vec2(x + u.x, y + u.y); }
 	vec2 operator - (const vec2& u)	const	{ return vec2(x - u.x, y - u.y); }
 	vec2 operator * (const vec2& u)	const	{ return vec2(x * u.x, y * u.y); }
 	vec2 operator / (const vec2& u)	const	{ return vec2(x / u.x, y / u.y); }
 
-	friend vec2 operator + (const vec2& u, float num)		{ return vec2(u.x + num, u.y + num); }
-	friend vec2 operator + (float num, const vec2& u)		{ return vec2(num + u.x, num + u.y); }
-	friend vec2 operator - (const vec2& u, float num)		{ return vec2(u.x - num, u.y - num); }
-	friend vec2 operator - (float num, const vec2& u)		{ return vec2(num - u.x, num - u.y); }
-	friend vec2 operator * (const vec2& u, float num)		{ return vec2(u.x * num, u.y * num); }
-	friend vec2 operator * (float num, const vec2& u)		{ return vec2(num * u.x, num * u.y); }
-	friend vec2 operator / (const vec2& u, float num)		{ return vec2(u.x / num, u.y / num); }
-	friend vec2 operator / (float num, const vec2& u)		{ return vec2(num / u.x, num / u.y); }
+	friend vec2 operator + (const vec2& u, float num)	{ return vec2(u.x + num, u.y + num); }
+	friend vec2 operator + (float num, const vec2& u)	{ return vec2(num + u.x, num + u.y); }
+	friend vec2 operator - (const vec2& u, float num)	{ return vec2(u.x - num, u.y - num); }
+	friend vec2 operator - (float num, const vec2& u)	{ return vec2(num - u.x, num - u.y); }
+	friend vec2 operator * (const vec2& u, float num)	{ return vec2(u.x * num, u.y * num); }
+	friend vec2 operator * (float num, const vec2& u)	{ return vec2(num * u.x, num * u.y); }
+	friend vec2 operator / (const vec2& u, float num)	{ return vec2(u.x / num, u.y / num); }
+	friend vec2 operator / (float num, const vec2& u)	{ return vec2(num / u.x, num / u.y); }
 };
 
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -69,14 +69,14 @@ public:
 	vec3* operator & () { return (vec3*)this; }
 	operator vec2 () { return *(vec2*)this; }
 
-	vec3& operator += (float num)		{ x += num; y += num; z += num; return *this; }
-	vec3& operator += (const vec3& u)	{ x += u.x; y += u.y; z += u.z; return *this; }
-	vec3& operator -= (float num)		{ x -= num; y -= num; z -= num; return *this; }
-	vec3& operator -= (const vec3& u)	{ x -= u.x; y -= u.y; z -= u.z; return *this; }
-	vec3& operator *= (float num)		{ x *= num; y *= num; z *= num; return *this; }
-	vec3& operator *= (const vec3& u)	{ x *= u.x; y *= u.y; z *= u.z; return *this; }
-	vec3& operator /= (float num)		{ x /= num; y /= num; z /= num; return *this; }
-	vec3& operator /= (const vec3& u)	{ x /= u.x; y /= u.y; z /= u.z; return *this; }
+	vec3& operator += (float num)     { x += num; y += num; z += num; return *this; }
+	vec3& operator += (const vec3& u) { x += u.x; y += u.y; z += u.z; return *this; }
+	vec3& operator -= (float num)     { x -= num; y -= num; z -= num; return *this; }
+	vec3& operator -= (const vec3& u) { x -= u.x; y -= u.y; z -= u.z; return *this; }
+	vec3& operator *= (float num)     { x *= num; y *= num; z *= num; return *this; }
+	vec3& operator *= (const vec3& u) { x *= u.x; y *= u.y; z *= u.z; return *this; }
+	vec3& operator /= (float num)     { x /= num; y /= num; z /= num; return *this; }
+	vec3& operator /= (const vec3& u) { x /= u.x; y /= u.y; z /= u.z; return *this; }
 
 	vec3 operator + (const vec3& u) const	{ return vec3(x + u.x, y + u.y, z + u.z); }
 	vec3 operator - (const vec3& u)	const	{ return vec3(x - u.x, y - u.y, z - u.z); }
@@ -85,14 +85,14 @@ public:
 	bool operator == (const vec3& u) const	{ return x == u.x && y == u.y && z == u.z; }
 	bool operator != (const vec3& u) const	{ return x != u.x || y != u.y || z != u.z; }
 
-	friend vec3 operator + (const vec3& u, float num)		{ return vec3(u.x + num, u.y + num, u.z + num); }
-	friend vec3 operator + (float num, const vec3& u)		{ return vec3(num + u.x, num + u.y, num + u.z); }
-	friend vec3 operator - (const vec3& u, float num)		{ return vec3(u.x - num, u.y - num, u.z - num); }
-	friend vec3 operator - (float num, const vec3& u)		{ return vec3(num - u.x, num - u.y, num - u.z); }
-	friend vec3 operator * (const vec3& u, float num)		{ return vec3(u.x * num, u.y * num, u.z * num); }
-	friend vec3 operator * (float num, const vec3& u)		{ return vec3(num * u.x, num * u.y, num * u.z); }
-	friend vec3 operator / (const vec3& u, float num)		{ return vec3(u.x / num, u.y / num, u.z / num); }
-	friend vec3 operator / (float num, const vec3& u)		{ return vec3(num / u.x, num / u.y, num / u.z); }
+	friend vec3 operator + (const vec3& u, float num)	{ return vec3(u.x + num, u.y + num, u.z + num); }
+	friend vec3 operator + (float num, const vec3& u)	{ return vec3(num + u.x, num + u.y, num + u.z); }
+	friend vec3 operator - (const vec3& u, float num)	{ return vec3(u.x - num, u.y - num, u.z - num); }
+	friend vec3 operator - (float num, const vec3& u)	{ return vec3(num - u.x, num - u.y, num - u.z); }
+	friend vec3 operator * (const vec3& u, float num)	{ return vec3(u.x * num, u.y * num, u.z * num); }
+	friend vec3 operator * (float num, const vec3& u)	{ return vec3(num * u.x, num * u.y, num * u.z); }
+	friend vec3 operator / (const vec3& u, float num)	{ return vec3(u.x / num, u.y / num, u.z / num); }
+	friend vec3 operator / (float num, const vec3& u)	{ return vec3(num / u.x, num / u.y, num / u.z); }
 };
 
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -120,28 +120,28 @@ public:
 	operator vec2 () { return *(vec2*)this; }
 	operator vec3 () { return *(vec3*)this; }
 
-	vec4& operator += (float num)		{ x += num; y += num; z += num; w += num; return *this; }
-	vec4& operator += (const vec4& u)	{ x += u.x; y += u.y; z += u.z; w += u.w; return *this; }
-	vec4& operator -= (float num)		{ x -= num; y -= num; z -= num; w -= num; return *this; }
-	vec4& operator -= (const vec4& u)	{ x -= u.x; y -= u.y; z -= u.z; w -= u.w; return *this; }
-	vec4& operator *= (float num)		{ x *= num; y *= num; z *= num; w *= num; return *this; }
-	vec4& operator *= (const vec4& u)	{ x *= u.x; y *= u.y; z *= u.z; w *= u.w; return *this; }
-	vec4& operator /= (float num)		{ x /= num; y /= num; z /= num; w /= num; return *this; }
-	vec4& operator /= (const vec4& u)	{ x /= u.x; y /= u.y; z /= u.z; w /= u.w; return *this; }
+	vec4& operator += (float num)     { x += num; y += num; z += num; w += num; return *this; }
+	vec4& operator += (const vec4& u) { x += u.x; y += u.y; z += u.z; w += u.w; return *this; }
+	vec4& operator -= (float num)     { x -= num; y -= num; z -= num; w -= num; return *this; }
+	vec4& operator -= (const vec4& u) { x -= u.x; y -= u.y; z -= u.z; w -= u.w; return *this; }
+	vec4& operator *= (float num)     { x *= num; y *= num; z *= num; w *= num; return *this; }
+	vec4& operator *= (const vec4& u) { x *= u.x; y *= u.y; z *= u.z; w *= u.w; return *this; }
+	vec4& operator /= (float num)     { x /= num; y /= num; z /= num; w /= num; return *this; }
+	vec4& operator /= (const vec4& u) { x /= u.x; y /= u.y; z /= u.z; w /= u.w; return *this; }
 
 	vec4 operator + (const vec4& u) const	{ return vec4(x + u.x, y + u.y, z + u.z, w + u.w); }
 	vec4 operator - (const vec4& u) const	{ return vec4(x - u.x, y - u.y, z - u.z, w - u.w); }
 	vec4 operator * (const vec4& u) const	{ return vec4(x * u.x, y * u.y, z * u.z, w * u.w); }
 	vec4 operator / (const vec4& u) const	{ return vec4(x / u.x, y / u.y, z / u.z, w / u.w); }
 
-	friend vec4 operator + (const vec4& u, float num)		{ return vec4(u.x + num, u.y + num, u.z + num, u.w + num); }
-	friend vec4 operator + (float num, const vec4& u)		{ return vec4(num + u.x, num + u.y, num + u.z, num + u.w); }
-	friend vec4 operator - (const vec4& u, float num)		{ return vec4(u.x - num, u.y - num, u.z - num, u.w - num); }
-	friend vec4 operator - (float num, const vec4& u)		{ return vec4(num - u.x, num - u.y, num - u.z, num - u.w); }
-	friend vec4 operator * (const vec4& u, float num)		{ return vec4(u.x * num, u.y * num, u.z * num, u.w * num); }
-	friend vec4 operator * (float num, const vec4& u)		{ return vec4(num * u.x, num * u.y, num * u.z, num * u.w); }
-	friend vec4 operator / (const vec4& u, float num)		{ return vec4(u.x / num, u.y / num, u.z / num, u.w / num); }
-	friend vec4 operator / (float num, const vec4& u)		{ return vec4(num / u.x, num / u.y, num / u.z, num / u.w); }
+	friend vec4 operator + (const vec4& u, float num)	{ return vec4(u.x + num, u.y + num, u.z + num, u.w + num); }
+	friend vec4 operator + (float num, const vec4& u)	{ return vec4(num + u.x, num + u.y, num + u.z, num + u.w); }
+	friend vec4 operator - (const vec4& u, float num)	{ return vec4(u.x - num, u.y - num, u.z - num, u.w - num); }
+	friend vec4 operator - (float num, const vec4& u)	{ return vec4(num - u.x, num - u.y, num - u.z, num - u.w); }
+	friend vec4 operator * (const vec4& u, float num)	{ return vec4(u.x * num, u.y * num, u.z * num, u.w * num); }
+	friend vec4 operator * (float num, const vec4& u)	{ return vec4(num * u.x, num * u.y, num * u.z, num * u.w); }
+	friend vec4 operator / (const vec4& u, float num)	{ return vec4(u.x / num, u.y / num, u.z / num, u.w / num); }
+	friend vec4 operator / (float num, const vec4& u)	{ return vec4(num / u.x, num / u.y, num / u.z, num / u.w); }
 };
 
 // ----------------------------------------------------------------------------------------------------------------------------

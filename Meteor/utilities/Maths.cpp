@@ -104,8 +104,9 @@ bool float_equals(float a, float b)
     b = fabs(b);
     float largest = (b > a) ? b : a;
 
-    return difference <= largest * FLT_EPSILON 
-		|| difference < FLT_MIN;
+    return
+		difference <= largest * FLT_EPSILON ||
+		difference < FLT_MIN;
 }
 
 bool is_nan(double n)

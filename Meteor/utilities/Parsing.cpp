@@ -25,15 +25,122 @@ double string_to_double(const char* str)
 	return atof(str);
 }
 
+unsigned long long string_to_unsigned(const char* str, char** endptr, int base = 0)
+{
+	if(base != 0 && (base < 2 || base > 36))
+	{
+		errno = EINVAL;
+		if(endptr) *endptr = (char*) str;
+		return 0;
+	}
+	
+	const char* p = str;
+
+	// Process the initial, possibly empty, sequence of white-space characters.
+	while(isspace(*p)) ++p;
+	const char* first_nonspace = p;
+
+	// Determine sign
+	int sign = 1;
+	if(*p == '+')
+		p++;
+	else if(*p == '-')
+	{
+		p++;
+		sign = -1;
+	}
+
+	if(base == 0)
+	{
+		// Determine base.
+		if(*p == '0')
+		{
+			if(p[1] == 'x' || p[1] == 'X')
+			{
+				if(isxdigit((unsigned char)(p[2])))
+				{
+					base = 16;
+					p += 2;
+				}
+				else
+				{
+					/* Special case: treat the string "0x" without any further
+					 * hex digits as a decimal number.
+					 */
+					base = 10;
+				}
+			}
+			else
+			{
+				base = 8;
+				p++;
+			}
+		}
+		else
+		{
+			base = 10;
+		}
+	}
+	else if(base == 16)
+	{
+		// For base 16, skip the optional "0x" / "0X" prefix.
+		if( *p == '0' 
+			&& (p[1] == 'x' || p[1] == 'X')
+			&& isxdigit((unsigned char)(p[2])))
+		{
+			p += 2;
+		}
+	}
+
+	unsigned long long accumulator = 0;
+	const char* digits_start = p;
+	bool outOfRange = false;
+
+	for(; *p; p++)
+	{
+		int digit = ('0' <= *p && *p <= '9')? *p - '0' :
+					('a' <= *p && *p <= 'z')? *p - 'a' + 10 :
+					('A' <= *p && *p <= 'Z')? *p - 'A' + 10 : 36;
+		if(digit < base)
+		{
+			if (!outOfRange)
+			{
+				if (accumulator > ULLONG_MAX / base ||
+					accumulator * base > ULLONG_MAX - digit)
+				{
+					outOfRange = true;
+				}
+				accumulator = accumulator * base + digit;
+			}
+		}
+		else break;
+	}
+ 
+	if(p > first_nonspace && p == digits_start)
+	{
+		errno = EINVAL;
+		if(endptr) *endptr = (char*) str;
+		return 0;
+	}
+
+	if(p == first_nonspace) p = str;
+
+	if(endptr) *endptr = (char*) p;
+
+	if(outOfRange) 
+	{
+		errno = ERANGE;
+		return ULLONG_MAX;
+	}
+
+	return (sign > 0)? accumulator : -accumulator;
+}
+
 //--- STREAM PROCESSING -----------------------------------------------------------------
 
 int next_unsigned_long_long(const char* str, char** endPtr, unsigned long long* value)
 {
-#if defined(_MSC_VER) && _MSC_VER < 1700
-	unsigned long long val = _strtoui64(str, endPtr, 10);
-#else
-	unsigned long long val = strtoull(str, endPtr, 10);
-#endif
+	unsigned long long val = string_to_unsigned(str, endPtr, 10);
 
 	errno = 0;
 	// check if value is in range
