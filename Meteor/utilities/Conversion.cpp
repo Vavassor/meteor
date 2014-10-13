@@ -6,12 +6,12 @@
 #include <math.h>
 #include <float.h>
 
-#define NAN_TEXT		"NaN"
-#define INFINITY_TEXT	"infinity"
+#define NAN_TEXT      "NaN"
+#define INFINITY_TEXT "infinity"
 
 void bool_to_string(bool a, char* str)
 {
-	copy_string(str, (a) ? "true" : "false");
+	copy_string(str, (a)? "true" : "false");
 }
 
 void int_to_string(long long value, char* str, unsigned base)
@@ -65,7 +65,7 @@ void float_to_string(double n, char* str, unsigned precision)
 
 		// calculate magnitude
 		int m = log10(n);
-		bool useExp = m >= 14 || neg && m >= 9 || m <= -9;
+		bool useExp = m >= 14 || (neg && m >= 9) || m <= -9;
 		if(neg) *(c++) = '-';
         
 		// set up for scientific notation
@@ -129,16 +129,16 @@ void float_to_string(double n, char* str, unsigned precision)
 
 struct SplitFloat
 {
-	char sign					: 1;
-	char exponent				: 8;
-	unsigned long significand	: 24;
+	char sign                 : 1;
+	char exponent             : 8;
+	unsigned long significand : 24;
 };
 
 struct SplitDouble
 {
-	char sign						: 1;
-	short exponent					: 11;
-	unsigned long long significand	: 52;
+	char sign                      : 1;
+	short exponent                 : 11;
+	unsigned long long significand : 52;
 };
 
 static void float_decompose(float n, SplitFloat* f)

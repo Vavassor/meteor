@@ -1,7 +1,7 @@
 #ifndef HANDLE_MANAGER_H
 #define HANDLE_MANAGER_H
 
-#include "DataTypes.h"
+#include "../DataTypes.h"
 
 #include <stddef.h>
 
@@ -13,7 +13,7 @@ struct Handle
 	inline operator uint32_t() const;
  
 	uint32_t index   : 16,
-			 counter : 16;
+	         counter : 16;
 };
 
 class HandleManager
@@ -40,10 +40,10 @@ private:
 		explicit HandleEntry(uint32_t nextFreeIndex);
 		
 		uint32_t nextFreeIndex : 12,
-				 counter	   : 15,
-				 active		   : 1,
-				 endOfList	   : 1;
-		void*	 entry;
+		         counter       : 15,
+		         active        : 1,
+		         endOfList     : 1;
+		void*    entry;
 	};
 
 	HandleEntry* entries;

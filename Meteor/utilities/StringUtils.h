@@ -38,4 +38,14 @@ inline bool starts_with(const char* s, const char* token)
 	return true;
 }
 
+inline int compare_strings(const char* a, const char* b)
+{
+    for(; *a == *b; ++a, ++b)
+    {
+        if(*a == '\0')
+            return 0;
+    }
+    return *(const unsigned char*)a - *(const unsigned char*)b;
+}
+
 #endif

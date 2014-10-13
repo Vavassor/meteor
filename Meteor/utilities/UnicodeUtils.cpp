@@ -104,8 +104,8 @@ char* wcs_to_utf8(char* buffer, const wchar_t* str, int n)
 		{
 			if(i + 3 > n) return nullptr;
 			buffer[i++] = 0xE0 + (*str >> 12);
-			buffer[i++] = 0x80 + ((*str >> 6) & 0x3F);
-			buffer[i++] = 0x80 + ((*str) & 0x3F);
+			buffer[i++] = 0x80 + (*str >> 6 & 0x3F);
+			buffer[i++] = 0x80 + (*str & 0x3F);
 			str += 1;
 		}
 	}
@@ -147,11 +147,11 @@ size_t utf8_surrogate_count(const char* s)
 	char* str = (char*) s;
 	while(*str)
 	{
-		if(!(*str & 0x80))				{ str += 1; count += 1; }
-		else if((*str & 0xE0) == 0xC0)	{ str += 2; count += 1; }
-		else if((*str & 0xf0) == 0xe0)	{ str += 3; count += 1; }
-		else if((*str & 0xF8) == 0xF0)	{ str += 4; count += 2; }
-		else							{ return 0; }
+		if(!(*str & 0x80))             { str += 1; count += 1; }
+		else if((*str & 0xE0) == 0xC0) { str += 2; count += 1; }
+		else if((*str & 0xf0) == 0xe0) { str += 3; count += 1; }
+		else if((*str & 0xF8) == 0xF0) { str += 4; count += 2; }
+		else                           { return 0; }
 	}
 	return count;
 }
@@ -162,11 +162,11 @@ size_t utf16_octet_count(const char16_t* s)
 	char16_t* str = (char16_t*) s;
 	while(*str)
 	{
-		if(*str < 0x80)								{ count += 1; str += 1; }
-		else if(*str < 0x800)						{ count += 2; str += 1; }
-		else if(*str >= 0xD800 && *str < 0xDC00)	{ count += 4; str += 2; }
-		else if(*str >= 0xDC00 && *str < 0xE000)	{ return 0; }
-		else										{ count += 3; str += 1; }
+		if(*str < 0x80)                          { count += 1; str += 1; }
+		else if(*str < 0x800)                    { count += 2; str += 1; }
+		else if(*str >= 0xD800 && *str < 0xDC00) { count += 4; str += 2; }
+		else if(*str >= 0xDC00 && *str < 0xE000) { return 0; }
+		else                                     { count += 3; str += 1; }
 	}
 	return count;
 }
@@ -183,10 +183,37 @@ size_t utf32_octet_count(const char32_t* s, size_t n)
 	size_t count = 0;
 	for(size_t i = 0; i < n; ++i)
 	{
-		if(s[i] < 0x80)			count += 1;
-		else if(s[i] < 0x800)	count += 2;
-		else if(s[i] < 0x10000)	count += 3;
-		else					count += 4;
+		if(s[i] < 0x80)         count += 1;
+		else if(s[i] < 0x800)   count += 2;
+		else if(s[i] < 0x10000) count += 3;
+		else                    count += 4;
 	}
 	return count;
+}
+
+int strncmp(const char* s1, const char* s2, size_t n)
+{
+	while(n--)
+	{
+		if(*s1++ != *s2++)
+			return *(unsigned char*)(s1 - 1) - *(unsigned char*)(s2 - 1);
+	}
+	return 0;
+}
+
+bool is_locale_utf8(char* locale)
+{
+	for(const char* cp = locale; *cp != '\0' && *cp != '@' && *cp != '+' && *cp != ','; ++cp)
+	{
+		if(*cp == '.')
+		{
+			const char* encoding = ++cp;
+			for(; *cp != '\0' && *cp != '@' && *cp != '+' && *cp != ','; ++cp);
+			if((cp - encoding == 5 && strncmp(encoding, "UTF-8", 5) != 0) ||
+			   (cp - encoding == 4 && strncmp(encoding, "utf8", 4)  != 0))
+				return true;
+			break;
+		}
+	}
+	return false;
 }

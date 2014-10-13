@@ -1,7 +1,7 @@
 #ifndef LINKED_QUEUE_H
 #define LINKED_QUEUE_H
 
-#include "MemoryFences.h"
+#include "../MemoryFences.h"
 
 // load with 'consume' (data-dependent) memory ordering
 template<typename T>

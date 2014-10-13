@@ -41,11 +41,11 @@ static unsigned long mwc_random()
 	unsigned long* x = multiplyWithCarryBuffer;
 
 	unsigned long long sum;
-	sum =	2111111111ull * (unsigned long long)(x[3])
-				+ 1492ull * (unsigned long long)(x[2])
-				+ 1776ull * (unsigned long long)(x[1])
-				+ 5115ull * (unsigned long long)(x[0])
-				+			(unsigned long long)(x[4]);
+	sum =   2111111111ull * (unsigned long long)(x[3])
+	      + 1492ull       * (unsigned long long)(x[2])
+	      + 1776ull       * (unsigned long long)(x[1])
+	      + 5115ull       * (unsigned long long)(x[0])
+	      +                 (unsigned long long)(x[4]);
 
 	x[3] = x[2];
 	x[2] = x[1];

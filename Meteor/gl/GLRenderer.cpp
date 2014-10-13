@@ -13,8 +13,8 @@
 #include "utilities/Logging.h"
 #include "utilities/GLMath.h"
 #include "utilities/GLUtils.h"
-#include "utilities/DenseArray.h"
 #include "utilities/Collision.h"
+#include "utilities/collections/DenseArray.h"
 
 int gl_version, gl_max_texture_size;
 float gl_max_texture_max_anisotropy_ext;

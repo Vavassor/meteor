@@ -7,7 +7,7 @@ inline float lerp(float v0, float v1, float t)
 	return v0 + t * (v1 - v0);
 }
 
-//edge1 <= t <= edge2
+// edge1 <= t <= edge2
 float smooth_step(float edge1, float edge2, float t)
 {
 	float y = (t - edge1) / (edge2 - edge1);
@@ -15,7 +15,7 @@ float smooth_step(float edge1, float edge2, float t)
 	return y * y * (3 - 2 * y);
 }
 
-//edge1 <= t <= edge2
+// edge1 <= t <= edge2
 float smoother_step(float edge1, float edge2, float t)
 {
 	float y = (t - edge1) / (edge2 - edge1);
@@ -23,14 +23,14 @@ float smoother_step(float edge1, float edge2, float t)
 	return y * y * y * (y * (y * 6 - 15) + 10);
 }
 
-//x moves towards t, large N means slow approach, small N is faster
-//	0.0f <= x,t <= 1.0f;     1.0f <= N <= FLT_MAX;
+// x moves towards t, large N means slow approach, small N is faster
+//	 0.0f <= x,t <= 1.0f;     1.0f <= N <= FLT_MAX;
 inline float weighted_avg(float x, float t, float N)
 {
 	return ((x * (N - 1)) + t) / N;
 }
 
-//y0-3 control points affecting t
+// y0-3 control points affecting t
 float cubic_interpolate(float y0, float y1, float y2, float y3, float t)
 {
 	float a0 = y3 - y2 - y0 + y1;

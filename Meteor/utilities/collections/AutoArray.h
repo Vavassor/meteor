@@ -29,7 +29,7 @@ public:
 	{
 		for(T *it = buffer, *stop = last; it != stop; ++it)
 			it->~T();
-		delete[] (void*) buffer;
+		::operator delete(buffer);
 	}
 
 	void Push(const T& element)
@@ -73,7 +73,7 @@ public:
 		for(size_t i = 0; i < minSize; ++i)
 			new(&newArray[i]) T(buffer[i]);
 
-		delete[] (void*) buffer;
+		::operator delete(buffer);
 		buffer = newArray;
 
 		// reallocation invalidated these, so reset them

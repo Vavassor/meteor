@@ -3,16 +3,6 @@
 #include <math.h>
 #include <float.h>
 
-int round_int(double r)
-{
-	return (r > 0.0) ? r + 0.5 : r - 0.5;
-}
-
-float clamp(float x, float min, float max)
-{
-    return (x < min) ? min : ((x > max) ? max : x);
-}
-
 int mod(int a, int b)
 {
 	if(b == 0) return a;
@@ -32,12 +22,18 @@ long long mod_power(int a, int n, int modulus)
 	return result;
 }
 
-#if defined(_MSC_VER)
-double log2(double x)
+bool float_equals(float a, float b)
 {
-    return log(x) * M_LOG2E;
+    float difference = fabs(a - b);
+
+    a = fabs(a);
+    b = fabs(b);
+    float largest = (b > a) ? b : a;
+
+    return
+		difference <= largest * FLT_EPSILON ||
+		difference < FLT_MIN;
 }
-#endif
 
 static bool prime_witness(int a, int n)
 {
@@ -89,24 +85,6 @@ bool is_prime(unsigned int m)
 	if(prime_witness(7, m)) return false;
 	if(prime_witness(61, m)) return false;
 	return true;
-}
-
-bool is_power_of_two(int x)
-{
-	return x > 0 && (x & x - 1) == 0;
-}
-
-bool float_equals(float a, float b)
-{
-    float difference = fabs(a - b);
-
-    a = fabs(a);
-    b = fabs(b);
-    float largest = (b > a) ? b : a;
-
-    return
-		difference <= largest * FLT_EPSILON ||
-		difference < FLT_MIN;
 }
 
 bool is_nan(double n)

@@ -2,8 +2,9 @@
 #define TEXTBLOCK_H
 
 #include "String.h"
-#include "AutoArray.h"
 #include "GLMath.h"
+
+#include "collections/AutoArray.h"
 
 class Attribute
 {
