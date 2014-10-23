@@ -1,6 +1,10 @@
 #ifndef MATHS_H
 #define MATHS_H
 
+int mod(int a, int b);
+long long mod_power(int a, int n, int modulus);
+bool float_equals(float a, float b);
+
 inline int round_int(double r)
 {
 	return (r > 0.0) ? r + 0.5 : r - 0.5;
@@ -18,17 +22,14 @@ inline double log2(double x)
 }
 #endif
 
-int mod(int a, int b);
-long long mod_power(int a, int n, int modulus);
-bool float_equals(float a, float b);
-
-inline bool is_power_of_two(int x)
-{
-	return x > 0 && (x & x - 1) == 0;
-}
 bool is_prime(unsigned int m);
 bool is_nan(double n);
 bool is_infinite(double n);
+
+inline bool is_power_of_two(int x)
+{
+	return x > 0 && (x & (x - 1)) == 0;
+}
 
 //--- INFINITY CONSTANTS ----------------------------------------------------------------
 

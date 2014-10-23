@@ -14,7 +14,7 @@ namespace Log
 	void Inc_Time();
 	void Write(bool outputToConsole = false);
 	void Add(LogLevel level, const char* format, ...);
-	const char* GetText();
+	const char* Get_Text();
 }
 
 #if defined(NDEBUG)

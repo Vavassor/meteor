@@ -30,9 +30,8 @@ bool float_equals(float a, float b)
     b = fabs(b);
     float largest = (b > a) ? b : a;
 
-    return
-		difference <= largest * FLT_EPSILON ||
-		difference < FLT_MIN;
+    return difference <= largest * FLT_EPSILON
+	    || difference < FLT_MIN;
 }
 
 static bool prime_witness(int a, int n)
@@ -67,7 +66,7 @@ bool is_prime(unsigned int m)
 
 	if(m < 1373653)
 	{
-		for(int k = 1; 36 * k * k - 12 * k < m; ++k)
+		for(unsigned int k = 1; 36 * k * k - 12 * k < m; ++k)
 		{
 			if(m % (6 * k + 1) == 0) return false;
 			if(m % (6 * k - 1) == 0) return false;

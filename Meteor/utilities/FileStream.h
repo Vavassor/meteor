@@ -8,7 +8,7 @@
 class FileStream
 {
 public:
-	file_handle_t fileHandle;
+	file_handle_t file;
 	size_t fileOffset;
 
 	const char* buffer;

@@ -1,4 +1,4 @@
-#include "TextBlock.h"
+#include "Textblock.h"
 
 #include "Macros.h"
 #include "FileHandling.h"
@@ -23,10 +23,7 @@ Attribute::Attribute(const Attribute& attribute):
 	numValues(attribute.numValues)
 {}
 
-Textblock::Textblock():
-	attributes(16),
-	children(8)
-{}
+Textblock::Textblock() {}
 
 Textblock::~Textblock()
 {
@@ -36,7 +33,7 @@ Textblock::~Textblock()
 		delete (*child);
 }
 
-void Textblock::AddAttribute(const String& name, String values[], int numValues)
+void Textblock::Add_Attribute(const String& name, String values[], int numValues)
 {
 	Attribute attribute;
 	attribute.key = name;
@@ -48,21 +45,21 @@ void Textblock::AddAttribute(const String& name, String values[], int numValues)
 	attributes.Push(attribute);
 }
 
-Attribute* Textblock::GetAttribute(const String& name) const
+Attribute* Textblock::Get_Attribute(const String& name) const
 {
 	FOR_EACH(attribute, attributes)
 		if(attribute->key == name) return attribute;
 	return nullptr;
 }
 
-bool Textblock::HasAttribute(const String& name) const
+bool Textblock::Has_Attribute(const String& name) const
 {
-	return GetAttribute(name) != nullptr;
+	return Get_Attribute(name) != nullptr;
 }
 
-bool Textblock::GetAttributeAsBool(const String& name, bool* value) const
+bool Textblock::Get_Attribute_As_Bool(const String& name, bool* value) const
 {
-	Attribute* attribute = GetAttribute(name);
+	Attribute* attribute = Get_Attribute(name);
 	if(attribute != nullptr && value != nullptr)
 	{
 		*value = attribute->values[0] == "true";
@@ -71,9 +68,9 @@ bool Textblock::GetAttributeAsBool(const String& name, bool* value) const
 	return false;
 }
 
-bool Textblock::GetAttributeAsInt(const String& name, int* value) const
+bool Textblock::Get_Attribute_As_Int(const String& name, int* value) const
 {
-	Attribute* attribute = GetAttribute(name);
+	Attribute* attribute = Get_Attribute(name);
 	if(attribute != nullptr && value != nullptr)
 	{
 		*value = string_to_int(attribute->values[0].Data());
@@ -82,9 +79,9 @@ bool Textblock::GetAttributeAsInt(const String& name, int* value) const
 	return false;
 }
 
-bool Textblock::GetAttributeAsFloat(const String& name, float* value) const
+bool Textblock::Get_Attribute_As_Float(const String& name, float* value) const
 {
-	Attribute* attribute = GetAttribute(name);
+	Attribute* attribute = Get_Attribute(name);
 	if(attribute != nullptr && value != nullptr)
 	{
 		*value = string_to_float(attribute->values[0].Data());
@@ -93,9 +90,9 @@ bool Textblock::GetAttributeAsFloat(const String& name, float* value) const
 	return false;
 }
 
-bool Textblock::GetAttributeAsDouble(const String& name, double* value) const
+bool Textblock::Get_Attribute_As_Double(const String& name, double* value) const
 {
-	Attribute* attribute = GetAttribute(name);
+	Attribute* attribute = Get_Attribute(name);
 	if(attribute != nullptr && value != nullptr)
 	{
 		*value = string_to_double(attribute->values[0].Data());
@@ -104,9 +101,9 @@ bool Textblock::GetAttributeAsDouble(const String& name, double* value) const
 	return false;
 }
 
-bool Textblock::GetAttributeAsVec2(const String& name, vec2* value) const
+bool Textblock::Get_Attribute_As_Vec2(const String& name, vec2* value) const
 {
-	Attribute* attribute = GetAttribute(name);
+	Attribute* attribute = Get_Attribute(name);
 	if(attribute != nullptr && value != nullptr)
 	{
 		String* values = attribute->values;
@@ -118,9 +115,9 @@ bool Textblock::GetAttributeAsVec2(const String& name, vec2* value) const
 	return false;
 }
 
-bool Textblock::GetAttributeAsVec3(const String& name, vec3* value) const
+bool Textblock::Get_Attribute_As_Vec3(const String& name, vec3* value) const
 {
-	Attribute* attribute = GetAttribute(name);
+	Attribute* attribute = Get_Attribute(name);
 	if(attribute != nullptr && value != nullptr)
 	{
 		String* values = attribute->values;
@@ -133,9 +130,9 @@ bool Textblock::GetAttributeAsVec3(const String& name, vec3* value) const
 	return false;
 }
 
-bool Textblock::GetAttributeAsVec4(const String& name, vec4* value) const
+bool Textblock::Get_Attribute_As_Vec4(const String& name, vec4* value) const
 {
-	Attribute* attribute = GetAttribute(name);
+	Attribute* attribute = Get_Attribute(name);
 	if(attribute != nullptr && value != nullptr)
 	{
 		String* values = attribute->values;
@@ -149,9 +146,9 @@ bool Textblock::GetAttributeAsVec4(const String& name, vec4* value) const
 	return false;
 }
 
-bool Textblock::GetAttributeAsQuaternion(const String& name, quaternion* value) const
+bool Textblock::Get_Attribute_As_Quaternion(const String& name, quaternion* value) const
 {
-	Attribute* attribute = GetAttribute(name);
+	Attribute* attribute = Get_Attribute(name);
 	if(attribute != nullptr && value != nullptr)
 	{
 		String* values = attribute->values;
@@ -165,9 +162,9 @@ bool Textblock::GetAttributeAsQuaternion(const String& name, quaternion* value) 
 	return false;
 }
 
-bool Textblock::GetAttributeAsStrings(const String& name, String** values, int* numValues) const
+bool Textblock::Get_Attribute_As_Strings(const String& name, String** values, int* numValues) const
 {
-	Attribute* attribute = GetAttribute(name);
+	Attribute* attribute = Get_Attribute(name);
 	if(attribute != nullptr && values != nullptr)
 	{
 		if(numValues != nullptr)
@@ -178,12 +175,12 @@ bool Textblock::GetAttributeAsStrings(const String& name, String** values, int* 
 	return false;
 }
 
-void Textblock::AddChild(Textblock* child)
+void Textblock::Add_Child(Textblock* child)
 {
 	children.Push(child);
 }
 
-void Textblock::RemoveChild(const String& name)
+void Textblock::Remove_Child(const String& name)
 {
 	FOR_EACH(block, children)
 	{
@@ -196,12 +193,12 @@ void Textblock::RemoveChild(const String& name)
 	}
 }
 
-bool Textblock::HasChild(const String& name) const
+bool Textblock::Has_Child(const String& name) const
 {
-	return GetChildByName(name) != nullptr;
+	return Get_Child_By_Name(name) != nullptr;
 }
 
-Textblock* Textblock::GetChildByName(const String& name) const
+Textblock* Textblock::Get_Child_By_Name(const String& name) const
 {
 	FOR_EACH(block, children)
 	{
@@ -211,17 +208,37 @@ Textblock* Textblock::GetChildByName(const String& name) const
 	return nullptr;
 }
 
-bool parse(Textblock* block, FileStream& in)
+static bool is_space(char c[6])
 {
-	String line;
+	return *c == ' '
+	    || (unsigned char)(*c - 9) <= (13 - 9)              // \t\n\v\f\r
+	    || (c[0] == 0xC2 && (c[1] == 0x85 || c[1] == 0xA0)) // next-line (NEL) and non-breaking space
+	    ;
+}
 
-	// TODO: implement
+static bool parse(FileStream& in, Textblock* block)
+{
+	/*
+
+	char sequence[6];
+
+	char data[128];
+	size_t length = 0;
+	while(length = in.Read(data, ARRAY_LENGTH(data)))
+	{
+		// TODO: implement
+
+		char* end = nullptr;
+		char* start = next_token(data, "\t\n\v\f\r {}=:", &end);
+	}
+
+	*/
 
 	return true;
 }
 
-void Textblock::LoadFromFile(const String& fileName, Textblock* block)
+void Textblock::Load_From_File(const String& fileName, Textblock* block)
 {
 	FileStream stream(fileName.Data());
-	parse(block, stream);
+	parse(stream, block);
 }

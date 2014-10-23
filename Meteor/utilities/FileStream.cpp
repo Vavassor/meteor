@@ -9,13 +9,13 @@ FileStream::FileStream(const char* filePath):
 	bufferOffset(0),
 	bufferFilled(0)
 {
-	fileHandle = open_file_stream(filePath);
+	file = open_file_stream(filePath);
 	buffer = new char[BUFFER_SIZE];
 }
 
 FileStream::~FileStream()
 {
-	close_file_stream(fileHandle);
+	close_file_stream(file);
 	delete[] buffer;
 }
 
@@ -41,7 +41,7 @@ size_t FileStream::Read(char* data, size_t size)
 
 size_t FileStream::FetchData()
 {
-	size_t bytesRead = read_file_stream(fileHandle, fileOffset, (void*) buffer, BUFFER_SIZE);
+	size_t bytesRead = read_file_stream(file, fileOffset, (void*) buffer, BUFFER_SIZE);
 	bufferFilled = bytesRead;
 	fileOffset += bytesRead;
 	bufferOffset = 0;

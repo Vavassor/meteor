@@ -17,7 +17,7 @@ uint32_t count_set_bits(uint32_t i)
 {
     i -= i >> 1 & 0x55555555;
     i = (i & 0x33333333) + (i >> 2 & 0x33333333);
-    return (i + (i >> 4) & 0x0F0F0F0F) * 0x01010101 >> 24;
+    return ((i + (i >> 4)) & 0x0F0F0F0F) * 0x01010101 >> 24;
 }
 
 uint8_t bit_reverse8(uint8_t n)
@@ -36,17 +36,7 @@ uint32_t bit_reverse32(uint32_t n)
 	return (n >> 16) | (n << 16);
 }
 
-static inline int32_t spread(int32_t x)
+uint32_t byte_swap(uint32_t n)
 {
-	int32_t y = x;
-	y = (y | y << 16) & 0x030000ff;
-	y = (y | y << 8) & 0x0300f00f;
-	y = (y | y << 4) & 0x030c30c3;
-	y = (y | y << 2) & 0x09249249;
-	return y;
-}
-
-int64_t morton_hash(int32_t x, int32_t y, int32_t z)
-{
-	return spread(x) | spread(y) << 1 | spread(z) << 2;
+	return  n << 24 | (n << 8 & 0x00FF0000) | (n >> 8 & 0x0000FF00) | n >> 24;
 }

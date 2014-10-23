@@ -74,9 +74,9 @@ static const char* log_level_name(Log::LogLevel level)
 {
 	switch(level)
 	{
-		case Log::ISSUE:	return "ERROR";
-		case Log::INFO:		return "INFO";
-		case Log::DEBUG:	return "DEBUG";
+		case Log::ISSUE: return "ERROR";
+		case Log::INFO:  return "INFO";
+		case Log::DEBUG: return "DEBUG";
 	}
 	return '\0';
 }
@@ -246,7 +246,7 @@ void Log::Add(LogLevel level, const char* format, ...)
 	stream += "\n";
 }
 
-const char* Log::GetText()
+const char* Log::Get_Text()
 {
 	return stream.Data();
 }

@@ -1,6 +1,9 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
+#include <new>
+#include <stddef.h>
+
 template<typename T>
 class Queue
 {
@@ -15,12 +18,12 @@ public:
 		front(0),
 		rear(0)
 	{
-		buffer = new T[capacity];
+		buffer = (T*) ::operator new[](sizeof(T) * capacity);
 	}
 
 	~Queue()
 	{
-		delete[] buffer;
+		::operator delete[](buffer);
 	}
 
 	void Enqueue(const T& element)
@@ -28,7 +31,7 @@ public:
 		size_t next = (rear + 1) % capacity;
 		if(next == front) return;
 		rear = next;
-		buffer[next] = element;
+		new(&buffer[next]) T(element);
 	}
 
 	bool Dequeue(T* element)
@@ -36,6 +39,7 @@ public:
 		if(front == rear) return false;
 		front = (front + 1) % capacity;
 		*element = buffer[front];
+		buffer[front].~T();
 		return true;
 	}
 
@@ -49,16 +53,19 @@ public:
 		return buffer[front];
 	}
 
-	inline bool IsEmpty() const
+	inline bool Is_Empty() const
 	{
 		return front == rear;
 	}
 
 	void Clear()
 	{
+		for(auto it = First(), end = Last(); it != end; ++it)
+			it->~T();
+
 		front = rear = 0;
-		delete[] buffer;
-		buffer = new T[capacity];
+		::operator delete[](buffer);
+		buffer = ::operator new[](sizeof(T) * capacity);
 	}
 
 	Iterator First()
@@ -66,7 +73,7 @@ public:
 		return Iterator(*this, buffer + front);
 	}
 
-	ConstIterator First()
+	ConstIterator First() const
 	{
 		return ConstIterator(*this, buffer + front);
 	}
@@ -76,7 +83,7 @@ public:
 		return Iterator(*this, buffer + rear);
 	}
 
-	ConstIterator Last()
+	ConstIterator Last() const
 	{
 		return ConstIterator(*this, buffer + rear);
 	}

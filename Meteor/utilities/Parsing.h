@@ -11,6 +11,7 @@ double string_to_double(const char* str);
 
 int next_int(const char* str, char** endptr);
 char* next_word(const char* str, char** endptr);
+char* next_token(const char* str, const char* delimiters, char** endptr);
 
 //--- SPECIFIC CASE ---------------------------------------------------------------------
 

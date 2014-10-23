@@ -21,10 +21,10 @@ inline void reverse_string(char s[], size_t length)
 	}
 }
 
-inline char* copy_string(char* to, const char* from)
+inline char* copy_string(const char* from, char* to)
 {
 	char* save = to;
-	while(*to++ = *from++);
+	while((*to++ = *from++));
 	return save;
 }
 

@@ -11,7 +11,7 @@
 
 void bool_to_string(bool a, char* str)
 {
-	copy_string(str, (a)? "true" : "false");
+	copy_string((a)? "true" : "false", str);
 }
 
 void int_to_string(long long value, char* str, unsigned base)
@@ -46,15 +46,15 @@ void float_to_string(double n, char* str, unsigned precision)
 	// handle special cases
 	if(is_nan(n))
 	{
-		copy_string(str, NAN_TEXT);
+		copy_string(NAN_TEXT, str);
 	}
 	else if(is_infinite(n))
 	{
-		copy_string(str, INFINITY_TEXT);
+		copy_string(INFINITY_TEXT, str);
 	}
 	else if(n == 0.0)
 	{
-		copy_string(str, "0");
+		copy_string("0", str);
 	}
 	else
 	{
@@ -168,15 +168,15 @@ void float_to_hex_string(float n, char* str)
 	// handle special cases
 	if(is_nan(n))
 	{
-		copy_string(str, NAN_TEXT);
+		copy_string(NAN_TEXT, str);
 	}
 	else if(is_infinite(n))
 	{
-		copy_string(str, INFINITY_TEXT);
+		copy_string(INFINITY_TEXT, str);
 	}
 	else if(n == 0.0f)
 	{
-		copy_string(str, "0");
+		copy_string("0", str);
 	}
 	else
 	{
@@ -185,7 +185,7 @@ void float_to_hex_string(float n, char* str)
 		float_decompose(n, &f);
 
 		if(f.sign < 0) *str++ = '-';
-		copy_string(str, "0x1.");
+		copy_string("0x1.", str);
 		str += 4;
 
 		int_to_string(f.significand, str, 16);
@@ -202,15 +202,15 @@ void double_to_hex_string(double n, char* str)
 	// handle special cases
 	if(is_nan(n))
 	{
-		copy_string(str, NAN_TEXT);
+		copy_string(NAN_TEXT, str);
 	}
 	else if(is_infinite(n))
 	{
-		copy_string(str, INFINITY_TEXT);
+		copy_string(INFINITY_TEXT, str);
 	}
 	else if(n == 0.0)
 	{
-		copy_string(str, "0");
+		copy_string("0", str);
 	}
 	else
 	{
@@ -218,7 +218,7 @@ void double_to_hex_string(double n, char* str)
 		double_decompose(n, &d);
 
 		if(d.sign < 0) *str++ = '-';
-		copy_string(str, "0x1.");
+		copy_string("0x1.", str);
 		str += 4;
 
 		int_to_string(d.significand, str, 16);

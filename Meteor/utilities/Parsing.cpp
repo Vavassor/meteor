@@ -188,7 +188,7 @@ static char* trim_leading(const char* str)
 static char* last_non_white(const char* str)
 {
 	while(*str) ++str;
-	do { --str; } while (isspace(*str));
+	do { --str; } while(isspace(*str));
 	return (char*) str;
 }
 
@@ -211,6 +211,37 @@ char* next_word(const char* str, char** endptr)
 	while(!isspace(*p) && ('\0' != *p)) ++p;
 	if(endptr != nullptr) *endptr = p;
 	return wstart;
+}
+
+static inline bool is_delimiter(const char a, const char* delimiters)
+{
+	while(*delimiters)
+	{
+		if(a == *delimiters++)
+			return true;
+	}
+	return false;
+}
+
+char* next_token(const char* str, const char* delimiters, char** endptr)
+{
+	char* s = (char*)str;
+
+	while(is_delimiter(*s, delimiters)) ++s;
+
+	// there is no word
+	if(*s == '\0')
+	{
+		if(endptr != nullptr)
+			*endptr = (char*) str;
+		return nullptr;
+	}
+
+	// find end of word and return
+	char* start = s;
+	while(*s && !is_delimiter(*s, delimiters)) ++s;
+	if(endptr != nullptr) *endptr = s;
+	return start;
 }
 
 //--- SPECIFIC CASE ---------------------------------------------------------------------

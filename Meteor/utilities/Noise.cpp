@@ -108,14 +108,14 @@ double perlin_noise(double x, double y, double z)
 	Z &= 255;
 
 	// hash out grid indices of cube corners
-	int gi000 = permutations[X		+ permutations[Y		+ permutations[Z	]]] % 12;
-	int gi001 = permutations[X		+ permutations[Y		+ permutations[Z + 1]]] % 12;
-	int gi010 = permutations[X		+ permutations[Y + 1	+ permutations[Z	]]] % 12;
-	int gi011 = permutations[X		+ permutations[Y + 1	+ permutations[Z + 1]]] % 12;
-	int gi100 = permutations[X + 1	+ permutations[Y		+ permutations[Z	]]] % 12;
-	int gi101 = permutations[X + 1	+ permutations[Y		+ permutations[Z + 1]]] % 12;
-	int gi110 = permutations[X + 1	+ permutations[Y + 1	+ permutations[Z	]]] % 12;
-	int gi111 = permutations[X + 1	+ permutations[Y + 1	+ permutations[Z + 1]]] % 12;
+	int gi000 = permutations[X     + permutations[Y     + permutations[Z    ]]] % 12;
+	int gi001 = permutations[X     + permutations[Y     + permutations[Z + 1]]] % 12;
+	int gi010 = permutations[X     + permutations[Y + 1 + permutations[Z    ]]] % 12;
+	int gi011 = permutations[X     + permutations[Y + 1 + permutations[Z + 1]]] % 12;
+	int gi100 = permutations[X + 1 + permutations[Y     + permutations[Z    ]]] % 12;
+	int gi101 = permutations[X + 1 + permutations[Y     + permutations[Z + 1]]] % 12;
+	int gi110 = permutations[X + 1 + permutations[Y + 1 + permutations[Z    ]]] % 12;
+	int gi111 = permutations[X + 1 + permutations[Y + 1 + permutations[Z + 1]]] % 12;
 
 	// choose gradient values based on original input point
 	double n000 = dot(gradient3D[gi000], x, y, z);
@@ -133,10 +133,10 @@ double perlin_noise(double x, double y, double z)
 	double w = fade(z);
 
 	// use lerp to create actual gradiation between chosen values
-	return	lerp(
-			lerp(lerp(n000, n100, u), lerp(n010, n110, u), v),
-			lerp(lerp(n001, n101, u), lerp(n011, n111, u), v),
-			w);
+	return lerp(
+	       lerp(lerp(n000, n100, u), lerp(n010, n110, u), v),
+	       lerp(lerp(n001, n101, u), lerp(n011, n111, u), v),
+	       w);
 }
 
 // SIMPLEX NOISE
@@ -175,7 +175,7 @@ double simplex_noise_2d(double x, double y)
 	// Offsets for second (middle) corner of simplex
     int i1, j1;
     if(x0 > y0) { i1 = 1; j1 = 0; }
-    else		{ i1 = 0; j1 = 1; }
+    else        { i1 = 0; j1 = 1; }
 
     // A step of (1,0) in (i,j) means a step of (1-c,-c) in (x,y), and
     // a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where
@@ -192,7 +192,7 @@ double simplex_noise_2d(double x, double y)
     // determine hashed gradient indices of the three simplex corners
     int ii = i & 255;
     int jj = j & 255;
-    int gi0 = permutations[ii      + permutations[jj	 ]] % 12;
+    int gi0 = permutations[ii      + permutations[jj     ]] % 12;
     int gi1 = permutations[ii + i1 + permutations[jj + j1]] % 12;
     int gi2 = permutations[ii + 1  + permutations[jj +  1]] % 12;
 
@@ -204,7 +204,7 @@ double simplex_noise_2d(double x, double y)
 	{
         t0 *= t0;
         n0 = t0 * t0 * (gradient3D[gi0][0] * x0 +
-						gradient3D[gi0][1] * y0);
+		                gradient3D[gi0][1] * y0);
     }
 
     double t1 = 0.5 - x1 * x1 - y1 * y1;
@@ -213,7 +213,7 @@ double simplex_noise_2d(double x, double y)
 	{
 		t1 *= t1;
 		n1 = t1 * t1 * (gradient3D[gi1][0] * x1 +
-						gradient3D[gi1][1] * y1);
+		                gradient3D[gi1][1] * y1);
 	}
 
     double t2 = 0.5 - x2 * x2 - y2 * y2;
@@ -222,7 +222,7 @@ double simplex_noise_2d(double x, double y)
 	{
         t2 *= t2;
         n2 = t2 * t2 * (gradient3D[gi2][0] * x2 +
-						gradient3D[gi2][1] * y2);
+		                gradient3D[gi2][1] * y2);
     }
 
     return 70.0 * (n0 + n1 + n2);
@@ -260,15 +260,15 @@ double simplex_noise_3d(double x, double y, double z)
 
 	if(x0 >= y0)
 	{
-		if(y0 >= z0)		{ i1 = 1; j1 = 0; k1 = 0; i2 = 1; j2 = 1; k2 = 0; } // X Y Z order
-		else if(x0 >= z0)	{ i1 = 1; j1 = 0; k1 = 0; i2 = 1; j2 = 0; k2 = 1; } // X Z Y order
-		else				{ i1 = 0; j1 = 0; k1 = 1; i2 = 1; j2 = 0; k2 = 1; } // Z X Y order
+		if(y0 >= z0)      { i1 = 1; j1 = 0; k1 = 0; i2 = 1; j2 = 1; k2 = 0; } // X Y Z order
+		else if(x0 >= z0) { i1 = 1; j1 = 0; k1 = 0; i2 = 1; j2 = 0; k2 = 1; } // X Z Y order
+		else              { i1 = 0; j1 = 0; k1 = 1; i2 = 1; j2 = 0; k2 = 1; } // Z X Y order
 	}
 	else
 	{
-		if(y0 < z0)			{ i1 = 0; j1 = 0; k1 = 1; i2 = 0; j2 = 1; k2 = 1; } // Z Y X order
-		else if(x0 < z0)	{ i1 = 0; j1 = 1; k1 = 0; i2 = 0; j2 = 1; k2 = 1; } // Y Z X order
-		else				{ i1 = 0; j1 = 1; k1 = 0; i2 = 1; j2 = 1; k2 = 0; } // Y X Z order
+		if(y0 < z0)      { i1 = 0; j1 = 0; k1 = 1; i2 = 0; j2 = 1; k2 = 1; } // Z Y X order
+		else if(x0 < z0) { i1 = 0; j1 = 1; k1 = 0; i2 = 0; j2 = 1; k2 = 1; } // Y Z X order
+		else             { i1 = 0; j1 = 1; k1 = 0; i2 = 1; j2 = 1; k2 = 0; } // Y X Z order
 	}
 
 	// A step of (1,0,0) in (i,j,k) means a step of (1-c,-c,-c) in (x,y,z),
@@ -295,7 +295,7 @@ double simplex_noise_3d(double x, double y, double z)
 	int ii = i & 255;
 	int jj = j & 255;
 	int kk = k & 255;
-	int gi0 = permutations[ii	   + permutations[jj	  + permutations[kk		]]] % 12;
+	int gi0 = permutations[ii      + permutations[jj      + permutations[kk     ]]] % 12;
 	int gi1 = permutations[ii + i1 + permutations[jj + j1 + permutations[kk + k1]]] % 12;
 	int gi2 = permutations[ii + i2 + permutations[jj + j2 + permutations[kk + k2]]] % 12;
 	int gi3 = permutations[ii + 1  + permutations[jj + 1  + permutations[kk +  1]]] % 12;
@@ -309,8 +309,8 @@ double simplex_noise_3d(double x, double y, double z)
 	{
 		t0 *= t0;
 		n0 = t0 * t0 * (gradient3D[gi0][0] * x0 +
-						gradient3D[gi0][1] * y0 +
-						gradient3D[gi0][2] * z0);
+		                gradient3D[gi0][1] * y0 +
+		                gradient3D[gi0][2] * z0);
 	}
 
 	double t1 = 0.5 - x1 * x1 - y1 * y1 - z1 * z1;
@@ -319,8 +319,8 @@ double simplex_noise_3d(double x, double y, double z)
 	{
 		t1 *= t1;
 		n1 = t1 * t1 * (gradient3D[gi1][0] * x1 +
-						gradient3D[gi1][1] * y1 +
-						gradient3D[gi1][2] * z1);
+		                gradient3D[gi1][1] * y1 +
+		                gradient3D[gi1][2] * z1);
 	}
 
 	double t2 = 0.5 - x2 * x2 - y2 * y2 - z2 * z2;
@@ -329,8 +329,8 @@ double simplex_noise_3d(double x, double y, double z)
 	{
 		t2 *= t2;
 		n2 = t2 * t2 * (gradient3D[gi2][0] * x2 +
-						gradient3D[gi2][1] * y2 +
-						gradient3D[gi2][2] * z2);
+		                gradient3D[gi2][1] * y2 +
+		                gradient3D[gi2][2] * z2);
 	}
 
 	double t3 = 0.5 - x3 * x3 - y3 * y3 - z3 * z3;
@@ -339,8 +339,8 @@ double simplex_noise_3d(double x, double y, double z)
 	{
 		t3 *= t3;
 		n3 = t3 * t3 * (gradient3D[gi3][0] * x3 +
-						gradient3D[gi3][1] * y3 +
-						gradient3D[gi3][2] * z3);
+		                gradient3D[gi3][1] * y3 +
+		                gradient3D[gi3][2] * z3);
 	}
 
 	return 32.0 * (n0 + n1 + n2 + n3);
@@ -444,7 +444,7 @@ double simplex_noise_4d(double x, double y, double z, double w)
 	int jj = j & 255;
 	int kk = k & 255;
 	int ll = l & 255;
-	int gi0 = permutations[ii	   + permutations[jj	  + permutations[kk		 + permutations[ll	   ]]]] % 32;
+	int gi0 = permutations[ii      + permutations[jj      + permutations[kk      + permutations[ll     ]]]] % 32;
 	int gi1 = permutations[ii + i1 + permutations[jj + j1 + permutations[kk + k1 + permutations[ll + l1]]]] % 32;
 	int gi2 = permutations[ii + i2 + permutations[jj + j2 + permutations[kk + k2 + permutations[ll + l2]]]] % 32;
 	int gi3 = permutations[ii + i3 + permutations[jj + j3 + permutations[kk + k3 + permutations[ll + l3]]]] % 32;
@@ -459,9 +459,9 @@ double simplex_noise_4d(double x, double y, double z, double w)
 	{
 		t0 *= t0;
 		n0 = t0 * t0 * (gradient4D[gi0][0] * x0 +
-						gradient4D[gi0][1] * y0 +
-						gradient4D[gi0][2] * z0 +
-						gradient4D[gi0][3] * w0);
+		                gradient4D[gi0][1] * y0 +
+		                gradient4D[gi0][2] * z0 +
+		                gradient4D[gi0][3] * w0);
 	}
 
 	double t1 = 0.5 - x1 * x1 - y1 * y1 - z1 * z1 - w1 * w1;
@@ -470,9 +470,9 @@ double simplex_noise_4d(double x, double y, double z, double w)
 	{
 		t1 *= t1;
 		n1 = t1 * t1 * (gradient4D[gi1][0] * x1 +
-						gradient4D[gi1][1] * y1 +
-						gradient4D[gi1][2] * z1 +
-						gradient4D[gi1][3] * w1);
+		                gradient4D[gi1][1] * y1 +
+		                gradient4D[gi1][2] * z1 +
+		                gradient4D[gi1][3] * w1);
 	}
 
 	double t2 = 0.5 - x2 * x2 - y2 * y2 - z2 * z2 - w2 * w2;
@@ -481,9 +481,9 @@ double simplex_noise_4d(double x, double y, double z, double w)
 	{
 		t2 *= t2;
 		n2 = t2 * t2 * (gradient4D[gi2][0] * x2 +
-						gradient4D[gi2][1] * y2 +
-						gradient4D[gi2][2] * z2 +
-						gradient4D[gi2][3] * w2);
+		                gradient4D[gi2][1] * y2 +
+		                gradient4D[gi2][2] * z2 +
+		                gradient4D[gi2][3] * w2);
 	}
 
 	double t3 = 0.5 - x3 * x3 - y3 * y3 - z3 * z3 - w3 * w3;
@@ -492,9 +492,9 @@ double simplex_noise_4d(double x, double y, double z, double w)
 	{
 		t3 *= t3;
 		n3 = t3 * t3 * (gradient4D[gi3][0] * x3 +
-						gradient4D[gi3][1] * y3 +
-						gradient4D[gi3][2] * z3 +
-						gradient4D[gi3][3] * w3);
+		                gradient4D[gi3][1] * y3 +
+		                gradient4D[gi3][2] * z3 +
+		                gradient4D[gi3][3] * w3);
 	}
 
 	double t4 = 0.5 - x4 * x4 - y4 * y4 - z4 * z4 - w4 * w4;
@@ -503,9 +503,9 @@ double simplex_noise_4d(double x, double y, double z, double w)
 	{
 		t4 *= t4;
 		n4 = t4 * t4 * (gradient4D[gi4][0] * x4 +
-						gradient4D[gi4][1] * y4 +
-						gradient4D[gi4][2] * z4 +
-						gradient4D[gi4][3] * w4);
+		                gradient4D[gi4][1] * y4 +
+		                gradient4D[gi4][2] * z4 +
+		                gradient4D[gi4][3] * w4);
 	}
 
 	return 27.0 * (n0 + n1 + n2 + n3 + n4);

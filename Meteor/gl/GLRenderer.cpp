@@ -495,6 +495,6 @@ void GLRenderer::RenderFinal()
 		vec2(1.0f, 0.0f),
 		vec2(1.0f, 1.0f),
 	};
-	GLPrimitives::AddTris(frameVerts, frameCoords, ARRAY_LENGTH(frameVerts));
+	GLPrimitives::AddTris(frameVerts, frameCoords, ARRAY_COUNT(frameVerts));
 	GLPrimitives::Draw();
 }

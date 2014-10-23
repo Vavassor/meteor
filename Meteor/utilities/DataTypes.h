@@ -1,5 +1,5 @@
-#ifndef __DATA_TYPES_H__
-#define __DATA_TYPES_H__
+#ifndef DATA_TYPES_H
+#define DATA_TYPES_H
 
 #if _MSC_VER >= 1600 || __GNUC__ >= 3
 	#include <cstdint>

@@ -138,21 +138,21 @@ void String::Append(const char32_t* s, size_t n)
 		}
 		else if(s[i] < 0x800)
 		{
-			sequence[size++] = s[i] >> 6         | 0xC0;
-			sequence[size++] = s[i]       & 0x3F | 0x80;
+			sequence[size++] = (s[i] >> 6        ) | 0xC0;
+			sequence[size++] = (s[i]       & 0x3F) | 0x80;
 		}
 		else if(s[i] < 0x10000)
 		{
-			sequence[size++] = s[i] >> 12        | 0xE0;
-			sequence[size++] = s[i] >> 6  & 0x3F | 0x80;
-			sequence[size++] = s[i]       & 0x3F | 0x80;
+			sequence[size++] = (s[i] >> 12       ) | 0xE0;
+			sequence[size++] = (s[i] >> 6  & 0x3F) | 0x80;
+			sequence[size++] = (s[i]       & 0x3F) | 0x80;
 		}
 		else
 		{
-			sequence[size++] = s[i] >> 18        | 0xF0;
-			sequence[size++] = s[i] >> 12 & 0x3F | 0x80;
-			sequence[size++] = s[i] >> 6  & 0x3F | 0x80;
-			sequence[size++] = s[i]       & 0x3F | 0x80;
+			sequence[size++] = (s[i] >> 18       ) | 0xF0;
+			sequence[size++] = (s[i] >> 12 & 0x3F) | 0x80;
+			sequence[size++] = (s[i] >> 6  & 0x3F) | 0x80;
+			sequence[size++] = (s[i]       & 0x3F) | 0x80;
 		}
 	}
 	sequence[size] = '\0';

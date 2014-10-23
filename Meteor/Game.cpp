@@ -4,14 +4,14 @@
 #include "Camera.h"
 #include "CameraData.h"
 
-#include "utilities/Benaphore.h"
-#include "utilities/Mutex.h"
 #include "utilities/Timer.h"
-#include "utilities/input/Input.h"
 #include "utilities/Maths.h"
 #include "utilities/Logging.h"
 #include "utilities/Assert.h"
-#include "utilities/collections/LinkedQueue.h"
+#include "utilities/input/Input.h"
+#include "utilities/concurrent/LinkedQueue.h"
+#include "utilities/concurrent/Benaphore.h"
+#include "utilities/concurrent/Mutex.h"
 
 #if defined(_MSC_VER) && defined(_WIN32)
 #ifndef WIN32_LEAN_AND_MEAN
