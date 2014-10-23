@@ -22,6 +22,13 @@ long long mod_power(int a, int n, int modulus)
 	return result;
 }
 
+#if defined(_MSC_VER)
+double log2(double x)
+{
+    return log(x) * M_LOG2E;
+}
+#endif
+
 bool float_equals(float a, float b)
 {
     float difference = fabs(a - b);

@@ -3,6 +3,11 @@
 
 int mod(int a, int b);
 long long mod_power(int a, int n, int modulus);
+
+#if defined(_MSC_VER)
+double log2(double x);
+#endif
+
 bool float_equals(float a, float b);
 
 inline int round_int(double r)
@@ -14,13 +19,6 @@ inline float clamp(float x, float min, float max)
 {
     return (x < min) ? min : ((x > max) ? max : x);
 }
-
-#if defined(_MSC_VER)
-inline double log2(double x)
-{
-    return log(x) * M_LOG2E;
-}
-#endif
 
 bool is_prime(unsigned int m);
 bool is_nan(double n);

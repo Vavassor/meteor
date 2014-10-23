@@ -37,7 +37,6 @@ namespace Input
 
 	Controller controllers[MAX_CONTROLLERS];
 	int numControllers = 1;
-	float mouseDelta[2];
 
 	int playerControllers[MAX_PLAYERS];
 

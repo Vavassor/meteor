@@ -625,7 +625,7 @@ void DXRenderer::RenderScene()
 		vec2(1.0f, 0.0f),
 		vec2(1.0f, 1.0f),
 	};
-	DXPrimitives::DrawTris(skyVerts, skyCoords, ARRAY_LENGTH(skyVerts));
+	DXPrimitives::DrawTris(skyVerts, skyCoords, ARRAY_COUNT(skyVerts));
 
 	//*** TRANSPARENT PASS ***//
 	SetDepthState(DEPTH_RO, isOrtho);
