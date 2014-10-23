@@ -19,8 +19,11 @@
 
 namespace Input
 {
-	HWND hWnd;
+	HWND window;
 	HDEVNOTIFY deviceNotification;
+
+	float mouseDelta[2];
+	float mouseSensitivity = 16.0f;
 
 	LRESULT OnDeviceChange(WPARAM eventType, LPARAM eventData);
 	void OnInput(HRAWINPUT input);
@@ -46,9 +49,9 @@ void Input::InitializeWindow()
 	}
 
 	// create the actual window
-	hWnd = CreateWindowEx(WS_EX_APPWINDOW, classEx.lpszClassName, NULL, NULL,
+	window = CreateWindowEx(WS_EX_APPWINDOW, classEx.lpszClassName, NULL, NULL,
 		0, 0, 0, 0, NULL, NULL, instance, NULL);
-	if(hWnd == NULL)
+	if(window == NULL)
 	{
 		LOG_ISSUE("CreateWindowEx failed!");
 		return;
@@ -60,7 +63,7 @@ void Input::InitializeWindow()
 	filter.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
 	filter.dbcc_classguid = GUID_DEVINTERFACE_HID;
 
-	deviceNotification = RegisterDeviceNotification(hWnd, &filter, DEVICE_NOTIFY_WINDOW_HANDLE);
+	deviceNotification = RegisterDeviceNotification(window, &filter, DEVICE_NOTIFY_WINDOW_HANDLE);
 	if(deviceNotification == NULL)
 	{
 		LOG_INFO("Registering device notification for detecting gamepads failed!");
@@ -73,14 +76,15 @@ void Input::InitializeWindow()
 		devices[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
 		devices[0].usUsage = HID_USAGE_GENERIC_MOUSE;
 		devices[0].dwFlags = RIDEV_NOLEGACY | RIDEV_CAPTUREMOUSE;
-		devices[0].hwndTarget = hWnd;
+		devices[0].hwndTarget = window;
 
 		devices[1].usUsagePage = HID_USAGE_PAGE_GENERIC;
 		devices[1].usUsage = HID_USAGE_GENERIC_KEYBOARD;
 		devices[1].dwFlags = RIDEV_NOLEGACY | RIDEV_NOHOTKEYS;
-		devices[1].hwndTarget = hWnd;
+		devices[1].hwndTarget = window;
 
-		BOOL registered = RegisterRawInputDevices(devices, ARRAYSIZE(devices), sizeof(RAWINPUTDEVICE));
+		BOOL registered = RegisterRawInputDevices(devices, ARRAYSIZE(devices),
+			sizeof(RAWINPUTDEVICE));
 		if(registered == FALSE)
 		{
 			LOG_INFO("Registering keyboard and/or mouse as Raw Input devices failed!");
@@ -109,12 +113,13 @@ void Input::TerminateWindow()
 
 	UnregisterDeviceNotification(deviceNotification);
 
-	DestroyWindow(hWnd);
+	DestroyWindow(window);
 }
 
-void Input::DetectDevices()
+int Input::DetectDevices(ControllerType types[])
 {
-	num_controllers = 1;
+	int numControllers = 1;
+	types[0] = KEYBOARD_AND_MOUSE;
 
 	// detect XInput gamepads
 	for(DWORD i = 0; i < XUSER_MAX_COUNT; i++)
@@ -125,9 +130,10 @@ void Input::DetectDevices()
 		DWORD result = XInputGetCapabilities(i, 0, &capabilities);
 		if(result != ERROR_SUCCESS) continue;
 
-		Controller& pad = controllers[num_controllers++];
-		pad.type = GAMEPAD_XINPUT;
+		types[numControllers++] = GAMEPAD_XINPUT;
 	}
+
+	return numControllers;
 }
 
 void Input::CaptureMouse(bool enable)
@@ -139,9 +145,8 @@ void Input::CaptureMouse(bool enable)
 		devices[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
 		devices[0].usUsage = HID_USAGE_GENERIC_MOUSE;
 		devices[0].dwFlags = RIDEV_NOLEGACY | RIDEV_CAPTUREMOUSE;
-		devices[0].hwndTarget = hWnd;
-		RegisterRawInputDevices(devices, ARRAYSIZE(devices),
-			sizeof(RAWINPUTDEVICE));
+		devices[0].hwndTarget = window;
+		RegisterRawInputDevices(devices, ARRAYSIZE(devices), sizeof(RAWINPUTDEVICE));
 
 		// hide cursor
 		ShowCursor(FALSE);
@@ -155,16 +160,14 @@ void Input::CaptureMouse(bool enable)
 		devices[0].usUsage = HID_USAGE_GENERIC_MOUSE;
 		devices[0].dwFlags = RIDEV_REMOVE;
 		devices[0].hwndTarget = NULL;
-		RegisterRawInputDevices(devices, ARRAYSIZE(devices),
-			sizeof(RAWINPUTDEVICE));
+		RegisterRawInputDevices(devices, ARRAYSIZE(devices), sizeof(RAWINPUTDEVICE));
 
 		// re-register mouse for raw input without the capture
 		devices[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
 		devices[0].usUsage = HID_USAGE_GENERIC_MOUSE;
 		devices[0].dwFlags = 0;
-		devices[0].hwndTarget = hWnd;
-		RegisterRawInputDevices(devices, ARRAYSIZE(devices),
-			sizeof(RAWINPUTDEVICE));
+		devices[0].hwndTarget = window;
+		RegisterRawInputDevices(devices, ARRAYSIZE(devices), sizeof(RAWINPUTDEVICE));
 
 		// show cursor
 		//SetCursor(oldCursor);
@@ -181,6 +184,14 @@ void Input::MessageLoop()
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+}
+
+void Input::PollMouse(Controller* controller)
+{
+	controller->rightAnalog[0] = mouseDelta[0] / mouseSensitivity;
+	controller->rightAnalog[1] = mouseDelta[1] / mouseSensitivity;
+
+	mouseDelta[0] = mouseDelta[1] = 0.0f;
 }
 
 void Input::PollXInputDevice(int deviceNum, Controller* pad)
@@ -289,12 +300,13 @@ LRESULT Input::OnDeviceChange(WPARAM eventType, LPARAM eventData)
 	if(deviceBroadcast->dbch_devicetype != DBT_DEVTYP_DEVICEINTERFACE)
 		return TRUE;
 
-	PDEV_BROADCAST_DEVICEINTERFACE deviceInterface = (PDEV_BROADCAST_DEVICEINTERFACE) deviceBroadcast;
+	PDEV_BROADCAST_DEVICEINTERFACE deviceInterface =
+		(PDEV_BROADCAST_DEVICEINTERFACE) deviceBroadcast;
 	switch(eventType)
 	{
 		case DBT_DEVICEARRIVAL:
 		case DBT_DEVICEREMOVECOMPLETE:
-			DetectDevices();
+			DetectControllers();
 			break;
 	}
 	return TRUE;
@@ -311,8 +323,8 @@ void Input::OnInput(HRAWINPUT input)
 	{
 		if(raw.data.mouse.usFlags == MOUSE_MOVE_RELATIVE)
 		{
-			mouse_delta[0] = raw.data.mouse.lLastX;
-			mouse_delta[1] = raw.data.mouse.lLastY;
+			mouseDelta[0] = raw.data.mouse.lLastX;
+			mouseDelta[1] = raw.data.mouse.lLastY;
 		}
 
 		bool buttons[2];

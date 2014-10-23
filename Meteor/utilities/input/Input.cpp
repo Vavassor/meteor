@@ -29,20 +29,21 @@
 
 #include <math.h>
 
+#define MAX_CONTROLLERS 5
+
 namespace Input
 {
 	enum KeyMapping { L_TRIGGER, R_TRIGGER, A_DOWN, A_LEFT, A_RIGHT, A_UP, NUM_MAPPINGS };
 
-	Controller controllers[5];
-	int num_controllers = 1;
-	float mouse_delta[2];
+	Controller controllers[MAX_CONTROLLERS];
+	int numControllers = 1;
+	float mouseDelta[2];
 
 	int playerControllers[MAX_PLAYERS];
 
 	unsigned short keyBindings[NUM_BUTTONS + NUM_MAPPINGS];
 
 	int mousePosition[2];
-	float mouseSensitivity = 16.0f;
 	bool isMouseRelative = true;
 
 #if defined(X11)
@@ -137,6 +138,8 @@ void Input::Initialize()
 	keyBindings[NUM_BUTTONS + A_LEFT] = GetScanCode('A');
 	keyBindings[NUM_BUTTONS + A_DOWN] = GetScanCode('S');
 #endif
+
+	DetectControllers();
 }
 
 void Input::Terminate()
@@ -152,6 +155,14 @@ void Input::Terminate()
 
 	XCloseDisplay(display);
 #endif
+}
+
+void Input::DetectControllers()
+{
+	ControllerType types[MAX_CONTROLLERS];
+	numControllers = DetectDevices(types);
+	for(int i = 0; i < numControllers; ++i)
+		controllers[i].type = types[i];
 }
 
 void Input::GetMousePosition(int point[2])
@@ -173,7 +184,7 @@ void Input::SetMouseMode(bool relative)
 
 Input::Controller* Input::GetController(PlayerSlot slot)
 {
-	if(slot >= num_controllers) return nullptr;
+	if(slot >= numControllers) return nullptr;
 	return &controllers[playerControllers[slot]];
 }
 
@@ -188,7 +199,7 @@ void Input::Poll()
 #endif
 
 	// input device handling
-	for(int i = 0; i < num_controllers; ++i)
+	for(int i = 0; i < numControllers; ++i)
 	{
 		Controller& pad = controllers[i];
 
@@ -272,14 +283,14 @@ void Input::PollKeyboardAndMouse()
 	for(int i = 0; i < NUM_BUTTONS; ++i)
 		controller.buttons[i] = buttonsPressed[i];
 
-	if(mappingsPressed[L_TRIGGER])	controller.leftTrigger = 1.0f;
-	if(mappingsPressed[R_TRIGGER])	controller.rightTrigger = 1.0f;
+	if(mappingsPressed[L_TRIGGER]) controller.leftTrigger = 1.0f;
+	if(mappingsPressed[R_TRIGGER]) controller.rightTrigger = 1.0f;
 
 	float dx = 0.0f, dy = 0.0f;
-	if(mappingsPressed[A_LEFT])		dx -= 1.0f;
-	if(mappingsPressed[A_RIGHT])	dx += 1.0f;
-	if(mappingsPressed[A_UP])		dy += 1.0f;
-	if(mappingsPressed[A_DOWN])		dy -= 1.0f;
+	if(mappingsPressed[A_LEFT])  dx -= 1.0f;
+	if(mappingsPressed[A_RIGHT]) dx += 1.0f;
+	if(mappingsPressed[A_UP])    dy += 1.0f;
+	if(mappingsPressed[A_DOWN])  dy -= 1.0f;
 
 	float magnitude = sqrt(dx * dx + dy * dy);
 	if(magnitude > 0.0f)
@@ -288,10 +299,7 @@ void Input::PollKeyboardAndMouse()
 		controller.leftAnalog[1] = dy / magnitude;
 	}
 
-	controller.rightAnalog[0] = mouse_delta[0] / mouseSensitivity;
-	controller.rightAnalog[1] = mouse_delta[1] / mouseSensitivity;
-
-	mouse_delta[0] = mouse_delta[1] = 0.0f;
+	PollMouse(&controller);
 }
 
 void Input::PollXInputGamepad(int index)
@@ -310,8 +318,7 @@ void Input::PollEvDevGamepad(int index)
 
 bool Input::Controller::GetButtonDown(Button button) const
 {
-	return buttonStates[button] == PRESSED
-		|| buttonStates[button] == ONCE;
+	return buttonStates[button] == PRESSED || buttonStates[button] == ONCE;
 }
 
 bool Input::Controller::GetButtonReleased(Button button) const

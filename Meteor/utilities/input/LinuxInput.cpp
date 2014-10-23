@@ -60,6 +60,9 @@ namespace Input
 	Device devices[5];
 	int numDevices = 0;
 
+	float mouseDelta[2];
+	float mouseSensitivity = 16.0f;
+
 	void SetupDevice(udev_device* device);
 	bool ConfigureDevice(Device* device);
 	void OnDeviceChange(udev_device* device, const char* action);
@@ -109,8 +112,19 @@ void Input::UnregisterMonitor()
 	}
 }
 
-void Input::DetectDevices()
+void Input::PollMouse(Controller* controller)
 {
+	controller->rightAnalog[0] = mouseDelta[0] / mouseSensitivity;
+	controller->rightAnalog[1] = mouseDelta[1] / mouseSensitivity;
+
+	mouseDelta[0] = mouseDelta[1] = 0.0f;
+}
+
+int Input::DetectDevices(ControllerType types[])
+{
+	int numControllers = 1;
+	types[0] = KEYBOARD_AND_MOUSE;
+
 	// Create a list of the devices in the 'hidraw' subsystem.
 	udev_enumerate* enumerate = udev_enumerate_new(udev);
 	udev_enumerate_add_match_subsystem(enumerate, "input");
@@ -127,9 +141,13 @@ void Input::DetectDevices()
 		SetupDevice(device);
 
 		udev_device_unref(device);
+
+		types[numControllers++] = GAMEPAD_EVDEV;
 	}
 
 	udev_enumerate_unref(enumerate);
+
+	return numControllers;
 }
 
 static bool check_monitor(udev_monitor* deviceMonitor)

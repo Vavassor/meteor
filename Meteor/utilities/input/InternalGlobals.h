@@ -5,9 +5,9 @@
 
 namespace Input
 {
-	extern Controller controllers[5];
-	extern int num_controllers;
-	extern float mouse_delta[2];
+	int DetectDevices(ControllerType types[]);
+	void DetectControllers();
+	void PollMouse(Controller* controller);
 }
 
 #endif

@@ -5,8 +5,6 @@
 
 namespace Input
 {
-	void DetectDevices();
-
 	void InitializeWindow();
 	void TerminateWindow();
 	void CaptureMouse(bool enable);

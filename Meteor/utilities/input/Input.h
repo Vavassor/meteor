@@ -24,7 +24,6 @@ namespace Input
 	void GetMousePosition(int point[2]);
 	void SetMouseMode(bool relative);
 
-	void DetectDevices();
 	void Poll();
 
 	class Controller

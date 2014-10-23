@@ -50,7 +50,6 @@ namespace Game
 void Game::Initialize()
 {
 	Input::Initialize();
-	Input::DetectDevices();
 }
 
 void Game::Terminate()
