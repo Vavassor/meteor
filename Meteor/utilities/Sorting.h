@@ -109,8 +109,10 @@ void merge_sort(T* array, T* buffer, size_t n, const IsLessFunctor& is_less)
 		{
 			T* x = array + i;
 			T* y = x + p;
-			size_t xn = p < n - i ? p : n - i;
-			size_t yn = (p << 1) < n - i ? p : p < n - i ? n - p - i : 0;
+			size_t xn = (p < n - i)? p : n - i;
+			size_t yn = (p << 1 < n - i)? p :
+			            (p < n - i)? n - p - i :
+			            0;
 			if(xn > 0 && yn > 0 && is_less(*y, x[xn - 1]))
 			{
 				while(true)

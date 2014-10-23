@@ -3,7 +3,8 @@
 
 #include "HandleManager.h"
 #include "Allocator.h"
-#include "Sorting.h"
+
+#include "../Sorting.h"
 
 template<typename T>
 class DenseArray

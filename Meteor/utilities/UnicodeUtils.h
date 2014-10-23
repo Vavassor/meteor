@@ -16,4 +16,6 @@ size_t utf16_octet_count(const char16_t* s);
 size_t utf8_codepoint_count(const char* s);
 size_t utf32_octet_count(const char32_t* s, size_t n);
 
+bool is_locale_utf8(char* locale);
+
 #endif

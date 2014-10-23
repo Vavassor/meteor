@@ -84,9 +84,9 @@ unsigned long long string_to_unsigned(const char* str, char** endptr, int base =
 	else if(base == 16)
 	{
 		// For base 16, skip the optional "0x" / "0X" prefix.
-		if( *p == '0' 
-			&& (p[1] == 'x' || p[1] == 'X')
-			&& isxdigit((unsigned char)(p[2])))
+		if (*p == '0'
+		    && (p[1] == 'x' || p[1] == 'X')
+		    && isxdigit((unsigned char)(p[2])))
 		{
 			p += 2;
 		}
@@ -99,14 +99,14 @@ unsigned long long string_to_unsigned(const char* str, char** endptr, int base =
 	for(; *p; p++)
 	{
 		int digit = ('0' <= *p && *p <= '9')? *p - '0' :
-					('a' <= *p && *p <= 'z')? *p - 'a' + 10 :
-					('A' <= *p && *p <= 'Z')? *p - 'A' + 10 : 36;
+		            ('a' <= *p && *p <= 'z')? *p - 'a' + 10 :
+		            ('A' <= *p && *p <= 'Z')? *p - 'A' + 10 : 36;
 		if(digit < base)
 		{
 			if (!outOfRange)
 			{
-				if (accumulator > ULLONG_MAX / base ||
-					accumulator * base > ULLONG_MAX - digit)
+				if(accumulator > ULLONG_MAX / base ||
+				   accumulator * base > ULLONG_MAX - digit)
 				{
 					outOfRange = true;
 				}
@@ -144,8 +144,8 @@ int next_unsigned_long_long(const char* str, char** endPtr, unsigned long long* 
 
 	errno = 0;
 	// check if value is in range
-	if (errno == ERANGE && val == ULLONG_MAX ||
-		errno != 0 && val == 0)
+	if((errno == ERANGE && val == ULLONG_MAX) ||
+	   (errno != 0 && val == 0))
 	{
 		*value = 0;
 		return -2;
@@ -188,7 +188,7 @@ static char* trim_leading(const char* str)
 static char* last_non_white(const char* str)
 {
 	while(*str) ++str;
-	do { --str; } while (isspace(*str));
+	do { --str; } while(isspace(*str));
 	return (char*) str;
 }
 
@@ -213,6 +213,37 @@ char* next_word(const char* str, char** endptr)
 	return wstart;
 }
 
+static inline bool is_delimiter(const char a, const char* delimiters)
+{
+	while(*delimiters)
+	{
+		if(a == *delimiters++)
+			return true;
+	}
+	return false;
+}
+
+char* next_token(const char* str, const char* delimiters, char** endptr)
+{
+	char* s = (char*)str;
+
+	while(is_delimiter(*s, delimiters)) ++s;
+
+	// there is no word
+	if(*s == '\0')
+	{
+		if(endptr != nullptr)
+			*endptr = (char*) str;
+		return nullptr;
+	}
+
+	// find end of word and return
+	char* start = s;
+	while(*s && !is_delimiter(*s, delimiters)) ++s;
+	if(endptr != nullptr) *endptr = s;
+	return start;
+}
+
 //--- SPECIFIC CASE ---------------------------------------------------------------------
 
 static unsigned char char_to_component(unsigned char c)
@@ -230,9 +261,9 @@ static unsigned long combine_rgba(unsigned char r, unsigned char g,
 	unsigned char b, unsigned char a)
 {
 	return((unsigned long) r) << 24
-		| ((unsigned long) g) << 16
-		| ((unsigned long) b) << 8
-		| a;
+	    | ((unsigned long) g) << 16
+	    | ((unsigned long) b) << 8
+	    | a;
 }
 
 unsigned long hex_string_to_rgba(const char* hex)

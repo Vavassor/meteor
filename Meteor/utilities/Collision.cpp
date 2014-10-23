@@ -68,45 +68,45 @@ Frustum::Frustum(const vec3& position, const vec3& viewX, const vec3& viewY, con
 static vec3 get_right_axis(const quaternion& q)
 {
 	return vec3(1 - 2 * (q.y * q.y + q.z * q.z),
-					2 * (q.x * q.y + q.w * q.z),
-					2 * (q.x * q.z - q.w * q.y));
+	                2 * (q.x * q.y + q.w * q.z),
+	                2 * (q.x * q.z - q.w * q.y));
 }
 
 static vec3 get_up_axis(const quaternion& q)
 {
 	return vec3(2 * (q.x * q.y - q.w * q.z),
-			1 - 2 * (q.x * q.x + q.z * q.z),
-                2 * (q.y * q.z + q.w * q.x));
+	        1 - 2 * (q.x * q.x + q.z * q.z),
+	            2 * (q.y * q.z + q.w * q.x));
 }
 
 static vec3 get_forward_axis(const quaternion& q)
 {
 	return vec3(2 * (q.x * q.z + q.w * q.y), 
-				2 * (q.y * q.z - q.w * q.x),
-			1 - 2 * (q.x * q.x + q.y * q.y));
+	            2 * (q.y * q.z - q.w * q.x),
+	        1 - 2 * (q.x * q.x + q.y * q.y));
 }
 
 bool intersect_point_rect(vec2 point, int x, int y, int width, int height)
 {
 	return point.x > x
-		&& point.x < x + width
-		&& point.y > y
-		&& point.y < y + height;
+	    && point.x < x + width
+	    && point.y > y
+	    && point.y < y + height;
 }
 
 bool intersect_point_obb(vec3 pointPosition, vec3 obbPosition, quaternion obbOrientation, vec3 obbDimensions)
 {
 	vec3 pointPos = invert_quat(obbOrientation) * (pointPosition - obbPosition);
 	return pointPos.x >= 0 && pointPos.x <= obbDimensions.x
-		&& pointPos.y >= 0 && pointPos.y <= obbDimensions.y
-		&& pointPos.z >= 0 && pointPos.z <= obbDimensions.z;
+	    && pointPos.y >= 0 && pointPos.y <= obbDimensions.y
+	    && pointPos.z >= 0 && pointPos.z <= obbDimensions.z;
 }
 
 vec3 intersect_ray_plane(vec3 rayOrigin, vec3 rayDirection, vec3 planePoint, vec3 planeNormal)
 {
 	float t = dot(planeNormal, planePoint - rayOrigin)
-			/ dot(planeNormal, rayDirection);
-	return rayOrigin + (rayDirection * t);
+	        / dot(planeNormal, rayDirection);
+	return rayOrigin + t * rayDirection;
 }
 
 bool intersect_ray_sphere(vec3 rayOrigin, vec3 rayDirection, vec3 sphereCenter, float sphereRadius)
@@ -187,20 +187,20 @@ bool intersect_sphere_sphere(const Sphere& sphere1, const Sphere& sphere2)
 bool intersect_aabb_aabb(const AABB& aabb1, const AABB& aabb2)
 {
 	return fabs(aabb1.center.x - aabb2.center.x) < (aabb1.extents.x + aabb2.extents.x)
-		&& fabs(aabb1.center.y - aabb2.center.y) < (aabb1.extents.y + aabb2.extents.y)
-		&& fabs(aabb1.center.z - aabb2.center.z) < (aabb1.extents.z + aabb2.extents.z);
+	    && fabs(aabb1.center.y - aabb2.center.y) < (aabb1.extents.y + aabb2.extents.y)
+	    && fabs(aabb1.center.z - aabb2.center.z) < (aabb1.extents.z + aabb2.extents.z);
 }
 
 bool intersect_sphere_aabb(const Sphere& sphere, const AABB& aabb)
 {
-	vec3 aabbMin = aabb.center - aabb.extents;
-	vec3 aabbMax = aabb.center + aabb.extents;
+	vec3 min = aabb.center - aabb.extents;
+	vec3 max = aabb.center + aabb.extents;
 
 	// find the closest point to the sphere on aabb
 	vec3 closestPoint;
-	closestPoint.x = (sphere.position.x < aabbMin.x)? aabbMin.x : (sphere.position.x > aabbMax.x)? aabbMax.x : sphere.position.x;
-    closestPoint.y = (sphere.position.y < aabbMin.y)? aabbMin.y : (sphere.position.y > aabbMax.y)? aabbMax.y : sphere.position.y;
-    closestPoint.z = (sphere.position.z < aabbMin.z)? aabbMin.z : (sphere.position.z > aabbMax.z)? aabbMax.z : sphere.position.z;
+	closestPoint.x = (sphere.position.x < min.x)? min.x : (sphere.position.x > max.x)? max.x : sphere.position.x;
+    closestPoint.y = (sphere.position.y < min.y)? min.y : (sphere.position.y > max.y)? max.y : sphere.position.y;
+    closestPoint.z = (sphere.position.z < min.z)? min.z : (sphere.position.z > max.z)? max.z : sphere.position.z;
 
 	// if the closest point is less than the sphere's radius, they collide
 	vec3 diff = closestPoint - sphere.position;
@@ -229,9 +229,9 @@ bool intersect_obb_obb(const OBB& obbA, const OBB& obbB)
 	}
 
 	vec3 D = obbB.center - obbA.center;
-	vec3 AD = vec3(	dot(obbA.axes[0], D),
-					dot(obbA.axes[1], D),
-					dot(obbA.axes[2], D));
+	vec3 AD = vec3(dot(obbA.axes[0], D),
+	               dot(obbA.axes[1], D),
+	               dot(obbA.axes[2], D));
 
 	// interval and radii of A and B along a potential separating axis
 	float t, rA, rB;
@@ -418,8 +418,8 @@ void cull_frustum_obb_list(const Frustum& frustum, OBB* obbList, int numOBBs, bo
 			// Compute the half-diagonal vector (vector from OBB center to corner)
 			// that points closest to the direction of the plane normal.
 			vec3 diag = x * obb.axes[0] +
-						y * obb.axes[1] +
-						z * obb.axes[2];
+			            y * obb.axes[1] +
+			            z * obb.axes[2];
 
 			// get corner point of the OBB that lies "the most" inside the frustum
 			vec3 corner = obb.center - diag;
@@ -739,7 +739,7 @@ vec3 get_furthest_in_direction(const ConvexRegion& region, vec3 direction)
 vec3 find_support(const ConvexRegion& regionA, const ConvexRegion& regionB, vec3 searchDirection)
 {
 	return get_furthest_in_direction(regionA, searchDirection)
-		 - get_furthest_in_direction(regionB, -searchDirection);
+	     - get_furthest_in_direction(regionB, -searchDirection);
 }
 
 bool intersect_convex_regions(const ConvexRegion& regionA, const ConvexRegion& regionB)

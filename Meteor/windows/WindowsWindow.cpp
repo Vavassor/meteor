@@ -7,8 +7,8 @@
 #include "utilities/UnicodeUtils.h"
 #include "utilities/Logging.h"
 #include "utilities/Macros.h"
-#include "utilities/Benaphore.h"
 #include "utilities/Timer.h"
+#include "utilities/concurrent/Benaphore.h"
 #include "utilities/input/Input.h"
 
 // engine
@@ -103,30 +103,30 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 	// load configuration file values
 	{
 		Textblock block;
-		Textblock::LoadFromFile("main.conf", &block);
+		Textblock::Load_From_File("main.conf", &block);
 
-		block.GetAttributeAsInt("screenWidth", &width);
-		block.GetAttributeAsInt("screenHeight", &height);
-		if(block.HasAttribute("renderer"))
+		block.Get_Attribute_As_Int("screenWidth", &width);
+		block.Get_Attribute_As_Int("screenHeight", &height);
+		if(block.Has_Attribute("renderer"))
 		{
 			String* values;
-			block.GetAttributeAsStrings("renderer", &values);
+			block.Get_Attribute_As_Strings("renderer", &values);
 
 			String& renderName = values[0];
 			if(renderName == "DIRECTX") renderMode = RENDER_DX;
 			if(renderName == "OPENGL")  renderMode = RENDER_GL;
 		}
-		block.GetAttributeAsBool("isFullscreen", &isFullscreen);
-		block.GetAttributeAsBool("verticalSynchronization", &enableVSync);
+		block.Get_Attribute_As_Bool("isFullscreen", &isFullscreen);
+		block.Get_Attribute_As_Bool("verticalSynchronization", &enableVSync);
 
-		block.GetAttributeAsFloat("textureAnisotropy", &texture_anisotropy);
-		if(block.HasChild("OpenGL"))
+		block.Get_Attribute_As_Float("textureAnisotropy", &texture_anisotropy);
+		if(block.Has_Child("OpenGL"))
 		{
-			Textblock* glConf = block.GetChildByName("OpenGL");
-			glConf->GetAttributeAsBool("createForwardCompatibleContext",
+			Textblock* glConf = block.Get_Child_By_Name("OpenGL");
+			glConf->Get_Attribute_As_Bool("createForwardCompatibleContext",
 				&createForwardCompatibleContext);
 		}
-		block.GetAttributeAsBool("enableDebugging", &enableDebugging);
+		block.Get_Attribute_As_Bool("enableDebugging", &enableDebugging);
 	}
 
 	// setup window class

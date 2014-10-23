@@ -164,7 +164,7 @@ void GLShader::AddAttribute(const char* name)
 
 void GLShader::SetTexture(unsigned int slot, const GLTexture& texture) const
 {
-	if(slot >= gl_max_combined_texture_image_units) return;
+	if(slot >= (unsigned int) gl_max_combined_texture_image_units) return;
 
 	static unsigned int lastSlot = 0;
 	if(slot != lastSlot)

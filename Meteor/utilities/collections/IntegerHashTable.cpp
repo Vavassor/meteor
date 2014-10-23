@@ -1,6 +1,6 @@
 #include "IntegerHashTable.h"
 
-#include "BitManipulation.h"
+#include "../BitManipulation.h"
 
 #include <cstring>
 
@@ -128,6 +128,8 @@ IntegerHashTable::Cell* IntegerHashTable::FindUnusedCell(size_t key)
         }
         return &zeroCell;
     }
+
+    return nullptr;
 }
 
 void IntegerHashTable::Delete(Cell* cell)

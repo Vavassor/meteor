@@ -18,9 +18,16 @@ private:
 	}
 
 public:
-	explicit AutoArray(size_t initialCapacity = 10)
+	AutoArray()
 	{
-		buffer = (T*) ::operator new(initialCapacity * sizeof(T));
+		buffer = (T*) ::operator new[](10 * sizeof(T));
+		last = buffer;
+		end = buffer + 10;
+	}
+
+	explicit AutoArray(size_t initialCapacity)
+	{
+		buffer = (T*) ::operator new[](initialCapacity * sizeof(T));
 		last = buffer;
 		end = buffer + initialCapacity;
 	}
@@ -29,7 +36,7 @@ public:
 	{
 		for(T *it = buffer, *stop = last; it != stop; ++it)
 			it->~T();
-		delete[] (void*) buffer;
+		::operator delete[](buffer);
 	}
 
 	void Push(const T& element)
@@ -66,14 +73,14 @@ public:
 	{
 		if(newSize == 0) return;
 
-		T* newArray = (T*) ::operator new(newSize * sizeof(T));
+		T* newArray = (T*) ::operator new[](newSize * sizeof(T));
 
 		size_t count = Count();
 		size_t minSize = (newSize < count) ? newSize : count;
 		for(size_t i = 0; i < minSize; ++i)
 			new(&newArray[i]) T(buffer[i]);
 
-		delete[] (void*) buffer;
+		::operator delete[](buffer);
 		buffer = newArray;
 
 		// reallocation invalidated these, so reset them

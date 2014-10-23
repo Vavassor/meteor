@@ -85,7 +85,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR sCmdLin
 	}
 	else
 	{
-		MessageBoxA(NULL, Log::GetText(), "Error", MB_OK | MB_ICONERROR);
+		MessageBoxA(NULL, Log::Get_Text(), "Error", MB_OK | MB_ICONERROR);
 	}
 
 	// window shutdown

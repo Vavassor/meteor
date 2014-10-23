@@ -21,10 +21,10 @@ inline void reverse_string(char s[], size_t length)
 	}
 }
 
-inline char* copy_string(char* to, const char* from)
+inline char* copy_string(const char* from, char* to)
 {
 	char* save = to;
-	while(*to++ = *from++);
+	while((*to++ = *from++));
 	return save;
 }
 
@@ -36,6 +36,16 @@ inline bool starts_with(const char* s, const char* token)
 			return false;
 	}
 	return true;
+}
+
+inline int compare_strings(const char* a, const char* b)
+{
+    for(; *a == *b; ++a, ++b)
+    {
+        if(*a == '\0')
+            return 0;
+    }
+    return *(const unsigned char*)a - *(const unsigned char*)b;
 }
 
 #endif
