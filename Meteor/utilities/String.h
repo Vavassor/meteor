@@ -1,8 +1,6 @@
 #ifndef STRING_H
 #define STRING_H
 
-#include "CharTypes.h"
-
 #include <stddef.h>
 
 class String
@@ -33,10 +31,10 @@ public:
 	bool operator == (const String& other) const;
 	bool operator != (const String& other) const;
 
+	void Append(const String& other);
 	void Append(const char* s, size_t n);
-	void Append(const char* str);
+	void Append(const char* s);
 	void Append(const char* first, const char* last);
-	void Append(const char32_t* s, size_t n);
 
 	void Reserve(size_t newSize);
 	void Clear();

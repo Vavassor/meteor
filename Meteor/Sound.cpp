@@ -2,18 +2,17 @@
 
 #include "utilities/Logging.h"
 
-#include "GlobalInfo.h"
-
 #include <cstring>
-
-Sound* Sound::sounds[Sound::MAX_SOUNDS];
-int Sound::numSounds = 0;
 
 namespace
 {
 	const int MAX_CHANNELS = 8;
 	FMOD_SYSTEM* fmodSystem;
 	FMOD_SOUNDGROUP *musicGroup, *noiseGroup;
+
+	static const int MAX_SOUNDS = 32;
+	Sound* sounds[MAX_SOUNDS];
+	int numSounds = 0;
 
 	void check_error(FMOD_RESULT result);
 	const char* fmoderr_text(FMOD_RESULT errorCode);
@@ -31,7 +30,7 @@ void Sound::Initialize()
 	check_error(result);
 	if(version < FMOD_VERSION)
 	{
-		Log::Add(Log::ISSUE, "AUDIO ERROR: fmodex.dll is an older version than needed. "
+		LOG_ISSUE("AUDIO ERROR: fmodex.dll is an older version than needed. "
 			"FMOD version should be at least %u.", FMOD_VERSION);
 	}
 
@@ -111,7 +110,7 @@ void Sound::Terminate()
 	check_error(s_result);
 }
 
-Sound* Sound::CreateSound(Type type) 
+Sound* Sound::Create_Sound(Type type) 
 {
 	if(numSounds < MAX_SOUNDS)
 	{
@@ -131,7 +130,7 @@ Sound* Sound::CreateSound(Type type)
 	return nullptr;
 }
 
-void Sound::DestroySound(Sound* sound)
+void Sound::Destroy_Sound(Sound* sound)
 {
 	for(int i = 0; i < MAX_SOUNDS; i++)
 	{
@@ -154,12 +153,12 @@ void Sound::Update()
 		Sound* sound = sounds[i];
 		if(sound == nullptr) continue;
 
-		if(sound->onlyPlayOnce && !sound->IsPlaying())
-			DestroySound(sound);
+		if(sound->onlyPlayOnce && !sound->Is_Playing())
+			Destroy_Sound(sound);
 	}
 }
 
-void Sound::SetGroupVolume(float volume, Type channelType)
+void Sound::Set_Group_Volume(float volume, Type channelType)
 {
 	if(volume > 1.0f || volume < 0.0f) return;
 
@@ -178,7 +177,7 @@ void Sound::SetGroupVolume(float volume, Type channelType)
 	}
 }
 
-float Sound::GetGroupVolume(Type channelType)
+float Sound::Get_Group_Volume(Type channelType)
 {
 	float currentVolume = 0.0f;
 	switch(channelType)
@@ -216,7 +215,7 @@ Sound::~Sound()
 	Unload();
 }
 
-void Sound::SetVolume(float vol) 
+void Sound::Set_Volume(float vol) 
 {
     if (vol >= 0.0f && vol <= 1.0f) 
 	{
@@ -224,18 +223,17 @@ void Sound::SetVolume(float vol)
     }
 }
 
-void Sound::LoadAudio(const String& fileName)
+void Sound::Load_Audio(const String& fileName)
 {
 	if(fileName.Count()) return;
 
 	name = fileName;
-	String filePath = module_directory + fileName;
 
 	FMOD_RESULT s_result = FMOD_OK;
     s_result = FMOD_Sound_Release(sound);
 	check_error(s_result);
 
-    s_result = FMOD_System_CreateSound(fmodSystem, (const char*) filePath.Data(),
+    s_result = FMOD_System_CreateSound(fmodSystem, fileName.Data(),
 		FMOD_SOFTWARE | FMOD_UNICODE, nullptr, &sound);
 	check_error(s_result);
 
@@ -251,12 +249,11 @@ void Sound::LoadAudio(const String& fileName)
 	}
 }
 
-void Sound::LoadStream(const String& fileName) 
+void Sound::Load_Stream(const String& fileName) 
 {
 	if(fileName.Count()) return;
 
 	name = fileName;
-    String filePath = module_directory + fileName;
 
 	FMOD_RESULT s_result = FMOD_OK;
 
@@ -266,7 +263,7 @@ void Sound::LoadStream(const String& fileName)
 		check_error(s_result);
 	}
 
-    s_result = FMOD_System_CreateSound(fmodSystem, (const char*) filePath.Data(),
+    s_result = FMOD_System_CreateSound(fmodSystem, fileName.Data(),
 		FMOD_SOFTWARE | FMOD_UNICODE | FMOD_CREATESTREAM, nullptr, &sound);
 	check_error(s_result);
 
@@ -296,23 +293,23 @@ void Sound::Play(bool pause)
 		FMOD_Channel_SetMode(channel, FMOD_LOOP_NORMAL);
 }
 
-void Sound::SetPause(bool pause)
+void Sound::Set_Pause(bool pause)
 {
 	FMOD_Channel_SetPaused(channel, pause);
 }
 
-void Sound::TogglePause() 
+void Sound::Toggle_Pause() 
 {
     FMOD_BOOL p;
     FMOD_Channel_GetPaused(channel, &p);
     FMOD_Channel_SetPaused(channel, !p);
 }
 
-bool Sound::IsPlaying() const
+bool Sound::Is_Playing() const
 {
 	FMOD_BOOL isPlaying;
 	FMOD_Channel_IsPlaying(channel, &isPlaying);
-	return isPlaying;
+	return isPlaying != 0;
 }
 
 namespace
@@ -321,7 +318,7 @@ namespace
 	{
 		if(result != FMOD_OK)
 		{
-			Log::Add(Log::ISSUE, "FMOD Error: %s", fmoderr_text(result));
+			LOG_ISSUE("FMOD Error: %s", fmoderr_text(result));
 		}
 	}
 

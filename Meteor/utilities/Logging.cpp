@@ -50,12 +50,12 @@ void Log::Inc_Time()
 	ticks++;
 }
 
-void Log::Write(bool outputToConsole)
+void Log::Output(bool printToConsole)
 {
 	if(stream.Size() == 0) return;
 
 	#if defined(_DEBUG)
-	if(outputToConsole)
+	if(printToConsole)
 	{
 		#if defined(_MSC_VER) && defined(_WIN32)
 			OutputDebugStringA(stream.Data());
@@ -92,7 +92,8 @@ static const char* log_level_name(Log::LogLevel level)
 void Log::Add(LogLevel level, const char* format, ...)
 {
 	// append log header to line
-	stream += "LOG-";
+	stream.Reserve(stream.Size() + 80);
+	stream.Append("LOG-");
 
 	time_t signature = time(nullptr);
 	tm* t = localtime(&signature);
@@ -114,7 +115,7 @@ void Log::Add(LogLevel level, const char* format, ...)
 	stream += timeStr;
 	stream += " ";
 
-	stream += log_level_name(level);
+	stream.Append(log_level_name(level));
 	stream += ": ";
 
 	// write parameter data to log
@@ -243,7 +244,7 @@ void Log::Add(LogLevel level, const char* format, ...)
 		stream.Append(f, s);
 	}
 
-	stream += "\n";
+	stream.Append("\n");
 }
 
 const char* Log::Get_Text()

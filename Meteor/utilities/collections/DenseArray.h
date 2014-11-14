@@ -2,9 +2,10 @@
 #define DENSE_ARRAY_H
 
 #include "HandleManager.h"
-#include "Allocator.h"
 
 #include "../Sorting.h"
+
+#include <new>
 
 template<typename T>
 class DenseArray
@@ -24,12 +25,12 @@ public:
 		last(0),
 		capacity(initialCapacity)
 	{
-		data = allocator::allocate_array<T>(initialCapacity);
+		data = (T*) ::operator new[](sizeof(T) * initialCapacity);
 	}
 
 	~DenseArray()
 	{
-		allocator::deallocate_array(data);
+		::operator delete[](data);
 	}
 
 	T* Get(Handle handle) const
@@ -51,8 +52,10 @@ public:
 		T* obj = nullptr;
 		if(handleManager.Get(handle, (void*&)obj))
 		{
-			(*obj).~T();
-			*obj = data[last];
+			obj->~T();
+			new(obj) T(data[last]);
+			data[last--].~T();
+
 			handleManager.Update(lastHandle, obj);
 			handleManager.Remove(handle);
 		}
@@ -64,7 +67,11 @@ public:
 
 		handleManager.Resize(newCapacity);
 
-		data = allocator::reallocate_array(data, newCapacity);
+		for(auto it = First(), end = Last(); it != end; ++it)
+			it->~T();
+		::operator delete[](data);
+
+		data = (T*) ::operator new[](sizeof(T) * newCapacity);
 		capacity = newCapacity;
 	}
 

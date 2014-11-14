@@ -1,5 +1,5 @@
-#ifndef UTF8_UTILS_H
-#define UTF8_UTILS_H
+#ifndef UNICODE_H
+#define UNICODE_H
 
 #include "CharTypes.h"
 

@@ -48,4 +48,12 @@ inline int compare_strings(const char* a, const char* b)
     return *(const unsigned char*)a - *(const unsigned char*)b;
 }
 
+inline char* concatenate(const char* from, char* to)
+{
+	char* save = to;
+	while(*to++);
+	while((*to++ = *from++));
+	return save;
+}
+
 #endif

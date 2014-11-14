@@ -1,4 +1,4 @@
-#include "UnicodeUtils.h"
+#include "Unicode.h"
 
 wchar_t* utf8_to_wcs(wchar_t* buffer, const char* ostr, int n)
 {

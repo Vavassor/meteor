@@ -1,9 +1,11 @@
 #include "utilities/Logging.h"
 
+#include "PlatformDefines.h"
 #include "Game.h"
 
-#if defined(_WIN32)
+// #include <vld.h>
 
+#if defined(OS_WINDOWS)
 #include "windows/WindowsWindow.h"
 
 #if defined(_MSC_VER)
@@ -11,14 +13,12 @@
 #include <eh.h>
 #endif
 
-#elif defined(X11)
-
+#elif defined(OS_LINUX)
 #include "x11/X11Window.h"
 
 #include <pthread.h>
 #include <errno.h>
 #include <string.h>
-
 #endif
 
 #if defined(_DEBUG)
@@ -31,16 +31,16 @@ namespace
 {
 	static const int MAX_THREADS = 1;
 
-#if defined(_WIN32)
+#if defined(OS_WINDOWS)
 	DWORD threadIDs[MAX_THREADS];
     HANDLE threads[MAX_THREADS];
 
-#elif defined(__unix__)
+#elif defined(OS_LINUX)
     pthread_t threads[MAX_THREADS];
 #endif
 }
 
-#if defined(_WIN32)
+#if defined(OS_WINDOWS)
 
 #if defined(_MSC_VER)
 __declspec(noreturn) __declspec(nothrow) void termination_handler()
@@ -58,6 +58,9 @@ __declspec(noreturn) __declspec(nothrow) void termination_handler()
 }
 #endif
 
+typedef LPTHREAD_START_ROUTINE ThreadStartRoutine;
+typedef void (*ThreadQuitRoutine)(void);
+
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR sCmdLine, int iShow)
 {
 	SetUnhandledExceptionFilter(UnhandledException);
@@ -67,18 +70,18 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR sCmdLin
 #endif
 
 	// create threads
-	LPTHREAD_START_ROUTINE threadRoutines[MAX_THREADS] =
+	ThreadStartRoutine start_routines[MAX_THREADS] =
 	{
 		Game::Main,
 	};
 	for(int i = 0; i < MAX_THREADS; i++)
-		threads[i] = CreateThread(NULL, 0, threadRoutines[i], NULL, 0, &threadIDs[i]);
+		threads[i] = CreateThread(NULL, 0, start_routines[i], NULL, 0, &threadIDs[i]);
 
 	// create window and begin render loop
 	WindowsWindow window;
 	if(window.Create(hInstance))
 	{
-		if(window.isFullscreen)
+		if(window.fullscreen)
 			window.ToggleFullscreen();
 		window.Show();
 		window.MessageLoop();
@@ -92,12 +95,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR sCmdLin
 	window.Destroy();
 
 	// thread shutdown
-	void (*threadExitRoutines[MAX_THREADS])() =
+	ThreadQuitRoutine quit_routines[MAX_THREADS] =
 	{
 		Game::Quit,
 	};
 	for(int i = 0; i < MAX_THREADS; i++)
-		threadExitRoutines[i]();
+		quit_routines[i]();
 
 	WaitForMultipleObjects(MAX_THREADS, threads, TRUE, INFINITE);
 	for(int i = 0; i < MAX_THREADS; i++)
@@ -106,9 +109,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR sCmdLin
 	return 0;
 }
 
-#endif // defined(_WIN32)
+#endif // defined(OS_WINDOWS)
 
-#if defined(X11)
+#if defined(OS_LINUX)
 
 typedef void* (*Thread_Start_Routine)(void*);
 
@@ -153,9 +156,9 @@ int main(int argc, const char* argv[])
 		pthread_join(threads[i], NULL);
 
 	// flush remaining log messages
-	Log::Write(PRINT_TO_CONSOLE);
+	Log::Output(PRINT_TO_CONSOLE);
 
 	return 0;
 }
 
-#endif // defined(X11)
+#endif // defined(OS_LINUX)

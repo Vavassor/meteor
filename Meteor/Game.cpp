@@ -7,18 +7,19 @@
 #include "utilities/Timer.h"
 #include "utilities/Maths.h"
 #include "utilities/Logging.h"
-#include "utilities/Assert.h"
 #include "utilities/input/Input.h"
 #include "utilities/concurrent/LinkedQueue.h"
 #include "utilities/concurrent/Benaphore.h"
 #include "utilities/concurrent/Mutex.h"
 
-#if defined(_MSC_VER) && defined(_WIN32)
+#if defined(_MSC_VER)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
 #include <Windows.h>
 #endif
+
+#include <assert.h>
 
 #include <cstring>
 #include <cstdio>
@@ -82,7 +83,7 @@ THREAD_RETURN_TYPE Game::Main(void* param)
 		{
 			#if defined(_DEBUG)
 			{
-				#if defined(_MSC_VER) && defined(_WIN32)
+				#if defined(_MSC_VER)
 					wchar_t out[64];
 					wsprintf(out, L"Game Thread : %i TPS\n", fpsSample);
 					OutputDebugString(out);
@@ -133,7 +134,7 @@ bool Game::PumpMessage(Message& message)
 
 void Game::GiveMessage(int type, void* data, size_t dataSize)
 {
-	DEBUG_ASSERT(dataSize <= SIZE_MESSAGE);
+	assert(dataSize <= SIZE_MESSAGE);
 
 	Message message = {};
 	message.type = type;
@@ -144,7 +145,7 @@ void Game::GiveMessage(int type, void* data, size_t dataSize)
 
 void Game::OutMessage(int type, void* data, size_t dataSize)
 {
-	DEBUG_ASSERT(dataSize <= SIZE_MESSAGE);
+	assert(dataSize <= SIZE_MESSAGE);
 
 	Message message = {};
 	message.type = type;

@@ -35,8 +35,3 @@ uint32_t bit_reverse32(uint32_t n)
 	n = (n & 0xFF00FF00) >> 8 | (n & 0x00FF00FF) << 8;
 	return (n >> 16) | (n << 16);
 }
-
-uint32_t byte_swap(uint32_t n)
-{
-	return  n << 24 | (n << 8 & 0x00FF0000) | (n >> 8 & 0x0000FF00) | n >> 24;
-}

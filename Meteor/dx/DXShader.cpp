@@ -5,8 +5,6 @@
 #include "utilities/FileHandling.h"
 #include "utilities/Logging.h"
 
-#include "GlobalInfo.h"
-
 float DXShader::vertBuffer[MAX_VERTEX_CONSTANTS * 16];
 float DXShader::pixelBuffer[MAX_PIXEL_CONSTANTS * 16];
 
@@ -32,9 +30,8 @@ bool DXShader::Load(const String& vertexFileName, const String& pixelFileName)
 {
 	HRESULT hr = S_OK;
 
-	String folder = "shaders/dx/";
-	String vertexFile = module_directory + folder + vertexFileName;
-	String pixelFile = module_directory + folder + pixelFileName;
+	String vertexFile("shaders/dx/");
+	vertexFile.Append(vertexFileName);
 
 	// create vertex shader
 	void* vBuffer = nullptr;
@@ -43,7 +40,7 @@ bool DXShader::Load(const String& vertexFileName, const String& pixelFileName)
 	if(FAILED(hr))
 	{
 		delete[] vBuffer;
-		Log::Add(Log::ISSUE, "DIRECTX ERROR: %s - failed to load vertex shader: %s",
+		LOG_ISSUE("DIRECTX ERROR: %s - failed to load vertex shader: %s",
 			dxerr_text(hr), vertexFileName);
 		return false;
 	}
@@ -68,19 +65,22 @@ bool DXShader::Load(const String& vertexFileName, const String& pixelFileName)
 	delete[] vBuffer;
 	if(FAILED(hr))
 	{
-		Log::Add(Log::ISSUE, "DIRECTX ERROR: %s - failed to create input layout "
+		LOG_ISSUE("DIRECTX ERROR: %s - failed to create input layout "
 			"for vertex shader: %s", dxerr_text(hr), vertexFileName);
 		return false;
 	}
 
 	// create pixel shader
+	String pixelFile("shaders/dx/");
+	pixelFile.Append(pixelFileName);
+
 	void* psBuffer = nullptr;
 	unsigned psSize = load_binary_file(&psBuffer, pixelFile.Data());
     hr = _Device->CreatePixelShader(psBuffer, psSize, NULL, &pixelShader);
 	delete[] psBuffer;
 	if(FAILED(hr))
 	{
-		Log::Add(Log::ISSUE, "DIRECTX ERROR: %s - failed to load pixel shader: %s",
+		LOG_ISSUE("DIRECTX ERROR: %s - failed to load pixel shader: %s",
 			dxerr_text(hr), pixelFileName);
 		return false;
 	}
@@ -124,7 +124,7 @@ bool DXShader::Load(const String& vertexFileName, const String& pixelFileName)
     _Device->CreateBuffer(&constantBufferDesc, nullptr, &vertCB);
 	if(FAILED(hr))
 	{
-		Log::Add(Log::ISSUE, "DIRECTX ERROR: %s - failed to create constant buffer "
+		LOG_ISSUE("DIRECTX ERROR: %s - failed to create constant buffer "
 			"for shaders: %s and %s", dxerr_text(hr), vertexFileName, pixelFileName);
 		return false;
 	}
@@ -141,7 +141,7 @@ bool DXShader::Load(const String& vertexFileName, const String& pixelFileName)
 	_Device->CreateBuffer(&pixelCBDesc, nullptr, &pixelCB);
 	if(FAILED(hr))
 	{
-		Log::Add(Log::ISSUE, "DIRECTX ERROR: %s - failed to create pixel constant buffer "
+		LOG_ISSUE("DIRECTX ERROR: %s - failed to create pixel constant buffer "
 			"for shaders: %s and %s", dxerr_text(hr), vertexFileName, pixelFileName);
 		return false;
 	}

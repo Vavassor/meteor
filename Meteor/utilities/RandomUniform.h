@@ -1,13 +1,16 @@
 #ifndef RANDOM_UNIFORM_H
 #define RANDOM_UNIFORM_H
 
+namespace random {
+
 void reseed(unsigned long seed);
-int random_int(int min, int max);
-float random_float(float min, float max);
-double random_double(double min, double max);
-double random_uniform();
+int integer_range(int min, int max);
+double real_range(double min, double max);
+double uniform_real();
 
 void reseed_unique();
-unsigned int unique_random_int();
+unsigned int unique_int();
+
+} // namespace random
 
 #endif

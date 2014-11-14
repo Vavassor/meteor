@@ -27,10 +27,8 @@ Textblock::Textblock() {}
 
 Textblock::~Textblock()
 {
-	FOR_EACH(attribute, attributes)
-		delete[] attribute->values;
-	FOR_EACH(child, children)
-		delete (*child);
+	FOR_ALL(attributes) delete[] it->values;
+	FOR_ALL(children) delete (*it);
 }
 
 void Textblock::Add_Attribute(const String& name, String values[], int numValues)
@@ -38,8 +36,7 @@ void Textblock::Add_Attribute(const String& name, String values[], int numValues
 	Attribute attribute;
 	attribute.key = name;
 	String* vals = new String[numValues];
-	for(int i = 0; i < numValues; i++)
-		vals[i] = values[i];
+	COPY(values, vals, numValues);
 	attribute.values = vals;
 	attribute.numValues = numValues;
 	attributes.Push(attribute);
@@ -47,8 +44,9 @@ void Textblock::Add_Attribute(const String& name, String values[], int numValues
 
 Attribute* Textblock::Get_Attribute(const String& name) const
 {
-	FOR_EACH(attribute, attributes)
-		if(attribute->key == name) return attribute;
+	FOR_ALL(attributes)
+		if(it->key == name) return it;
+
 	return nullptr;
 }
 
@@ -182,13 +180,13 @@ void Textblock::Add_Child(Textblock* child)
 
 void Textblock::Remove_Child(const String& name)
 {
-	FOR_EACH(block, children)
+	FOR_ALL(children)
 	{
-		Textblock* child = *block;
+		Textblock* child = *it;
 		if(child->name == name)
 		{
 			delete child;
-			*block = nullptr;
+			*it = nullptr;
 		}
 	}
 }
@@ -200,38 +198,67 @@ bool Textblock::Has_Child(const String& name) const
 
 Textblock* Textblock::Get_Child_By_Name(const String& name) const
 {
-	FOR_EACH(block, children)
+	FOR_ALL(children)
 	{
-		Textblock* child = *block;
+		Textblock* child = *it;
 		if(child->name == name) return child;
 	}
 	return nullptr;
 }
 
-static bool is_space(char c[6])
+static bool is_space(unsigned char c[6])
 {
-	return *c == ' '
-	    || (unsigned char)(*c - 9) <= (13 - 9)              // \t\n\v\f\r
+	return (*c == ' ')
+	    || (*c - 9 <= 13 - 9)                               // \t\n\v\f\r
 	    || (c[0] == 0xC2 && (c[1] == 0x85 || c[1] == 0xA0)) // next-line (NEL) and non-breaking space
-	    ;
+	    || (c[0] == 0xEA && c[1] == 0x9A && c[2] == 0x80)   // Ogham space mark
+	    || (c[0] == 0xE2 && c[1] == 0x80 && (
+	           (c[2] - 0x80 <= 0xA) // sized space marks
+	        || (c[2] == 0xA8)		// line separator
+	        || (c[2] == 0xA9)       // paragraph separator
+	        || (c[2] == 0xAF)       // narrow no-break space
+	        )
+	    )
+	    || (c[0] == 0xE2 && c[1] == 0x81 && c[2] == 0x9F)   // medium mathematical space
+	    || (c[0] == 0xE3 && c[1] == 0x80 && c[2] == 0x80);  // ideographic space
+}
+
+static bool is_line_break(unsigned char s[6])
+{
+	return (*s - 0xA <= 0xD - 0xA)                                           // \n\v\f\r
+	    || (s[0] == 0xC2 && s[1] == 0x85)                                    // next-line (NEL)
+	    || (s[0] == 0xE2 && s[1] == 0x80 && (s[2] == 0xA8 || s[2] == 0xA9)); // line separator
 }
 
 static bool parse(FileStream& in, Textblock* block)
 {
 	/*
-
-	char sequence[6];
-
+	enum Mode { SET, SEQUENCE, QUOTED } mode;
+	
 	char data[128];
 	size_t length = 0;
-	while(length = in.Read(data, ARRAY_LENGTH(data)))
+	while(length = in.Read(data, ARRAY_COUNT(data)))
 	{
-		// TODO: implement
+		switch(mode)
+		{
+			case SET:
+			{
+				char* start = data;
+				char* end = data;
 
-		char* end = nullptr;
-		char* start = next_token(data, "\t\n\v\f\r {}=:", &end);
+
+				break;
+			}
+			case SEQUENCE:
+			{
+				break;
+			}
+			case QUOTED:
+			{
+				break;
+			}
+		}
 	}
-
 	*/
 
 	return true;

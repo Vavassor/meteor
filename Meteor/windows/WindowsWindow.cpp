@@ -2,9 +2,8 @@
 
 #include "resource.h"
 
-// utilities
 #include "utilities/Textblock.h"
-#include "utilities/UnicodeUtils.h"
+#include "utilities/Unicode.h"
 #include "utilities/Logging.h"
 #include "utilities/Macros.h"
 #include "utilities/Timer.h"
@@ -12,7 +11,6 @@
 #include "utilities/input/Input.h"
 
 // engine
-#include "GlobalInfo.h"
 #include "Sound.h"
 #include "Game.h"
 #include "ThreadMessages.h"
@@ -28,18 +26,22 @@
 #include "dx/DXRenderer.h"
 #endif
 
+// Windows
+#include <direct.h>
+
 // general
 #include <cstdio>
 #include <stddef.h>
 #include <wchar.h>
 
-const char* module_directory;
-bool enable_capture_render_statistics;
-float texture_anisotropy;
-
 namespace
 {
-	bool enableDebugging;
+	const char* module_directory;
+	const char* working_directory;
+	bool enable_capture_render_statistics;
+	float texture_anisotropy;
+
+	bool enable_debugging;
 	ViewportData viewport;
 
 #if defined(GRAPHICS_OPENGL)
@@ -49,38 +51,41 @@ namespace
 
 WindowsWindow::WindowsWindow():
 	paused(false),
-	isFullscreen(false),
-	isBorderless(false),
-	enableVSync(true),
-	isAltDown(false),
+	fullscreen(false),
+	borderless(false),
+	vertical_synchronization(true),
 
-	hWnd(NULL),
-	windowName(L"METEOR"),
+	window(NULL),
+	window_name(L"METEOR"),
 	width(1280),
 	height(720),
-	samples(0),
-
-	oldCursor(NULL),
-	isCursorHidden(false),
-	showFPS(false),
-	lastTickTime(0.0),
 
 	device(NULL),
-	deviceName(nullptr),
-	renderMode(RENDER_GL)
-{
-	wchar_t wcsFilePath[MAX_PATH];
-	GetModuleFileName(GetModuleHandle(NULL), wcsFilePath, MAX_PATH);
-	*(wcsrchr(wcsFilePath, '\\') + 1) = 0;
+	device_name(nullptr),
+	render_mode(RENDER_GL),
 
-	char* filePath = new char[MAX_PATH];
-	wcs_to_utf8(filePath, wcsFilePath, MAX_PATH);
-	module_directory = filePath;
+	old_cursor(NULL),
+	last_tick_time(0.0),
+	alt_pressed(false)
+{
+	// get module directory
+	wchar_t wide_path[MAX_PATH];
+	GetModuleFileName(NULL, wide_path, MAX_PATH);
+	*(wcsrchr(wide_path, '\\') + 1) = 0;
+
+	char* file_path = new char[MAX_PATH];
+	wcs_to_utf8(file_path, wide_path, MAX_PATH);
+	module_directory = file_path;
+
+	// get current working directory
+	char* utf8_path = new char[MAX_PATH];
+	_getcwd(utf8_path, MAX_PATH);
+	working_directory = utf8_path;
 
 #if defined(_DEBUG)
-	enableDebugging = true;
+	enable_debugging = true;
 #else
-	enableDebugging = false;
+	enable_debugging = false;
 #endif
 
 	enable_capture_render_statistics = false;
@@ -90,43 +95,44 @@ WindowsWindow::WindowsWindow():
 WindowsWindow::~WindowsWindow()
 {
 	delete[] module_directory;
+	delete[] working_directory;
 }
 
-bool WindowsWindow::Create(HINSTANCE hInstance)
+bool WindowsWindow::Create(HINSTANCE instance)
 {
 	// reset log file so initialization errors can be recorded
 	Log::Clear_File();
 
 	// initialize defaults
-	bool createForwardCompatibleContext = false;
+	bool create_forward_compatible_context = false;
 
 	// load configuration file values
 	{
 		Textblock block;
 		Textblock::Load_From_File("main.conf", &block);
 
-		block.Get_Attribute_As_Int("screenWidth", &width);
-		block.Get_Attribute_As_Int("screenHeight", &height);
+		block.Get_Attribute_As_Int("window_width", &width);
+		block.Get_Attribute_As_Int("window_height", &height);
 		if(block.Has_Attribute("renderer"))
 		{
 			String* values;
 			block.Get_Attribute_As_Strings("renderer", &values);
 
 			String& renderName = values[0];
-			if(renderName == "DIRECTX") renderMode = RENDER_DX;
-			if(renderName == "OPENGL")  renderMode = RENDER_GL;
+			if(renderName == "DIRECTX") render_mode = RENDER_DX;
+			if(renderName == "OPENGL")  render_mode = RENDER_GL;
 		}
-		block.Get_Attribute_As_Bool("isFullscreen", &isFullscreen);
-		block.Get_Attribute_As_Bool("verticalSynchronization", &enableVSync);
+		block.Get_Attribute_As_Bool("is_fullscreen", &fullscreen);
+		block.Get_Attribute_As_Bool("vertical_synchronization", &vertical_synchronization);
 
-		block.Get_Attribute_As_Float("textureAnisotropy", &texture_anisotropy);
+		block.Get_Attribute_As_Float("texture_anisotropy", &texture_anisotropy);
 		if(block.Has_Child("OpenGL"))
 		{
 			Textblock* glConf = block.Get_Child_By_Name("OpenGL");
-			glConf->Get_Attribute_As_Bool("createForwardCompatibleContext",
-				&createForwardCompatibleContext);
+			glConf->Get_Attribute_As_Bool("create_forward_compatible_context",
+				&create_forward_compatible_context);
 		}
-		block.Get_Attribute_As_Bool("enableDebugging", &enableDebugging);
+		block.Get_Attribute_As_Bool("enable_debugging", &enable_debugging);
 	}
 
 	// setup window class
@@ -134,11 +140,11 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 	classEx.cbSize = sizeof classEx;
 	classEx.style = CS_HREDRAW | CS_VREDRAW;
 	classEx.lpfnWndProc = WindowProc;
-	classEx.hInstance = hInstance;
+	classEx.hInstance = instance;
 	classEx.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ICON1));
 	classEx.hIconSm = (HICON)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, 16, 16, 0);
 	classEx.hCursor = LoadCursor(NULL, IDC_ARROW);
-	classEx.lpszClassName = L"HellitorWindowClass";
+	classEx.lpszClassName = L"MeteorWindowClass";
 	classEx.cbWndExtra = sizeof(WindowsWindow*);
 
 	if(RegisterClassEx(&classEx) == 0)
@@ -148,19 +154,18 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 	}
 
 	// create the actual window
-	DWORD style = WS_OVERLAPPEDWINDOW;
-	hWnd = CreateWindowEx(WS_EX_APPWINDOW, classEx.lpszClassName, windowName, style,
-		0, 0, width, height, NULL, NULL, hInstance, NULL);
-	if(hWnd == NULL)
+	window = CreateWindowEx(WS_EX_APPWINDOW, classEx.lpszClassName, window_name, WS_OVERLAPPEDWINDOW,
+		0, 0, width, height, NULL, NULL, instance, NULL);
+	if(window == NULL)
 	{
 		LOG_ISSUE("CreateWindowEx failed!");
 		return false;
 	}
-	SetWindowLongPtr(hWnd, 0, (LONG)this);
+	SetWindowLongPtr(window, 0, (LONG)this);
 
 	// initialize graphics contexts
 	device = NULL;
-	if((device = GetDC(hWnd)) == NULL)
+	if((device = GetDC(window)) == NULL)
 	{
 		LOG_ISSUE("GetDC failed!");
 		return false;
@@ -168,7 +173,7 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 
 	// do opengl graphics initialization
 	#if defined(GRAPHICS_OPENGL)
-	if(renderMode == RENDER_GL)
+	if(render_mode == RENDER_GL)
 	{
 		// setup pixel format
 		PIXELFORMATDESCRIPTOR pfd = {};
@@ -223,7 +228,7 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 		int glVersion = major * 10 + minor;
 
 		// create forward compatible context if desired/possible
-		if(createForwardCompatibleContext && glVersion >= 30 && WGLEW_ARB_create_context)
+		if(create_forward_compatible_context && glVersion >= 30 && WGLEW_ARB_create_context)
 		{
 			wglDeleteContext(context);
 
@@ -262,7 +267,7 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 			// set vertical synchronization
 			if(WGLEW_EXT_swap_control)
 			{
-				wglSwapIntervalEXT(enableVSync ? 1 : 0);
+				wglSwapIntervalEXT(vertical_synchronization ? 1 : 0);
 			}
 		}
 	}
@@ -270,7 +275,7 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 
 	// go ahead and initialize DirectX in the renderer, since DirectX is windows-only anyways
 	#if defined(GRAPHICS_DIRECTX)
-	if(renderMode == RENDER_DX)
+	if(render_mode == RENDER_DX)
 	{
 		if(!DXRenderer::Initialize(hWnd, isFullscreen, enableDebugging))
 			return false;
@@ -279,7 +284,7 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 	#endif
 
 	// initialize everything else
-	oldCursor = LoadCursor(hInstance, IDC_ARROW);
+	old_cursor = LoadCursor(instance, IDC_ARROW);
 	ShowCursor(FALSE);
 	SetCursor(NULL);
 
@@ -290,12 +295,12 @@ bool WindowsWindow::Create(HINSTANCE hInstance)
 	{
 		char* gpuName = new char[sizeof dd.DeviceString];
 		wcs_to_utf8(gpuName, dd.DeviceString, sizeof dd.DeviceString);
-		deviceName = gpuName;
+		device_name = gpuName;
 	}
 
 	Sound::Initialize();
 
-	lastTickTime = Timer::GetTime();
+	last_tick_time = Timer::GetTime();
 
 	return true;
 }
@@ -306,8 +311,8 @@ void WindowsWindow::Show(bool maximized)
 	int desktopHeight = GetSystemMetrics(SM_CYSCREEN);
 
 	RECT wRect, cRect;
-	GetWindowRect(hWnd, &wRect);
-	GetClientRect(hWnd, &cRect);
+	GetWindowRect(window, &wRect);
+	GetClientRect(window, &cRect);
 
 	wRect.right += width - cRect.right;
 	wRect.bottom += height - cRect.bottom;
@@ -318,13 +323,13 @@ void WindowsWindow::Show(bool maximized)
 	wRect.left = desktopWidth / 2 - wRect.right / 2;
 	wRect.top = desktopHeight / 2 - wRect.bottom / 2;
 
-	MoveWindow(hWnd, wRect.left, wRect.top, wRect.right, wRect.bottom, FALSE);
-	ShowWindow(hWnd, (maximized) ? SW_MAXIMIZE : SW_SHOW);
+	MoveWindow(window, wRect.left, wRect.top, wRect.right, wRect.bottom, FALSE);
+	ShowWindow(window, (maximized)? SW_MAXIMIZE : SW_SHOW);
 }
 
 void WindowsWindow::ToggleFullscreen()
 {
-	if(isFullscreen)
+	if(fullscreen)
 	{
 		//--- Exit Fullscreen ---//
 
@@ -334,12 +339,12 @@ void WindowsWindow::ToggleFullscreen()
 		// change window style back to bordered and load
 		// window position/dimensions from before the program
 		// entered fullscreen
-		SetWindowLongPtr(hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
-		SetWindowPlacement(hWnd, &placement);
-		SetWindowPos(hWnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE
+		SetWindowLongPtr(window, GWL_STYLE, WS_OVERLAPPEDWINDOW);
+		SetWindowPlacement(window, &placement);
+		SetWindowPos(window, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE
 			| SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
 
-		isBorderless = false;
+		borderless = false;
 	}
 	else
 	{
@@ -348,16 +353,16 @@ void WindowsWindow::ToggleFullscreen()
 		// save position/dimensions of window prior to entering full screen mode
 		ZeroMemory(&placement, sizeof placement);
 		placement.length = sizeof placement;
-		GetWindowPlacement(hWnd, &placement);
+		GetWindowPlacement(window, &placement);
 
 		// get current monitor's screen size
 		MONITORINFO mi = {};
 		mi.cbSize = sizeof mi;
-		GetMonitorInfo(MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST), &mi);
+		GetMonitorInfo(MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST), &mi);
 
 		// change window style and position/dimensions
-		SetWindowLongPtr(hWnd, GWL_STYLE, WS_POPUP);
-		SetWindowPos(hWnd, HWND_TOPMOST, 0, 0,
+		SetWindowLongPtr(window, GWL_STYLE, WS_POPUP);
+		SetWindowPos(window, HWND_TOPMOST, 0, 0,
 			mi.rcMonitor.right - mi.rcMonitor.left,
 			mi.rcMonitor.bottom - mi.rcMonitor.top,
 			SWP_FRAMECHANGED | SWP_SHOWWINDOW);
@@ -374,23 +379,23 @@ void WindowsWindow::ToggleFullscreen()
 			LOG_ISSUE("Display Mode change failed! Could not enter fullscreen mode");
 		}
 
-		isBorderless = true;
+		borderless = true;
 	}
 
-	isFullscreen = !isFullscreen;
+	fullscreen = !fullscreen;
 }
 
 void WindowsWindow::ToggleBorderlessMode()
 {
-	if(isFullscreen) return;
+	if(fullscreen) return;
 
-	LONG style = (isBorderless) ? WS_OVERLAPPEDWINDOW : WS_POPUP;
-	SetWindowLongPtr(hWnd, GWL_STYLE, style);
+	LONG style = (borderless)? WS_OVERLAPPEDWINDOW : WS_POPUP;
+	SetWindowLongPtr(window, GWL_STYLE, style);
 
-	SetWindowPos(hWnd, NULL, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER 
+	SetWindowPos(window, NULL, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER 
 		| SWP_FRAMECHANGED | SWP_SHOWWINDOW);
 
-	isBorderless = !isBorderless;
+	borderless = !borderless;
 }
 
 void WindowsWindow::ThreadMessageLoop()
@@ -411,23 +416,23 @@ void WindowsWindow::Update()
 	ThreadMessageLoop();
 
 	// update frame-rate counters
-	static DWORD lastFPSTime = GetTickCount();
+	static DWORD last_fps_time = GetTickCount();
 	static int fps = 0;
-	static int fpsSample = 0;
+	static int fps_sample = 0;
 
 	DWORD time = GetTickCount();
 
-	if(time - lastFPSTime > 1000)
+	if(time - last_fps_time > 1000)
 	{
 		wchar_t out[64];
-		wsprintf(out, L"%s - %i FPS", windowName, fpsSample);
-		SetWindowText(hWnd, out);
+		wsprintf(out, L"%s - %i FPS", window_name, fps_sample);
+		SetWindowText(window, out);
 
-		bool printToConsole = enableDebugging;
-		Log::Write(printToConsole);
+		bool print_to_console = enable_debugging;
+		Log::Output(print_to_console);
 
-		fpsSample = fps;
-		lastFPSTime = time;
+		fps_sample = fps;
+		last_fps_time = time;
 		fps = 0;
 	}
 	else
@@ -441,7 +446,7 @@ void WindowsWindow::Update()
 		CameraData cameraData;
 		Game::GetCameraData(&cameraData);
 		#if defined(GRAPHICS_OPENGL)
-		if(renderMode == RENDER_GL)
+		if(render_mode == RENDER_GL)
 		{
 			GLRenderer::SetCameraState(cameraData);
 		}
@@ -450,7 +455,7 @@ void WindowsWindow::Update()
 
 	// Render
 	#if defined(GRAPHICS_OPENGL)
-	if(renderMode == RENDER_GL)
+	if(render_mode == RENDER_GL)
 	{
 		GLRenderer::Render();
 
@@ -459,7 +464,7 @@ void WindowsWindow::Update()
 	#endif
 
 	#if defined(GRAPHICS_DIRECTX)
-	if(renderMode == RENDER_DX)
+	if(render_mode == RENDER_DX)
 	{
 		DXRenderer::Render();
 	}
@@ -473,7 +478,7 @@ LRESULT WindowsWindow::OnGainedFocus()
 {
 	paused = false;
 
-	SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	SetWindowPos(window, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
 	return 0;
 }
@@ -482,8 +487,8 @@ LRESULT WindowsWindow::OnLostFocus()
 {
 	paused = true;
 
-	SetCursor(oldCursor);
-	SetWindowPos(hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+	SetCursor(old_cursor);
+	SetWindowPos(window, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
 
 	return 0;
 }
@@ -494,14 +499,14 @@ LRESULT WindowsWindow::OnSize(int dimX, int dimY)
 	height = dimY;
 
 	#if defined(GRAPHICS_OPENGL)
-	if(renderMode == RENDER_GL)
+	if(render_mode == RENDER_GL)
 	{
 		GLRenderer::Resize(dimX, dimY);
 	}
 	#endif
 
 	#if defined(GRAPHICS_DIRECTX)
-	if(renderMode == RENDER_DX)
+	if(render_mode == RENDER_DX)
 	{
 		DXRenderer::Resize(dimX, dimY);
 	}
@@ -518,10 +523,10 @@ void WindowsWindow::KeyDown(USHORT key)
 {
 	switch(key)
 	{
-		case VK_MENU:   isAltDown = true;                 break;
-		case VK_F2:     ToggleBorderlessMode();           break;
-		case VK_F11:    ToggleFullscreen();               break;
-		case VK_RETURN: if(isAltDown) ToggleFullscreen(); break;
+		case VK_MENU:   alt_pressed = true;                 break;
+		case VK_F2:     ToggleBorderlessMode();             break;
+		case VK_F11:    ToggleFullscreen();                 break;
+		case VK_RETURN: if(alt_pressed) ToggleFullscreen(); break;
 	}
 }
 
@@ -529,11 +534,11 @@ void WindowsWindow::KeyUp(USHORT key)
 {
 	switch(key)
 	{
-		case VK_MENU: isAltDown = false; break;
+		case VK_MENU: alt_pressed = false; break;
 		case VK_F4:
 		{
-			if(isAltDown)
-				PostMessage(hWnd, WM_DESTROY, 0, 0);
+			if(alt_pressed)
+				PostMessage(window, WM_DESTROY, 0, 0);
 			break;
 		}
 	}
@@ -555,11 +560,11 @@ void WindowsWindow::MessageLoop()
 		Update();
 
 		const double oneFrameLimit = 1000.0 / 60.0;
-		double timeLeft = Timer::GetTime() - lastTickTime;
-		if(timeLeft >= oneFrameLimit || enableVSync)
+		double timeLeft = Timer::GetTime() - last_tick_time;
+		if(timeLeft >= oneFrameLimit || vertical_synchronization)
 		{
 			Game::Signal();
-			lastTickTime = Timer::GetTime();
+			last_tick_time = Timer::GetTime();
 		}
 	}
 }
@@ -570,10 +575,10 @@ void WindowsWindow::Destroy()
 
 	Sound::Terminate();
 
-	delete[] deviceName;
+	delete[] device_name;
 
 	#if defined(GRAPHICS_OPENGL)
-	if(renderMode == RENDER_GL)
+	if(render_mode == RENDER_GL)
 	{
 		GLRenderer::Terminate();
 
@@ -582,7 +587,7 @@ void WindowsWindow::Destroy()
 	#endif
 
 	#if defined(GRAPHICS_DIRECTX)
-	if(renderMode == RENDER_DX)
+	if(render_mode == RENDER_DX)
 	{
 		DXRenderer::Terminate();
 	}
@@ -654,6 +659,6 @@ LONG WINAPI UnhandledException(LPEXCEPTION_POINTERS exceptionInfo)
 		codeBase);
 
 	MessageBox(0, message, L"Error!", MB_OK);
-	LONG filterMode = (enableDebugging) ? EXCEPTION_CONTINUE_SEARCH : EXCEPTION_EXECUTE_HANDLER;
+	LONG filterMode = (enable_debugging)? EXCEPTION_CONTINUE_SEARCH : EXCEPTION_EXECUTE_HANDLER;
     return filterMode;
 }

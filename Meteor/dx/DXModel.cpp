@@ -5,8 +5,6 @@
 #include "utilities/MeshLoading.h"
 #include "utilities/Logging.h"
 
-#include "GlobalInfo.h"
-
 DXModel::DXModel()
 {
 	SetDefaults();
@@ -43,16 +41,18 @@ void DXModel::LoadAsMesh(const String& fileName, ModelUsage usage)
 	AutoArray<vec2> texcoords;
 	AutoArray<unsigned short> elements;
 
-	String filePath = module_directory + fileName;
 	MaterialInfo matInfo[MAX_MATERIALS];
-	numMaterials = load_obj(filePath.Data(), vertices, normals, texcoords, elements, matInfo);
+	numMaterials = load_obj(fileName.Data(), vertices, normals, texcoords, elements, matInfo);
 
 	for(int i = 0; i < numMaterials; i++)
 	{
 		materials[i].startIndex = matInfo[i].startIndex;
-		materials[i].phase = (matInfo[i].alpha < 1.0f) ? PHASE_TRANSPARENT : PHASE_SOLID;
-		materials[i].texture.Load("tex\\" + matInfo[i].texName);
+		materials[i].phase = (matInfo[i].alpha < 1.0f)? PHASE_TRANSPARENT : PHASE_SOLID;
 		materials[i].color = VEC4_ONE;
+
+		String textureName("tex/");
+		textureName.Append(matInfo[i].texName);
+		materials[i].texture.Load(textureName);
 	}
 
 	numVertices = vertices.Count();

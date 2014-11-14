@@ -2,8 +2,6 @@
 
 #include "utilities/Logging.h"
 
-#include "GlobalInfo.h"
-
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
@@ -38,7 +36,8 @@ GLFont::~GLFont()
 
 void GLFont::LoadBitmapFont(const String& fontFile)
 {
-	String layoutFilePath = module_directory + fontFile + ".fnt";
+	String layoutFilePath(fontFile);
+	layoutFilePath.Append(".fnt");
 
 	ifstream file(layoutFilePath.Data(), ios::in);
 	if(!file.is_open())

@@ -9,12 +9,12 @@
 class WindowsWindow
 {
 public:
-	bool paused, isFullscreen, isBorderless, enableVSync, isAltDown;
+	bool paused, fullscreen, borderless, vertical_synchronization;
 
 	WindowsWindow();
 	~WindowsWindow();
 
-	bool Create(HINSTANCE hInstance);
+	bool Create(HINSTANCE instance);
 	void Show(bool maximized = false);
 	void MessageLoop();
 	void Destroy();
@@ -40,18 +40,18 @@ private:
 		RENDER_DX,
 	};
 
-	HWND hWnd;
-	const wchar_t* windowName;
-	int width, height, samples;
-	HCURSOR oldCursor;
-	bool isCursorHidden, showFPS;
-	double lastTickTime;
+	HWND window;
+	const wchar_t* window_name;
+	int width, height;
 
 	HDC device;
-	const char* deviceName;
-	RenderMode renderMode;
+	const char* device_name;
+	RenderMode render_mode;
 
 	WINDOWPLACEMENT placement;
+	HCURSOR old_cursor;
+	double last_tick_time;
+	bool alt_pressed;
 };
 
 // ----------------------------------------------------------------------------------------------------------------------------

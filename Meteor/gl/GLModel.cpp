@@ -3,8 +3,6 @@
 #include "utilities/String.h"
 #include "utilities/MeshLoading.h"
 
-#include "GlobalInfo.h"
-
 GLModel::GLModel()
 {
 	SetDefaults();
@@ -34,18 +32,18 @@ void GLModel::LoadAsMesh(const String& filename)
 	AutoArray<vec2> texcoords;
 	AutoArray<unsigned short> elements;
 
-	String filePath = module_directory + filename;
 	MaterialInfo matInfo[MAX_MATERIALS];
-	numMaterials = load_obj(filePath.Data(), vertices, normals, texcoords, elements, matInfo);
+	numMaterials = load_obj(filename.Data(), vertices, normals, texcoords, elements, matInfo);
 
 	for(int i = 0; i < numMaterials; i++)
 	{
 		materials[i].startIndex = matInfo[i].startIndex;
-		materials[i].phase = (matInfo[i].alpha < 1.0f) ? PHASE_TRANSPARENT : PHASE_SOLID;
-		materials[i].color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		materials[i].phase = (matInfo[i].alpha < 1.0f)? PHASE_TRANSPARENT : PHASE_SOLID;
+		materials[i].color = VEC4_ONE;
 
-		String texPath = "tex/" + matInfo[i].texName;
-		materials[i].texture.Load(texPath);
+		String path("tex/");
+		path.Append(matInfo[i].texName);
+		materials[i].texture.Load(path);
 	}
 
 	numVertices = vertices.Count();

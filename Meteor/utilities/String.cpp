@@ -1,6 +1,6 @@
 #include "String.h"
 
-#include "UnicodeUtils.h"
+#include "Unicode.h"
 #include "StringUtils.h"
 
 String::String():
@@ -91,14 +91,7 @@ String operator + (const String& a, const String& b)
 
 bool String::operator == (const String& other) const
 {
-	if(size != other.Size()) return false;
-
-	const char* otherSequence = other.Data();
-	for(int i = 0, n = string_size(sequence); i < n; ++i)
-	{
-		if(sequence[i] != otherSequence[i]) return false;
-	}
-	return true;
+	return compare_strings(sequence, other.sequence) == 0;
 }
 
 bool String::operator != (const String& other) const
@@ -125,43 +118,16 @@ void String::Append(const char* first, const char* last)
 	Append(first, last - first);
 }
 
-void String::Append(const char32_t* s, size_t n)
+void String::Append(const String& other)
 {
-	size_t sizeUTF8 = utf32_octet_count(s, n);
-	Reserve(size + sizeUTF8);
-
-	for(size_t i = 0; i < n; ++i)
-	{
-		if(s[i] < 0x80)
-		{
-			sequence[size++] = s[i];
-		}
-		else if(s[i] < 0x800)
-		{
-			sequence[size++] = (s[i] >> 6        ) | 0xC0;
-			sequence[size++] = (s[i]       & 0x3F) | 0x80;
-		}
-		else if(s[i] < 0x10000)
-		{
-			sequence[size++] = (s[i] >> 12       ) | 0xE0;
-			sequence[size++] = (s[i] >> 6  & 0x3F) | 0x80;
-			sequence[size++] = (s[i]       & 0x3F) | 0x80;
-		}
-		else
-		{
-			sequence[size++] = (s[i] >> 18       ) | 0xF0;
-			sequence[size++] = (s[i] >> 12 & 0x3F) | 0x80;
-			sequence[size++] = (s[i] >> 6  & 0x3F) | 0x80;
-			sequence[size++] = (s[i]       & 0x3F) | 0x80;
-		}
-	}
-	sequence[size] = '\0';
+	Append(other.sequence, other.size);
 }
 
 void String::Reserve(size_t newSize)
 {
 	if(newSize <= capacity) return;
 
+	// create new, resized buffer
 	size_t newCapacity = newSize | 0xF;
 	if(capacity / 2 > newCapacity / 3)
 		newCapacity = capacity + capacity / 2;
@@ -169,6 +135,7 @@ void String::Reserve(size_t newSize)
 	char* prevSequence = sequence;
 	sequence = new char[newCapacity + 1];
 
+	// copy over to new buffer and delete old
 	if(prevSequence != nullptr)
 	{
 		for(size_t i = 0; i < size; ++i)
@@ -176,6 +143,7 @@ void String::Reserve(size_t newSize)
 	}
 	delete[] prevSequence;
 
+	// reset things to match new capacity
 	sequence[newCapacity] = '\0';
 	capacity = newCapacity;
 }

@@ -1,6 +1,6 @@
 #include "FileHandling.h"
 
-#include "UnicodeUtils.h"
+#include "Unicode.h"
 #include "Logging.h"
 
 #if defined(_WIN32)
@@ -90,6 +90,7 @@ size_t load_binary_file(void** data, const char* filePath)
 	HANDLE file = open_file(filePath, FILE_MODE_READ);
 	if(file == INVALID_HANDLE_VALUE) return 0;
 
+	// determine file size
 	BY_HANDLE_FILE_INFORMATION fileInfo = {};
     BOOL gotFileInfo = GetFileInformationByHandle(file, &fileInfo);
 	if(gotFileInfo == FALSE)
@@ -99,10 +100,10 @@ size_t load_binary_file(void** data, const char* filePath)
 		CloseHandle(file);
 		return 0;
 	}
-
 	DWORD size = fileInfo.nFileSizeLow;
-	char* buffer = new char[size];
 
+	// copy file data into a buffer
+	char* buffer = new char[size];
 	DWORD numBytesRead;
 	BOOL fileRead = ReadFile(file, buffer, size, &numBytesRead, NULL);
 	if(fileRead == FALSE || numBytesRead == 0)
@@ -114,6 +115,7 @@ size_t load_binary_file(void** data, const char* filePath)
 		return 0;
 	}
 
+	// close file and return buffer full of data
 	CloseHandle(file);
 
 	*data = buffer;
@@ -144,6 +146,8 @@ void save_text_file(const char* data, size_t size, const char* filePath, FileWri
 {
 	HANDLE file = open_file(filePath, writeMode);
 
+	// if file is being overwritten, clear the file and write a byte-order mark at the
+	// beginning of the file to indicate that it's a UTF-8-encoded text file
 	DWORD numBytesWritten;
 	BOOL fileWrote;
 	if(writeMode == FILE_MODE_OVERWRITE)
@@ -157,6 +161,7 @@ void save_text_file(const char* data, size_t size, const char* filePath, FileWri
 		}
 	}
 
+	// then append the data regardless of whether we are in append mode
 	OVERLAPPED overlap = {};
 	overlap.Offset = 0xFFFFFFFF;
 	overlap.OffsetHigh = 0xFFFFFFFF;

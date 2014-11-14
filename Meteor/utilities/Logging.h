@@ -12,7 +12,7 @@ namespace Log
 
 	void Clear_File();
 	void Inc_Time();
-	void Write(bool outputToConsole = false);
+	void Output(bool printToConsole = false);
 	void Add(LogLevel level, const char* format, ...);
 	const char* Get_Text();
 }

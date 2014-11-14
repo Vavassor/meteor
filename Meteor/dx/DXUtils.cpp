@@ -1,6 +1,6 @@
 #include "DXUtils.h"
 
-#include "utilities/UnicodeUtils.h"
+#include "utilities/Unicode.h"
 
 #include <DxErr.h>
 

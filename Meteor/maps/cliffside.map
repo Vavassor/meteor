@@ -1,0 +1,63 @@
+﻿Data: {
+	music: sounds/seiren.mp3
+	bg: tex/sky.png
+	surface: meshes/unfolding.fbx
+}
+Entities: {
+	Static_13: {
+		position: (1151.7, 0, 549.1) dimensions: (620 100 10)
+		scale: (1 1 1)
+		orientation: (1 0 0 0)
+		collides: false
+		texture: tex/railing.png
+		texCoords: (
+			0.0000
+			0.0000
+			1.0000
+			1.0000
+		)
+		inBackground: false
+		isBillboarded: false
+		isHideable: false
+	}
+	Static_17: {
+		position: (1149.6, 0, 451.2)
+		dimensions: (620 100 10)
+		scale: (1 1 1)
+		orientation: (1 0 0 0)
+		collides: false
+		texture: tex/railing_white.png
+		texCoords: (0 0 1 1)
+		inBackground: false
+		isBillboarded: false
+		isHideable: false
+	}
+	SnowEmitter_11: {
+		position: (1150 1000 500)
+		dimensions: (2400 50 1200)
+		scale: (1 1 1)
+		orientation: (1 0 0 0)
+		collides: false
+		velocity: (0 0 0)
+		texture: tex/snow.png
+		maxParticles: 1000
+		isBillboarded: true
+	}
+}
+Map: {
+	width: 8
+	height: 8
+	Tiles: (
+		0 0 0 0 0 0 0 0
+		0 0 0 0 0 0 0 0
+		0 0 0 0 0 0 0 0
+		0 0 0 0 0 0 0 0
+		0 0 0 0 0 0 0 0
+		0 0 0 0 0 0 0 0
+		0 0 0 0 0 0 0 0
+		0 0 0 0 0 0 0 0
+	)
+	SpawnPoints: {
+		point1: (0 0 0)
+	}
+}

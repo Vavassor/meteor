@@ -1,5 +1,7 @@
 #include "RandomUniform.h"
 
+namespace random {
+
 #define MT_LENGTH 624
 #define MT_IA 379
 
@@ -155,24 +157,18 @@ static unsigned long mt_random()
 	return r;
 }
 
-int random_int(int min, int max)
+int integer_range(int min, int max)
 {
 	return min + int(mt_random() % (unsigned long)(max - min + 1));
 }
 
-float random_float(float min, float max)
-{
-	float d = float(mt_random()) / 4294967296.0f;
-	return min + d * (max - min);
-}
-
-double random_double(double min, double max)
+double real_range(double min, double max)
 {
 	double d = double(mt_random()) / 4294967296.0;
 	return min + d * (max - min);
 }
 
-double random_uniform()
+double uniform_real()
 {
 	return double(mt_random()) / 4294967296.0;
 }
@@ -194,7 +190,9 @@ void reseed_unique(unsigned long seedBase, unsigned long seedOffset)
 	sequenceOffset = permute_sequence(permute_sequence(seedOffset) + 0x46790905ul);
 }
 
-unsigned int unique_random_int()
+unsigned int unique_int()
 {
 	return permute_sequence((permute_sequence(sequenceIndex++) + sequenceOffset) ^ 0x5BF03635ul);
 }
+
+} // namespace random

@@ -12,11 +12,11 @@ public:
 
 	static void Initialize();
 	static void Terminate();
-	static Sound* CreateSound(Type type = SOUND_EFFECT);
-	static void DestroySound(Sound* sound);
+	static Sound* Create_Sound(Type type = SOUND_EFFECT);
+	static void Destroy_Sound(Sound* sound);
 	static void Update();
-	static void SetGroupVolume(float volume, Type channelType = SYSTEM);
-	static float GetGroupVolume(Type channelType = SYSTEM);
+	static void Set_Group_Volume(float volume, Type channelType = SYSTEM);
+	static float Get_Group_Volume(Type channelType = SYSTEM);
 
 	FMOD_SOUND* sound;
 	FMOD_CHANNEL* channel;
@@ -27,19 +27,14 @@ public:
 	Sound();
 	~Sound();
 
-	void SetVolume(float vol);
-	void LoadAudio(const String& fileName);
-	void LoadStream(const String& fileName);
+	void Set_Volume(float vol);
+	void Load_Audio(const String& fileName);
+	void Load_Stream(const String& fileName);
 	void Unload();
 	void Play(bool pause = false);
-	void SetPause(bool pause);
-	void TogglePause();
-	bool IsPlaying() const;
-
-private:
-	static const int MAX_SOUNDS = 32;
-	static Sound* sounds[MAX_SOUNDS];
-	static int numSounds;
+	void Set_Pause(bool pause);
+	void Toggle_Pause();
+	bool Is_Playing() const;
 };
 
 #endif

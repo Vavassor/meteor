@@ -4,8 +4,6 @@
 #include "utilities/Maths.h"
 #include "utilities/stb_image.h"
 
-#include "GlobalInfo.h"
-
 GLTexture::TextureRecord GLTexture::loadedTextures[MAX_NUM_TEXTURES];
 
 void GLTexture::Initialize()
@@ -81,13 +79,14 @@ bool GLTexture::Load(const String& fileName)
 
 bool GLTexture::LoadImageData(const String& fileName)
 {
-	String filePath = module_directory + fileName;
-	String errorText = "Error loading file " + filePath + "! -> ";
+	String errorText("Error loading file ");
+	errorText.Append(fileName);
+	errorText.Append("! -> ");
 
-	FILE* file = fopen(filePath.Data(), "rb");
+	FILE* file = fopen(fileName.Data(), "rb");
 	if(file == nullptr)
 	{
-		Log::Add(Log::ISSUE, "%s file could not be opened", errorText.Data());
+		LOG_ISSUE("%s : file could not be opened", errorText.Data());
 		fclose(file);
 		return false;
 	}
@@ -96,7 +95,7 @@ bool GLTexture::LoadImageData(const String& fileName)
 	unsigned char* data = stbi_load_from_file(file, &width, &height, &numComponents, 0);
 	if(data == nullptr)
 	{
-		Log::Add(Log::ISSUE, "%s STB IMAGE ERROR: %s", errorText.Data(), stbi_failure_reason());
+		LOG_ISSUE("%s STB IMAGE ERROR: %s", errorText.Data(), stbi_failure_reason());
 		fclose(file);
 		return false;
 	}
@@ -152,7 +151,7 @@ bool GLTexture::BufferData(GLubyte* data, int numComponents, const String& error
 
 	if(GLEW_EXT_texture_filter_anisotropic)
 	{
-		float anisotropy = texture_anisotropy;
+		float anisotropy = 16.0f;
 		if(anisotropy > gl_max_texture_max_anisotropy_ext)
 			anisotropy = gl_max_texture_max_anisotropy_ext;
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);

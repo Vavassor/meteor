@@ -73,13 +73,16 @@ public:
 	{
 		if(newSize == 0) return;
 
+		// make a new buffer and copy over elements
 		T* newArray = (T*) ::operator new[](newSize * sizeof(T));
-
 		size_t count = Count();
 		size_t minSize = (newSize < count) ? newSize : count;
 		for(size_t i = 0; i < minSize; ++i)
 			new(&newArray[i]) T(buffer[i]);
 
+		// deconstruct and delete elements in old buffer
+		for(T *it = buffer, *stop = last; it != stop; ++it)
+			it->~T();
 		::operator delete[](buffer);
 		buffer = newArray;
 

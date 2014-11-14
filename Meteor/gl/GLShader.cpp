@@ -2,8 +2,6 @@
 
 #include "utilities/Logging.h"
 
-#include "GlobalInfo.h"
-
 #include <cstdio>
 
 GLShader::GLShader():
@@ -74,13 +72,13 @@ bool GLShader::Load(const String& vertexFileName, const String& pixelFileName)
 
 GLuint GLShader::LoadShaderGL(GLenum Type, const String& shaderFileName)
 {
-	String folder = "shaders/gl/";
-	String fileName = module_directory + folder + shaderFileName;
+	String path("shaders/gl/");
+	path.Append(shaderFileName);
 
-	FILE* File = fopen(fileName.Data(), "rb");
+	FILE* File = fopen(path.Data(), "rb");
 	if(File == NULL)
 	{
-		Log::Add(Log::ISSUE, "couldn't load shader file: %s", shaderFileName.Data());
+		LOG_ISSUE("couldn't load shader file: %s", shaderFileName.Data());
 		return 0;
 	}
 
@@ -112,7 +110,7 @@ GLuint GLShader::LoadShaderGL(GLenum Type, const String& shaderFileName)
 			char* InfoLog = new char[InfoLogLength];
 			int CharsWritten  = 0;
 			glGetShaderInfoLog(Shader, InfoLogLength, &CharsWritten, InfoLog);
-			Log::Add(Log::ISSUE, "Error compiling shader %s\n%s", shaderFileName.Data(), InfoLog);
+			LOG_ISSUE("Error compiling shader %s\n%s", shaderFileName.Data(), InfoLog);
 			delete[] InfoLog;
 		}
 
