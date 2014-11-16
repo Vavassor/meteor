@@ -41,22 +41,22 @@ bool DXShader::Load(const String& vertexFileName, const String& pixelFileName)
 	{
 		delete[] vBuffer;
 		LOG_ISSUE("DIRECTX ERROR: %s - failed to load vertex shader: %s",
-			dxerr_text(hr), vertexFileName);
+			hresult_text(hr).Data(), vertexFileName.Data());
 		return false;
 	}
 
 	// create input layout
 	const D3D11_INPUT_ELEMENT_DESC basicVertexLayoutDesc[] =
-    {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-    };
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
 	const D3D11_INPUT_ELEMENT_DESC particleVertexLayoutDesc[] =
-    {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "COLOR",	  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,		 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-    };
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,		 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
 
 	const D3D11_INPUT_ELEMENT_DESC* inputLayoutDesc = (layoutType == 0) ? basicVertexLayoutDesc : particleVertexLayoutDesc;
 	unsigned inputDescSize = (layoutType == 0) ? ARRAYSIZE(basicVertexLayoutDesc) : ARRAYSIZE(particleVertexLayoutDesc);
@@ -66,7 +66,7 @@ bool DXShader::Load(const String& vertexFileName, const String& pixelFileName)
 	if(FAILED(hr))
 	{
 		LOG_ISSUE("DIRECTX ERROR: %s - failed to create input layout "
-			"for vertex shader: %s", dxerr_text(hr), vertexFileName);
+			"for vertex shader: %s", hresult_text(hr).Data(), vertexFileName.Data());
 		return false;
 	}
 
@@ -76,12 +76,12 @@ bool DXShader::Load(const String& vertexFileName, const String& pixelFileName)
 
 	void* psBuffer = nullptr;
 	unsigned psSize = load_binary_file(&psBuffer, pixelFile.Data());
-    hr = _Device->CreatePixelShader(psBuffer, psSize, NULL, &pixelShader);
+	hr = _Device->CreatePixelShader(psBuffer, psSize, NULL, &pixelShader);
 	delete[] psBuffer;
 	if(FAILED(hr))
 	{
 		LOG_ISSUE("DIRECTX ERROR: %s - failed to load pixel shader: %s",
-			dxerr_text(hr), pixelFileName);
+			hresult_text(hr).Data(), pixelFileName.Data());
 		return false;
 	}
 
@@ -117,15 +117,16 @@ bool DXShader::Load(const String& vertexFileName, const String& pixelFileName)
 		vertexConstantBufferSize += vertexConstants[i].GetSize();
 
 	D3D11_BUFFER_DESC constantBufferDesc = {0};
-    constantBufferDesc.ByteWidth = sizeof(float) * vertexConstantBufferSize;
-    constantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-    constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	constantBufferDesc.ByteWidth = sizeof(float) * vertexConstantBufferSize;
+	constantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	constantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    _Device->CreateBuffer(&constantBufferDesc, nullptr, &vertCB);
+	_Device->CreateBuffer(&constantBufferDesc, nullptr, &vertCB);
 	if(FAILED(hr))
 	{
 		LOG_ISSUE("DIRECTX ERROR: %s - failed to create constant buffer "
-			"for shaders: %s and %s", dxerr_text(hr), vertexFileName, pixelFileName);
+			"for shaders: %s and %s", hresult_text(hr).Data(), vertexFileName.Data(),
+			pixelFileName.Data());
 		return false;
 	}
 
@@ -134,15 +135,16 @@ bool DXShader::Load(const String& vertexFileName, const String& pixelFileName)
 		pixelConstantBufferSize += pixelConstants[i].GetSize();
 
 	D3D11_BUFFER_DESC pixelCBDesc = {0};
-    pixelCBDesc.ByteWidth = sizeof(float) * pixelConstantBufferSize;
-    pixelCBDesc.Usage = D3D11_USAGE_DYNAMIC;
-    pixelCBDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	pixelCBDesc.ByteWidth = sizeof(float) * pixelConstantBufferSize;
+	pixelCBDesc.Usage = D3D11_USAGE_DYNAMIC;
+	pixelCBDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	pixelCBDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	_Device->CreateBuffer(&pixelCBDesc, nullptr, &pixelCB);
 	if(FAILED(hr))
 	{
 		LOG_ISSUE("DIRECTX ERROR: %s - failed to create pixel constant buffer "
-			"for shaders: %s and %s", dxerr_text(hr), vertexFileName, pixelFileName);
+			"for shaders: %s and %s", hresult_text(hr).Data(), vertexFileName.Data(),
+			pixelFileName.Data());
 		return false;
 	}
 	return true;

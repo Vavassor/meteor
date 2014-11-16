@@ -137,11 +137,11 @@ bool DXTexture::LoadDataToDX(BYTE* data, int bpp, int pitch, const String& error
 	if(format == DXGI_FORMAT_UNKNOWN)
 	{
 		LOG_ISSUE("%s DIRECTX ERROR: %s bit format of image not supported!",
-			errorText.Data(), dxerr_text(hr));
+			errorText.Data(), hresult_text(hr).Data());
 		return false;
 	}
 
-	UINT numMipmaps = log2((width < height) ? width : height);
+	UINT numMipmaps = binary_log((width < height)? width : height);
 
 	D3D11_TEXTURE2D_DESC textureDesc = {0};
 	textureDesc.Width = width;
@@ -160,7 +160,7 @@ bool DXTexture::LoadDataToDX(BYTE* data, int bpp, int pitch, const String& error
 	if(FAILED(hr))
 	{
 		LOG_ISSUE("%s DIRECTX ERROR: %s texture could not be created!",
-			errorText.Data(), dxerr_text(hr));
+			errorText.Data(), hresult_text(hr).Data());
 		return false;
 	}
 	_DeviceContext->UpdateSubresource(texture, 0, NULL, data, pitch, 0);
@@ -176,7 +176,7 @@ bool DXTexture::LoadDataToDX(BYTE* data, int bpp, int pitch, const String& error
 	if(FAILED(hr))
 	{
 		LOG_ISSUE("%s DIRECTX ERROR: %s shader resource view could not be made",
-			errorText.Data(), dxerr_text(hr));
+			errorText.Data(), hresult_text(hr).Data());
 		return false;
 	}
 	_DeviceContext->GenerateMips(textureView);
@@ -207,7 +207,7 @@ bool DXTexture::LoadDataToDX(BYTE* data, int bpp, int pitch, const String& error
 	if(FAILED(hr))
 	{
 		LOG_ISSUE("%s DIRECTX ERROR: %s sampler could not be made for texture",
-			errorText.Data(), dxerr_text(hr));
+			errorText.Data(), hresult_text(hr).Data());
 		return false;
 	}
 	return true;

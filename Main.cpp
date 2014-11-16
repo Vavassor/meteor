@@ -3,8 +3,6 @@
 #include "PlatformDefines.h"
 #include "Game.h"
 
-// #include <vld.h>
-
 #if defined(OS_WINDOWS)
 #include "windows/WindowsWindow.h"
 

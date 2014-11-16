@@ -4,9 +4,7 @@
 int mod(int a, int b);
 long long mod_power(int a, int n, int modulus);
 
-#if defined(_MSC_VER)
-double log2(double x);
-#endif
+double binary_log(double x);
 
 bool float_equals(float a, float b);
 

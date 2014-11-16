@@ -284,28 +284,28 @@ bool DXRenderer::Initialize(HWND hWnd, bool isFullscreen, bool enableDebugging)
 			hr = d3dDevice->CreateQuery(&queryDesc, &deviceQueryDisjoint[i]);
 			if(FAILED(hr))
 			{
-				Log::Add(Log::INFO, "%s%s%s", "DIRECTX: ", dxerr_text(hr), " - failed to create timestamp disjoint query object");
+				LOG_INFO("DIRECTX: %s - failed to create timestamp disjoint query object", hresult_text(hr).Data());
 			}
 
 			queryDesc.Query = D3D11_QUERY_TIMESTAMP;
 			hr = d3dDevice->CreateQuery(&queryDesc, &deviceQueryBeginTimestamp[i]);
 			if(FAILED(hr))
 			{
-				Log::Add(Log::INFO, "%s%s%s", "DIRECTX: ", dxerr_text(hr), " - failed to create beginning-of-frame timestamp query object");
+                LOG_INFO("DIRECTX: %s - failed to create beginning-of-frame timestamp query object", hresult_text(hr).Data());
 			}
 
 			queryDesc.Query = D3D11_QUERY_TIMESTAMP;
 			hr = d3dDevice->CreateQuery(&queryDesc, &deviceQueryEndTimestamp[i]);
 			if(FAILED(hr))
 			{
-				Log::Add(Log::INFO, "%s%s%s", "DIRECTX: ", dxerr_text(hr), " - failed to create end-of-frame timestamp query object");
+				LOG_INFO("DIRECTX: %s - failed to create end-of-frame timestamp query object", hresult_text(hr).Data());
 			}
 
 			queryDesc.Query = D3D11_QUERY_PIPELINE_STATISTICS;
 			hr = d3dDevice->CreateQuery(&queryDesc, &deviceQueryPipeline[i]);
 			if(FAILED(hr))
 			{
-				Log::Add(Log::INFO, "%s%s%s", "DIRECTX: ", dxerr_text(hr), " - failed to create pipeline statistics query object");
+				LOG_INFO("DIRECTX: %s - failed to create pipeline statistics query object", hresult_text(hr).Data());
 			}
 		}
 	}
@@ -392,7 +392,7 @@ bool DXRenderer::CreateSwapChain(IDXGIAdapter* dxgiAdapter, HWND hWnd, bool isFu
 		return false;
 	}
 
-	hr = dxgiFactory->MakeWindowAssociation(hWnd, NULL);
+	hr = dxgiFactory->MakeWindowAssociation(hWnd, 0x0);
 	if(FAILED(hr))
 	{
 		DXError(hr, "failed to attach new swap chain to window!");
@@ -539,8 +539,8 @@ void DXRenderer::Resize(int dimX, int dimY)
 	viewport.TopLeftY = 0.0f;
 	viewport.Width = static_cast<float>(backBufferDesc.Width);
 	viewport.Height = static_cast<float>(backBufferDesc.Height);
-	viewport.MinDepth = D3D11_MIN_DEPTH;
-	viewport.MaxDepth = D3D11_MAX_DEPTH;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
 	_DeviceContext->RSSetViewports(1, &viewport);
 }
 
@@ -744,5 +744,5 @@ void DXRenderer::SetBlendState(BlendState state)
 
 void DXRenderer::DXError(HRESULT hr, const char* errorString)
 {
-	Log::Add(Log::ISSUE, "DIRECTX ERROR: %s - %s", dxerr_text(hr), errorString);
+	LOG_ISSUE("DIRECTX ERROR: %s - %s", hresult_text(hr).Data(), errorString);
 }

@@ -277,9 +277,9 @@ bool WindowsWindow::Create(HINSTANCE instance)
 	#if defined(GRAPHICS_DIRECTX)
 	if(render_mode == RENDER_DX)
 	{
-		if(!DXRenderer::Initialize(hWnd, isFullscreen, enableDebugging))
+		if(!DXRenderer::Initialize(window, fullscreen, enable_debugging))
 			return false;
-		DXRenderer::SetVSync(enableVSync);
+		DXRenderer::SetVSync(vertical_synchronization);
 	}
 	#endif
 
@@ -650,8 +650,9 @@ LONG WINAPI UnhandledException(LPEXCEPTION_POINTERS exceptionInfo)
 
 	wchar_t message[255];
 	DWORD codeBase = (DWORD)GetModuleHandle(NULL);
-	swprintf_s<255>(
+	swprintf(
 		message,
+		255,
 		L"An exception occurred which wasn't handled!\nCode: %s (0x%08X)\nOffset: 0x%08X\nCodebase: 0x%08X",
 		exceptionString,
 		exceptionInfo->ExceptionRecord->ExceptionCode,

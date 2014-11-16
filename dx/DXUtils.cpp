@@ -2,6 +2,7 @@
 
 #include "utilities/Unicode.h"
 
+#if 0
 #include <DxErr.h>
 
 String dxerr_text(HRESULT hr)
@@ -26,19 +27,20 @@ String dxerr_text(HRESULT hr)
 
 	return output;
 }
+#endif
 
 String hresult_text(HRESULT hr)
 {
 	LPTSTR errorText = NULL;
 
 	FormatMessage(
-	   FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
-	   NULL, // unused with FORMAT_MESSAGE_FROM_SYSTEM
-	   hr,
-	   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-	   errorText,
-	   0, // minimum size for output buffer
-	   NULL);
+		FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL, // unused with FORMAT_MESSAGE_FROM_SYSTEM
+		hr,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		errorText,
+		0, // minimum size for output buffer
+		NULL);
 
 	String output;
 	if(errorText != NULL)

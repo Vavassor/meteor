@@ -8,9 +8,9 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-#include <Windows.h>
+#include "windows.h"
 
-String dxerr_text(HRESULT hr);
+// String dxerr_text(HRESULT hr);
 String hresult_text(HRESULT hr);
 
 const char* get_feature_level_name(D3D_FEATURE_LEVEL level);

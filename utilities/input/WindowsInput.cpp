@@ -7,13 +7,13 @@
 #include "utilities/Logging.h"
 #include "utilities/DeviceGUID.h"
 
-#include <XInput.h>
+#include "xinput.h"
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-#include <Dbt.h>
-#include <Windows.h>
+#include "dbt.h"
+#include "windows.h"
 
 #include <math.h>
 

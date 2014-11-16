@@ -2,7 +2,7 @@
 #define DX_INFO_H
 
 #include <d3d11.h>
-#include <DXGI.h>
+#include "dxgi.h"
 
 extern ID3D11DeviceContext* _DeviceContext;
 extern ID3D11Device* _Device;
