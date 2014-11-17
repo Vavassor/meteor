@@ -1,7 +1,7 @@
 #ifndef SHADER_CONSTANT_H
 #define SHADER_CONSTANT_H
 
-#include "utilities/String.h"
+#include "../utilities/String.h"
 
 enum ShaderType
 {

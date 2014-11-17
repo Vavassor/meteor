@@ -1,29 +1,29 @@
 #include "WindowsWindow.h"
 
-#include "resource.h"
+#include "../resource.h"
 
-#include "utilities/Textblock.h"
-#include "utilities/Unicode.h"
-#include "utilities/Logging.h"
-#include "utilities/Macros.h"
-#include "utilities/Timer.h"
-#include "utilities/concurrent/Benaphore.h"
-#include "utilities/input/Input.h"
+#include "../utilities/Textblock.h"
+#include "../utilities/Unicode.h"
+#include "../utilities/Logging.h"
+#include "../utilities/Macros.h"
+#include "../utilities/Timer.h"
+#include "../utilities/concurrent/Benaphore.h"
+#include "../utilities/input/Input.h"
 
 // engine
-#include "Sound.h"
-#include "Game.h"
-#include "ThreadMessages.h"
+#include "../Sound.h"
+#include "../Game.h"
+#include "../ThreadMessages.h"
 
 #if defined(GRAPHICS_OPENGL)
-#include "gl/GLRenderer.h"
+#include "../gl/GLRenderer.h"
 
 #include <gl/wglew.h>
 #include <gl/wglext.h>
 #endif
 
 #if defined(GRAPHICS_DIRECTX)
-#include "dx/DXRenderer.h"
+#include "../dx/DXRenderer.h"
 #endif
 
 // Windows

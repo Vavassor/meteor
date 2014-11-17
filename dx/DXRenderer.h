@@ -3,7 +3,7 @@
 
 #include "DXInfo.h"
 
-#include "utilities/GLMath.h"
+#include "../utilities/GLMath.h"
 
 namespace DXRenderer
 {

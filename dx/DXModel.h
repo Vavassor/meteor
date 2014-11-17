@@ -3,10 +3,10 @@
 
 #include "DXShader.h"
 
-#include "utilities/GLMath.h"
-#include "utilities/String.h"
+#include "../utilities/GLMath.h"
+#include "../utilities/String.h"
 
-#include "RenderPhase.h"
+#include "../RenderPhase.h"
 
 enum ModelUsage
 {

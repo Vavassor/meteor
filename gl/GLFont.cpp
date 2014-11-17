@@ -1,6 +1,6 @@
 #include "GLFont.h"
 
-#include "utilities/Logging.h"
+#include "../utilities/Logging.h"
 
 #include <cstdlib>
 #include <fstream>

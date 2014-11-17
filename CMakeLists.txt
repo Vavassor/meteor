@@ -1,5 +1,7 @@
 cmake_minimum_required (VERSION 2.8)
-project (METEOR)
+project (Meteor)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 if (WIN32)
 set (FMOD_SDK_DIR "C:/Program Files (x86)/FMOD SoundSystem/FMOD Programmers API Windows/api")
@@ -9,22 +11,31 @@ endif ()
 
 if (WIN32)
 set (OPENGL TRUE BOOL)
-if (MSVC)
 set (DIRECTX TRUE BOOL)
-endif (MSVC)
 elseif (UNIX)
 set (OPENGL TRUE BOOL)
 endif ()
 
+if (DIRECTX)
+set (DIRECTX_SDK_DIR "C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)")
+endif ()
+
 # ----- INCLUDE DIRECTORIES -----
-set (INCLUDE_PATHS
-    ${METEOR_SOURCE_DIR}
-    ${FMOD_SDK_DIR}/inc
-)
+set (INCLUDE_PATHS ${FMOD_SDK_DIR}/inc)
+
+if (MSVC AND DIRECTX)
+list (APPEND INCLUDE_PATHS ${DIRECTX_SDK_DIR}/Include)
+endif ()
+
 include_directories (${INCLUDE_PATHS})
 
 # ----- LINK DIRECTORIES -----
 set (LINK_PATHS ${FMOD_SDK_DIR}/lib)
+
+if (MSVC AND DIRECTX)
+list (APPEND LINK_PATHS ${DIRECTX_SDK_DIR}/Lib/x86)
+endif ()
+
 link_directories (${LINK_PATHS})
 
 # ----- SOURCE FILES -----
@@ -33,7 +44,10 @@ set (SOURCES
     Game.cpp
     Camera.cpp
     Sound.cpp
+)
+source_group ("" FILES ${SOURCES})
 
+set (UTILITIES_SOURCES
     utilities/String.cpp
     utilities/Logging.cpp
     utilities/Timer.cpp
@@ -47,17 +61,31 @@ set (SOURCES
     utilities/Textblock.cpp
     utilities/stb_image.c
     utilities/MeshLoading.cpp
-    utilities/concurrent/Benaphore.cpp
-    utilities/concurrent/Mutex.cpp
-    utilities/input/Input.cpp
-)
-
-set (GL_SOURCE_FILES
-    utilities/GLUtils.cpp
+	utilities/GLUtils.cpp
     utilities/Collision.cpp
     utilities/Noise.cpp
-    utilities/collections/HandleManager.cpp
+	utilities/BitManipulation.cpp
+)
+source_group ("utilities" FILES ${UTILITIES_SOURCES})
 
+set (COLLECTIONS_SOURCES
+	utilities/collections/HandleManager.cpp
+)
+source_group ("utilities\\collections" FILES ${COLLECTIONS_SOURCES})
+
+set (CONCURRENT_SOURCES
+	utilities/concurrent/Benaphore.cpp
+	utilities/concurrent/Mutex.cpp
+)
+source_group("utilities\\concurrent" FILES ${CONCURRENT_SOURCES})
+
+set (INPUT_SOURCES
+	utilities/input/Input.cpp
+	utilities/input/WindowsInput.cpp
+)
+source_group ("utilities\\input" FILES ${INPUT_SOURCES})
+
+set (GL_SOURCES
     gl/GLTexture.cpp
     gl/GLUniformBuffer.cpp
     gl/GLShader.cpp
@@ -70,9 +98,7 @@ set (GL_SOURCE_FILES
     gl/GLRenderer.cpp
 )
 
-set (DX_SOURCE_FILES
-	utilities/BitManipulation.cpp
-
+set (DX_SOURCES
     dx/DXUtils.cpp
     dx/DXTexture.cpp
     dx/ShaderConstant.cpp
@@ -82,27 +108,40 @@ set (DX_SOURCE_FILES
     dx/DXRenderer.cpp
 )
 
-set (WINDOWS_SOURCE_FILES
-    utilities/input/WindowsInput.cpp
+set (WINDOWS_SOURCES
     windows/WindowsWindow.cpp
 )
 
+list (APPEND SOURCES
+	${UTILITIES_SOURCES}
+	${COLLECTIONS_SOURCES}
+	${CONCURRENT_SOURCES}
+	${INPUT_SOURCES}
+)
+
 if (OPENGL)
-list (APPEND SOURCES ${GL_SOURCE_FILES})
+source_group ("gl" FILES ${GL_SOURCES})
+list (APPEND SOURCES ${GL_SOURCES})
 endif ()
+
 if (DIRECTX)
-list (APPEND SOURCES ${DX_SOURCE_FILES})
+source_group ("dx" FILES ${DX_SOURCES})
+list (APPEND SOURCES ${DX_SOURCES})
 endif ()
 
 if (WIN32)
-list (APPEND SOURCES ${WINDOWS_SOURCE_FILES})
+source_group ("windows" FILES ${WINDOWS_SOURCES})
+list (APPEND SOURCES ${WINDOWS_SOURCES})
 endif ()
 
 add_executable (Meteor ${SOURCES})
 
 # ----- DEFINES -----
 if (MINGW)
-add_definitions (-std=c++11)
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif ()
+if (MSVC)
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
 endif ()
 
 set (DEFINITIONS
@@ -123,9 +162,9 @@ if (DIRECTX)
 list (APPEND DEFINITIONS GRAPHICS_DIRECTX)
 endif ()
 
-list (APPEND DEFINITIONS ${DEBUG_DEFINITIONS})
-
 set_target_properties (Meteor PROPERTIES COMPILE_DEFINITIONS "${DEFINITIONS}")
+set_target_properties (Meteor PROPERTIES COMPILE_DEFINITIONS_DEBUG "${DEBUG_DEFINITIONS}")
+set_target_properties (Meteor PROPERTIES COMPILE_DEFINITIONS_RELEASE "${RELEASE_DEFINITIONS}")
 
 # ----- LINKER OPTIONS -----
 if (MINGW)
@@ -133,14 +172,20 @@ set (CMAKE_EXE_LINKER_FLAGS
     "${CMAKE_EXE_LINKER_FLAGS} -municode -mwindows")
 elseif (MSVC)
 set (CMAKE_EXE_LINKER_FLAGS
-    "${CMAKE_EXE_LINKER_FLAGS} /subsystem:windows")
+    "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /INCREMENTAL:NO")
 endif ()
 
 # ----- LIBRARIES -----
-set (LIBRARIES fmodex)
-set (GL_LIBRARIES glew32 opengl32 glu32)
-set (DX_LIBRARIES d3dx11 dxgi)
+set (LIBRARIES)
+set (GL_LIBRARIES glew32s opengl32 glu32)
+set (DX_LIBRARIES d3d11 dxgi)
 set (WINDOWS_LIBRARIES xinput)
+
+if (MSVC)
+list (APPEND LIBRARIES fmodex_vc)
+else ()
+list (APPEND LIBRARIES fmodex)
+endif ()
 
 if (OPENGL)
 list (APPEND LIBRARIES ${GL_LIBRARIES})

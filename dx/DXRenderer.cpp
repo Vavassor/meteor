@@ -5,10 +5,10 @@
 #include "DXModel.h"
 #include "DXPrimitives.h"
 
-#include "utilities/Macros.h"
-#include "utilities/Logging.h"
+#include "../utilities/Macros.h"
+#include "../utilities/Logging.h"
 
-#include "CameraData.h"
+#include "../CameraData.h"
 
 #if _DEBUG
 #include <D3D11SDKLayers.h>

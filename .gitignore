@@ -29,9 +29,6 @@ obj/
 *.tmp
 *.tmp_proj
 
-# Clion files
-.idea/
-
 # Visual C++ cache files
 ipch/
 *.aps
@@ -39,3 +36,12 @@ ipch/
 *.opensdf
 *.sdf
 *.cachefile
+
+# Clion files
+.idea/
+
+# CMake files
+Meteor.dir/
+CMakeFiles/
+*.cmake
+CMakeCache.txt

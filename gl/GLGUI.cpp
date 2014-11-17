@@ -5,7 +5,7 @@
 #include "GLShader.h"
 #include "GLTexture.h"
 
-#include "utilities/Macros.h"
+#include "../utilities/Macros.h"
 
 using namespace std;
 

@@ -5,7 +5,7 @@
 #include "GLTexture.h"
 #include "GLShader.h"
 
-#include "RenderPhase.h"
+#include "../RenderPhase.h"
 
 struct GLMaterial
 {

@@ -3,7 +3,7 @@
 
 #include "GLInfo.h"
 
-#include "utilities/String.h"
+#include "../utilities/String.h"
 
 class GLTexture
 {

@@ -4,7 +4,7 @@
 #include "GLInfo.h"
 #include "GLTexture.h"
 
-#include "utilities/GLMath.h"
+#include "../utilities/GLMath.h"
 
 class GLShader
 {

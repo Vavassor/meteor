@@ -3,8 +3,8 @@
 #include "DXInfo.h"
 #include "DXUtils.h"
 
-#include "utilities/Logging.h"
-#include "utilities/Maths.h"
+#include "../utilities/Logging.h"
+#include "../utilities/Maths.h"
 
 namespace DXPrimitives
 {

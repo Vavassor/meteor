@@ -1,6 +1,6 @@
 #include "GLShader.h"
 
-#include "utilities/Logging.h"
+#include "../utilities/Logging.h"
 
 #include <cstdio>
 

@@ -2,8 +2,8 @@
 
 #include "DXUtils.h"
 
-#include "utilities/FileHandling.h"
-#include "utilities/Logging.h"
+#include "../utilities/FileHandling.h"
+#include "../utilities/Logging.h"
 
 float DXShader::vertBuffer[MAX_VERTEX_CONSTANTS * 16];
 float DXShader::pixelBuffer[MAX_PIXEL_CONSTANTS * 16];

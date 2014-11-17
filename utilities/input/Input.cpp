@@ -8,18 +8,18 @@
 
 #include "InternalGlobals.h"
 
-#include "utilities/Logging.h"
-#include "utilities/Macros.h"
+#include "../Logging.h"
+#include "../Macros.h"
 
 #if defined(_WIN32)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-#include "windows.h"
+#include <Windows.h>
 #endif
 
 #if defined(X11)
-#include "utilities/XLibUtils.h"
+#include "../XLibUtils.h"
 
 #define XK_LATIN1
 #define XK_MISCELLANY

@@ -3,7 +3,7 @@
 
 #include "DXInfo.h"
 
-#include "utilities/String.h"
+#include "../utilities/String.h"
 
 class DXTexture
 {

@@ -2,8 +2,8 @@
 
 #include "DXUtils.h"
 
-#include "utilities/MeshLoading.h"
-#include "utilities/Logging.h"
+#include "../utilities/MeshLoading.h"
+#include "../utilities/Logging.h"
 
 DXModel::DXModel()
 {

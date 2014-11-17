@@ -1,7 +1,7 @@
 #ifndef GL_PRIMITIVES_H
 #define GL_PRIMITIVES_H
 
-#include "utilities/GLMath.h"
+#include "../utilities/GLMath.h"
 
 namespace GLPrimitives
 {

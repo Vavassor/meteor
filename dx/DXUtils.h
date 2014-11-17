@@ -3,12 +3,12 @@
 
 #include "DXInfo.h"
 
-#include "utilities/String.h"
+#include "../utilities/String.h"
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-#include "windows.h"
+#include <Windows.h>
 
 // String dxerr_text(HRESULT hr);
 String hresult_text(HRESULT hr);

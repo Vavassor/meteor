@@ -3,8 +3,8 @@
 
 #include "GLInfo.h"
 
-#include "utilities/GLMath.h"
-#include "utilities/DataTypes.h"
+#include "../utilities/GLMath.h"
+#include "../utilities/DataTypes.h"
 
 struct ObjectBlock
 {

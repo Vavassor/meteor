@@ -1,7 +1,7 @@
 #include "GLModel.h"
 
-#include "utilities/String.h"
-#include "utilities/MeshLoading.h"
+#include "../utilities/String.h"
+#include "../utilities/MeshLoading.h"
 
 GLModel::GLModel()
 {

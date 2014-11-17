@@ -4,16 +4,16 @@
 
 #include "InternalGlobals.h"
 
-#include "utilities/Logging.h"
-#include "utilities/DeviceGUID.h"
+#include "../Logging.h"
+#include "../DeviceGUID.h"
 
-#include "xinput.h"
+#include <XInput.h>
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-#include "dbt.h"
-#include "windows.h"
+#include <dbt.h>
+#include <Windows.h>
 
 #include <math.h>
 

@@ -2,10 +2,10 @@
 
 #include "DXUtils.h"
 
-#include "utilities/stb_image.h"
-#include "utilities/Logging.h"
-#include "utilities/Maths.h"
-#include "utilities/BitManipulation.h"
+#include "../utilities/stb_image.h"
+#include "../utilities/Logging.h"
+#include "../utilities/Maths.h"
+#include "../utilities/BitManipulation.h"
 
 DXTexture::TextureRecord DXTexture::loadedTextures[MAX_NUM_TEXTURES];
 
