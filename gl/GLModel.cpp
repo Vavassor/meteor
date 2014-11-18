@@ -27,23 +27,23 @@ void GLModel::SetDefaults()
 
 void GLModel::LoadAsMesh(const String& filename)
 {
+	String path("meshes/");
+	path.Append(filename);
+
 	AutoArray<vec4> vertices;
 	AutoArray<vec3> normals;
 	AutoArray<vec2> texcoords;
 	AutoArray<unsigned short> elements;
 
 	MaterialInfo matInfo[MAX_MATERIALS];
-	numMaterials = load_obj(filename.Data(), vertices, normals, texcoords, elements, matInfo);
+	numMaterials = load_obj(path.Data(), vertices, normals, texcoords, elements, matInfo);
 
 	for(int i = 0; i < numMaterials; i++)
 	{
 		materials[i].startIndex = matInfo[i].startIndex;
 		materials[i].phase = (matInfo[i].alpha < 1.0f)? PHASE_TRANSPARENT : PHASE_SOLID;
 		materials[i].color = VEC4_ONE;
-
-		String path("tex/");
-		path.Append(matInfo[i].texName);
-		materials[i].texture.Load(path);
+		materials[i].texture.Load(matInfo[i].texName);
 	}
 
 	numVertices = vertices.Count();

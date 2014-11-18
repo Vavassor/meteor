@@ -14,8 +14,8 @@
 
 #if defined(GRAPHICS_OPENGL)
 #include "gl/GLRenderer.h"
+#include "glx_extensions.h"
 
-#include <GL/glxew.h>
 #include <GL/glx.h>
 #endif
 
@@ -200,21 +200,33 @@ bool X11Window::Create()
 		return false;
 	}
 
-	/*	glewExperimental needed for GL3.2+ forward-compatible context to prevent
-		glewInit's call to glGetString(GL_EXTENSIONS) which can cause
-		the error GL_INVALID_ENUM */
-	glewExperimental = GL_TRUE;
-	if(glewInit() != GLEW_OK)
+	// get procedures from OpenGL .dll
 	{
-		LOG_ISSUE("Could not obtain graphics library: glewInit failed!");
-		return false;
+		int loaded = ogl_LoadFunctions();
+		if(loaded == ogl_LOAD_FAILED)
+		{
+			int num_failed = loaded - ogl_LOAD_SUCCEEDED;
+			LOG_ISSUE("ogl_LoadFunctions failed! %i procedures failed to load", num_failed);
+			return false;
+		}
+	}
+
+	// get glx procedures
+	{
+		int loaded = glx_LoadFunctions(device);
+		if(loaded == glx_LOAD_FAILED)
+		{
+			int num_failed = loaded - glx_LOAD_SUCCEEDED;
+			LOG_ISSUE("glx_LoadFuntions failed: %i procedures didn't load", num_failed);
+			return false;
+		}
 	}
 
 	if(!GLRenderer::Initialize())
 		return false;
 
 	// set vertical synchronization
-	if(GLX_EXT_swap_control)
+	if(glx_ext_EXT_swap_control)
 	{
 		glXSwapIntervalEXT(display, glXGetCurrentDrawable(), enableVSync ? 1 : 0);
 	}

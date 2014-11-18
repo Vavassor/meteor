@@ -86,6 +86,7 @@ set (INPUT_SOURCES
 source_group ("utilities\\input" FILES ${INPUT_SOURCES})
 
 set (GL_SOURCES
+	gl/gl_core_3_3.c
     gl/GLTexture.cpp
     gl/GLUniformBuffer.cpp
     gl/GLShader.cpp
@@ -96,6 +97,10 @@ set (GL_SOURCES
     gl/GLFont.cpp
     gl/GLGUI.cpp
     gl/GLRenderer.cpp
+)
+
+set (WGL_SOURCES
+	windows/wgl_extensions.c
 )
 
 set (DX_SOURCES
@@ -122,6 +127,11 @@ list (APPEND SOURCES
 if (OPENGL)
 source_group ("gl" FILES ${GL_SOURCES})
 list (APPEND SOURCES ${GL_SOURCES})
+
+if (WIN32)
+list (APPEND WINDOWS_SOURCES ${WGL_SOURCES})
+endif (WIN32)
+
 endif ()
 
 if (DIRECTX)
@@ -177,7 +187,7 @@ endif ()
 
 # ----- LIBRARIES -----
 set (LIBRARIES)
-set (GL_LIBRARIES glew32s opengl32 glu32)
+set (GL_LIBRARIES opengl32 glu32)
 set (DX_LIBRARIES d3d11 dxgi)
 set (WINDOWS_LIBRARIES xinput)
 

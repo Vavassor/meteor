@@ -34,25 +34,25 @@ void DXModel::SetDefaults()
 	numIndices = 0;
 }
 
-void DXModel::LoadAsMesh(const String& fileName, ModelUsage usage)
+void DXModel::LoadAsMesh(const String& filename, ModelUsage usage)
 {
+	String path("meshes/");
+	path.Append(filename);
+
 	AutoArray<vec4> vertices;
 	AutoArray<vec3> normals;
 	AutoArray<vec2> texcoords;
 	AutoArray<unsigned short> elements;
 
 	MaterialInfo matInfo[MAX_MATERIALS];
-	numMaterials = load_obj(fileName.Data(), vertices, normals, texcoords, elements, matInfo);
+	numMaterials = load_obj(path.Data(), vertices, normals, texcoords, elements, matInfo);
 
 	for(int i = 0; i < numMaterials; i++)
 	{
 		materials[i].startIndex = matInfo[i].startIndex;
 		materials[i].phase = (matInfo[i].alpha < 1.0f)? PHASE_TRANSPARENT : PHASE_SOLID;
 		materials[i].color = VEC4_ONE;
-
-		String textureName("tex/");
-		textureName.Append(matInfo[i].texName);
-		materials[i].texture.Load(textureName);
+		materials[i].texture.Load(matInfo[i].texName);
 	}
 
 	numVertices = vertices.Count();

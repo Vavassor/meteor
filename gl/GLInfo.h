@@ -1,8 +1,7 @@
 #ifndef GL_INFO
 #define GL_INFO
 
-#define GLEW_STATIC
-#include <GL/glew.h>
+#include "gl_core_3_3.h"
 
 /* Windows SDK version of gl.h and other gl headers requires Windows.h
  * to be included first because it uses windows types and macros.

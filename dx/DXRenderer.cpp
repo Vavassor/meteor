@@ -313,7 +313,7 @@ bool DXRenderer::Initialize(HWND hWnd, bool isFullscreen, bool enableDebugging)
 	// init textures
 	DXTexture::Initialize();
 
-	blankTexture.Load("tex/blank.png");
+	blankTexture.Load("blank.png");
 
 	// setup shaders
 	defaultShader.Load("default_vertex.cso", "default_pixel.cso");
@@ -324,7 +324,7 @@ bool DXRenderer::Initialize(HWND hWnd, bool isFullscreen, bool enableDebugging)
 	alphaTestShader.SetConstantVec4("color", SHADER_PIXEL, multiplyColor);
 
 	// init models
-	wonk.LoadAsMesh("meshes/Fiona.obj");
+	wonk.LoadAsMesh("Fiona.obj");
 
 	cameraData.projection = MAT_I;
 	cameraData.isOrtho = false;

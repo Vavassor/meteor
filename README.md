@@ -10,9 +10,10 @@ It will be subject to change as I intend to continue to develop and fork games o
 // Making/Building
 --------------
 
-Make instructions for specific compilers I currently can't provide, but generally as follows:
+CMake can be used to build the project using the CMakeLists.txt file in the root directory. Note that options are only provided for the compilers tested above.
 
--   the project directory should be in the include path.
+If you wish to build manually, the requirements are basically as follows:
+
 -   exclude source subdirectories that conflict with the platform
     compiled under, like the directx /dx directory should be excluded
     under linux builds because DirectX is a microsoft-owned windows-only
@@ -21,7 +22,6 @@ Make instructions for specific compilers I currently can't provide, but generall
     GRAPHICS_OPENGL or GRAPHICS_DIRECTX for compiling the code related
     to those api's.
 -   Dependencies, headers and static libraries (.lib or .a) needed for all:
-      * [GLEW](http://glew.sourceforge.net/) openGL Extension Wrangler
       * DirectX SDK for any windows build that wishes to render using it
       * FMOD Ex for Sound.h and Sound.cpp
       * XInput for controller input on Windows

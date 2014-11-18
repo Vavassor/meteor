@@ -42,7 +42,7 @@ void GLFont::LoadBitmapFont(const String& fontFile)
 	ifstream file(layoutFilePath.Data(), ios::in);
 	if(!file.is_open())
 	{
-		Log::Add(Log::ISSUE, "Font Error: bitmap font file: %s failed to load", fontFile.Data());
+		LOG_ISSUE("Font Error: bitmap font file: %s failed to load", fontFile.Data());
 		return;
 	}
 
@@ -109,7 +109,7 @@ void GLFont::LoadBitmapFont(const String& fontFile)
 			bool bitmapLoaded = texture.Load(imagePath.c_str());
 			if(!bitmapLoaded)
 			{
-				Log::Add(Log::ISSUE, "Font Error: bitmap font texture: %s failed to load",
+				LOG_ISSUE("Font Error: bitmap font texture: %s failed to load",
 					imageFile.c_str());
 				break;
 			}

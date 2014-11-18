@@ -17,9 +17,9 @@
 
 #if defined(GRAPHICS_OPENGL)
 #include "../gl/GLRenderer.h"
+#include "wgl_extensions.h"
 
-#include <gl/wglew.h>
-#include <gl/wglext.h>
+#include <GL/wglext.h>
 #endif
 
 #if defined(GRAPHICS_DIRECTX)
@@ -193,13 +193,13 @@ bool WindowsWindow::Create(HINSTANCE instance)
 		}
 
 		static int MSAAPixelFormat = 0;
-		if(SetPixelFormat(device, MSAAPixelFormat == 0 ? PixelFormat : MSAAPixelFormat, &pfd) == FALSE)
+		if(SetPixelFormat(device, (MSAAPixelFormat == 0)? PixelFormat : MSAAPixelFormat, &pfd) == FALSE)
 		{
 			LOG_ISSUE("SetPixelFormat failed!");
 			return false;
 		}
 
-		// create context and initialize glew
+		// create context
 		if((context = wglCreateContext(device)) == NULL)
 		{
 			LOG_ISSUE("wglCreateContext failed!");
@@ -212,27 +212,39 @@ bool WindowsWindow::Create(HINSTANCE instance)
 			return false;
 		}
 
-		/*	glewExperimental needed for GL3.2+ forward-compatible context to prevent
-			glewInit's call to glGetString(GL_EXTENSIONS) which can cause
-			the error GL_INVALID_ENUM */
-		glewExperimental = GL_TRUE;
-		if(glewInit() != GLEW_OK)
+		// get procedures from OpenGL .dll
 		{
-			LOG_ISSUE("glewInit failed!");
-			return false;
+			int loaded = ogl_LoadFunctions();
+			if(loaded == ogl_LOAD_FAILED)
+			{
+				int num_failed = loaded - ogl_LOAD_SUCCEEDED;
+				LOG_ISSUE("ogl_LoadFunctions failed! %i procedures failed to load", num_failed);
+				return false;
+			}
+		}
+
+		// get wgl procedures
+		{
+			int loaded = wgl_LoadFunctions(device);
+			if(loaded == wgl_LOAD_FAILED)
+			{
+				int num_failed = loaded - wgl_LOAD_SUCCEEDED;
+				LOG_ISSUE("wgl_LoadFuntions failed: %i procedures didn't load", num_failed);
+				return false;
+			}
 		}
 
 		// get OpenGL version info
-		int major, minor;
-		sscanf((char*)glGetString(GL_VERSION), "%d.%d", &major, &minor);
+		int major = ogl_GetMajorVersion();
+		int minor = ogl_GetMinorVersion();
 		int glVersion = major * 10 + minor;
 
 		// create forward compatible context if desired/possible
-		if(create_forward_compatible_context && glVersion >= 30 && WGLEW_ARB_create_context)
+		if(create_forward_compatible_context && wgl_ext_ARB_create_context != wgl_LOAD_FAILED)
 		{
 			wglDeleteContext(context);
 
-			int GLFCRCAttribs[] =
+			int attribute_list[] =
 			{
 				WGL_CONTEXT_MAJOR_VERSION_ARB, major,
 				WGL_CONTEXT_MINOR_VERSION_ARB, minor,
@@ -240,7 +252,7 @@ bool WindowsWindow::Create(HINSTANCE instance)
 				0
 			};
 
-			if((context = wglCreateContextAttribsARB(device, 0, GLFCRCAttribs)) == NULL)
+			if((context = wglCreateContextAttribsARB(device, 0, attribute_list)) == NULL)
 			{
 				LOG_ISSUE("wglCreateContextAttribsARB failed!");
 				return false;
@@ -265,7 +277,7 @@ bool WindowsWindow::Create(HINSTANCE instance)
 				return false;
 
 			// set vertical synchronization
-			if(WGLEW_EXT_swap_control)
+			if(wgl_ext_EXT_swap_control != wgl_LOAD_FAILED)
 			{
 				wglSwapIntervalEXT(vertical_synchronization ? 1 : 0);
 			}

@@ -30,7 +30,7 @@ void GUI::Initialize()
 
 	GLFont::Initialize();
 
-	fonts[0].LoadBitmapFont("fonts/bitmap/GatsbyFLF");
+	fonts[0].LoadBitmapFont("fonts/GatsbyFLF");
 
 	panelShader.Load("default_vertex.vert", "default_frag.frag");
 	panelShader.Bind();

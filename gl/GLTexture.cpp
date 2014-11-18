@@ -39,7 +39,7 @@ GLTexture::operator GLuint() const
 bool GLTexture::Load(const String& fileName)
 {
 	unsigned id = 0;
-	for(int i = 0; i < MAX_NUM_TEXTURES; i++)
+	for(int i = 0; i < MAX_NUM_TEXTURES; ++i)
 	{
 		GLTexture* tex = loadedTextures[i].record;
 		if(tex == nullptr) continue;
@@ -83,7 +83,10 @@ bool GLTexture::LoadImageData(const String& fileName)
 	errorText.Append(fileName);
 	errorText.Append("! -> ");
 
-	FILE* file = fopen(fileName.Data(), "rb");
+	String path("textures/");
+	path.Append(fileName);
+
+	FILE* file = fopen(path.Data(), "rb");
 	if(file == nullptr)
 	{
 		LOG_ISSUE("%s : file could not be opened", errorText.Data());
@@ -102,14 +105,6 @@ bool GLTexture::LoadImageData(const String& fileName)
 
 	fclose(file);
 
-	if(!GLEW_ARB_texture_non_power_of_two)
-	{
-		/*
-		width = get_next_power_of_two(width);
-		height = get_next_power_of_two(height);
-		*/
-	}
-
 	int maxTextureSize = gl_max_texture_size;
 	if(width > maxTextureSize) width = maxTextureSize;
 	if(height > maxTextureSize) height = maxTextureSize;
@@ -125,7 +120,7 @@ bool GLTexture::BufferData(GLubyte* data, int numComponents, const String& error
 {
 	if(data == NULL)
 	{
-		Log::Add(Log::ISSUE, "%s could not buffer: image Data is empty", errorText.Data());
+		LOG_ISSUE("%s could not buffer: image Data is empty", errorText.Data());
 		return false;
 	}
 
@@ -136,7 +131,7 @@ bool GLTexture::BufferData(GLubyte* data, int numComponents, const String& error
 
 	if(Format == 0)
 	{
-		Log::Add(Log::ISSUE, "%s could not buffer: image Format is 0", errorText.Data());
+		LOG_ISSUE("%s could not buffer: image Format is 0", errorText.Data());
 		return false;
 	}
 
@@ -149,7 +144,7 @@ bool GLTexture::BufferData(GLubyte* data, int numComponents, const String& error
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	if(GLEW_EXT_texture_filter_anisotropic)
+	if(ogl_ext_EXT_texture_filter_anisotropic)
 	{
 		float anisotropy = 16.0f;
 		if(anisotropy > gl_max_texture_max_anisotropy_ext)

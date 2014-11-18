@@ -81,13 +81,13 @@ bool GLRenderer::Initialize()
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &gl_max_texture_size);
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &gl_max_combined_texture_image_units);
 
-	if(GLEW_EXT_texture_filter_anisotropic)
+	if(ogl_ext_EXT_texture_filter_anisotropic)
 	{
 		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &gl_max_texture_max_anisotropy_ext);
 	}
 	else
 	{
-		Log::Add(Log::INFO, "%s", "GL extension EXT_texture_filter_anisotropic is not available.");
+		LOG_INFO("GL extension EXT_texture_filter_anisotropic is not available.");
 	}
 
 	// gen fbo and screen buffers
@@ -103,8 +103,8 @@ bool GLRenderer::Initialize()
 	// texture initialization
 	GLTexture::Initialize();
 
-	blankTexture.Load("tex/blank.png");
-	scaleTexture.Load("tex/tile4.png");
+	blankTexture.Load("blank.png");
+	scaleTexture.Load("tile4.png");
 
 	// uniform buffers
 	objectUniformBuffer = GLUniformBuffer::Create(sizeof(ObjectBlock));
@@ -131,7 +131,7 @@ bool GLRenderer::Initialize()
 	alphaTestShader.SetUniformInt("texture", 0);
 
 	// models Init
-	wonk.LoadAsMesh("meshes/Fiona.obj");
+	wonk.LoadAsMesh("Fiona.obj");
 
 	for(int j = 0; j < NUM_MODELS; j++)
 	{
@@ -240,7 +240,7 @@ void GLRenderer::Resize(int dimX, int dimY)
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if(status != GL_FRAMEBUFFER_COMPLETE)
 	{
-		Log::Add(Log::ISSUE, "OpenGL Error: Framebuffer Incomplete! - %s", gl_fbstatus_text(status));
+		LOG_ISSUE("OpenGL Error: Framebuffer Incomplete! - %s", gl_fbstatus_text(status));
 	}
 
 	// resize projection in viewport block
