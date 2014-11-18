@@ -1,12 +1,12 @@
 #ifndef COMPONENT_H
 #define COMPONENT_H
 
-#include "utilities/TextBlock.h"
-
-#include <string>
-
 class Component;
 #include "ComponentRegistry.h"
+
+#include "utilities/Textblock.h"
+
+#include <string>
 
 class Component
 {

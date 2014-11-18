@@ -2,9 +2,9 @@
 
 #include "XPMNamedColor.h"
 
-#include "utilities/Logging.h"
-#include "utilities/Parsing.h"
-#include "utilities/Macros.h"
+#include "../utilities/Logging.h"
+#include "../utilities/Parsing.h"
+#include "../utilities/Macros.h"
 
 #include <cstring>
 #include <cctype>
@@ -103,7 +103,7 @@ static color_t color_name_to_rgba(char *cname)
 	}
 
 	/* Binary search in color names array */
-	len = ARRAY_LENGTH(colorNames);
+	len = ARRAY_COUNT(colorNames);
 
 	int half = len >> 1;
 	int rest = len - half;
@@ -134,7 +134,7 @@ static color_t color_name_to_rgba(char *cname)
 	else
 	{
 		// Not found
-		Log::Add(Log::INFO, "Color name '%s' not in colors database, returning transparent red", cname);
+		LOG_INFO("Color name '%s' not in colors database, returning transparent red", cname);
 		// Return 'red' color like libXpm does
 		return combine_rgba(255, 0, 0, 255);
 	}
@@ -317,7 +317,7 @@ static bool parse_pixels(char** data, MetaData* meta)
 				if(2 == chpp) c2 = (unsigned char) *(p + 1);
 
 				if(c1 < 32 || c1 > 127 ||
-					(chpp == 2) && (c2 < 32 || c2 > 127))
+					(chpp == 2 && (c2 < 32 || c2 > 127)))
 				{
 					LOG_ISSUE("Pixel char is out of range [32-127]");
 

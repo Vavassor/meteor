@@ -2,7 +2,7 @@
 
 #include "GLInfo.h"
 
-#include "utilities/Maths.h"
+#include "../utilities/Maths.h"
 
 #include <cstring>
 

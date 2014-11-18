@@ -1,19 +1,18 @@
 #include "X11Window.h"
 
-#include "utilities/Logging.h"
-#include "utilities/Timer.h"
-#include "utilities/TextBlock.h"
-#include "utilities/Macros.h"
+#include "../utilities/Logging.h"
+#include "../utilities/Timer.h"
+#include "../utilities/Textblock.h"
+#include "../utilities/Macros.h"
 
-#include "GlobalInfo.h"
-#include "ThreadMessages.h"
-#include "Game.h"
+#include "../ThreadMessages.h"
+#include "../Game.h"
 
 #include "XPM.h"
 #include "icon.xpm"
 
 #if defined(GRAPHICS_OPENGL)
-#include "gl/GLRenderer.h"
+#include "../gl/GLRenderer.h"
 #include "glx_extensions.h"
 
 #include <GL/glx.h>
@@ -23,9 +22,6 @@
 
 #include <cstring>
 #include <cstdio>
-
-const char* module_directory;
-float texture_anisotropy;
 
 namespace
 {
@@ -45,6 +41,10 @@ namespace
 	Atom wmStateFullscreen;
 
 	ViewportData viewport;
+
+	const char* module_directory;
+	const char* working_directory;
+	float texture_anisotropy;
 
 #if defined(GRAPHICS_OPENGL)
 	GLXContext	glContext;
@@ -67,6 +67,7 @@ X11Window::X11Window():
 
 	lastTickTime(0.0)
 {
+	// get module directory
 	char buffer[1024];
 	ssize_t size = readlink("/proc/self/exe", buffer, sizeof buffer);
 	if(size != -1)
@@ -81,6 +82,12 @@ X11Window::X11Window():
 		module_directory = path;
 	}
 
+	// get working directory
+	{
+		char* path = new char[1024];
+		working_directory = getcwd(path, 1024);
+	}
+
 #if defined(_DEBUG)
 	enableDebugging = true;
 #else
@@ -91,6 +98,7 @@ X11Window::X11Window():
 X11Window::~X11Window()
 {
 	delete[] module_directory;
+	delete[] working_directory;
 }
 
 bool X11Window::Create()
@@ -103,31 +111,31 @@ bool X11Window::Create()
 	// load configuration file values
 	{
 		Textblock block;
-		Textblock::LoadFromFile("main.conf", &block);
+		Textblock::Load_From_File("main.conf", &block);
 
-		block.GetAttributeAsInt("screenWidth", &width);
-		block.GetAttributeAsInt("screenHeight", &height);
+		block.Get_Attribute_As_Int("window_width", &width);
+		block.Get_Attribute_As_Int("window_height", &height);
 
-		if(block.HasAttribute("renderer"))
+		if(block.Has_Attribute("renderer"))
 		{
 			String* values;
-			block.GetAttributeAsStrings("renderer", &values);
+			block.Get_Attribute_As_Strings("renderer", &values);
 			String& renderName = values[0];
 			if(renderName == "OPENGL") renderMode = RENDER_GL;
 		}
 
-		block.GetAttributeAsBool("isFullscreen", &fullscreen);
-		block.GetAttributeAsBool("verticalSynchronization", &enableVSync);
-		block.GetAttributeAsFloat("textureAnisotropy", &texture_anisotropy);
+		block.Get_Attribute_As_Bool("is_fullscreen", &fullscreen);
+		block.Get_Attribute_As_Bool("vertical_synchronization", &enableVSync);
+		block.Get_Attribute_As_Float("texture_anisotropy", &texture_anisotropy);
 
-		if(block.HasChild("OpenGL"))
+		if(block.Has_Child("OpenGL"))
 		{
-			Textblock* glConf = block.GetChildByName("OpenGL");
-			glConf->GetAttributeAsBool("createForwardCompatibleContext",
+			Textblock* glConf = block.Get_Child_By_Name("OpenGL");
+			glConf->Get_Attribute_As_Bool("create_forward_compatible_context",
 				&createForwardCompatibleContext);
 		}
 
-		block.GetAttributeAsBool("enableDebugging", &enableDebugging);
+		block.Get_Attribute_As_Bool("enable_debugging", &enableDebugging);
 	}
 
 	display = XOpenDisplay(NULL);
@@ -174,7 +182,7 @@ bool X11Window::Create()
 	// load application icon
 	{
 		unsigned long* buffer = x_pixmap::parse_image(icon_16x16_xpm,
-			ARRAY_LENGTH(icon_16x16_xpm));
+			ARRAY_COUNT(icon_16x16_xpm));
 
 		Atom wmIcon = XInternAtom(display, "_NET_WM_ICON", False);
 		Atom cardinal = XInternAtom(display, "CARDINAL", False);
@@ -213,7 +221,7 @@ bool X11Window::Create()
 
 	// get glx procedures
 	{
-		int loaded = glx_LoadFunctions(device);
+		int loaded = glx_LoadFunctions(display, 0);
 		if(loaded == glx_LOAD_FAILED)
 		{
 			int num_failed = loaded - glx_LOAD_SUCCEEDED;
@@ -323,7 +331,7 @@ void X11Window::Update()
 	if(time - lastFPSTime > 1000)
 	{
 		bool printToConsole = enableDebugging;
-		Log::Write(printToConsole);
+		Log::Output(printToConsole);
 
 		lastFPSTime = time;
 		fps = 0;

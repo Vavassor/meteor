@@ -4,9 +4,9 @@
 #include "GLTexture.h"
 #include "GLShader.h"
 
-#include "utilities/GLMath.h"
+#include "../utilities/GLMath.h"
 
-#include "RenderPhase.h"
+#include "../RenderPhase.h"
 
 struct Particle
 {

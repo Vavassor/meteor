@@ -5,8 +5,8 @@
 #include "InternalGlobals.h"
 #include "LinuxEvDevUtils.h"
 
-#include "utilities/Logging.h"
-#include "utilities/StringUtils.h"
+#include "../Logging.h"
+#include "../StringUtils.h"
 
 #include <libudev.h>
 
@@ -63,7 +63,7 @@ namespace Input
 	float mouseDelta[2];
 	float mouseSensitivity = 16.0f;
 
-	void SetupDevice(udev_device* device);
+	bool SetupDevice(udev_device* device);
 	bool ConfigureDevice(Device* device);
 	void OnDeviceChange(udev_device* device, const char* action);
 
@@ -138,10 +138,11 @@ int Input::DetectDevices(ControllerType types[])
 		udev_device* device = udev_device_new_from_syspath(udev, path);
 		if(device == NULL) continue;
 
-		SetupDevice(device);
+		bool setup = SetupDevice(device);
 
 		udev_device_unref(device);
 
+		if(!setup) continue;
 		types[numControllers++] = GAMEPAD_EVDEV;
 	}
 
@@ -186,10 +187,10 @@ void Input::CheckMonitor()
 	}
 }
 
-void Input::SetupDevice(udev_device* device)
+bool Input::SetupDevice(udev_device* device)
 {
 	const char* devicePath = udev_device_get_devnode(device);
-	if(devicePath == NULL) return;
+	if(devicePath == NULL) return false;
 
 	// query which classes are supported by the device
 	int deviceClass = 0;
@@ -228,7 +229,7 @@ void Input::SetupDevice(udev_device* device)
 
 	// open device
 	int file = open(devicePath, O_RDONLY, 0);
-	if(file < 0) return;
+	if(file < 0) return false;
 
 	// set read mode to non-blocking
 	fcntl(file, F_SETFL, O_NONBLOCK);
@@ -256,15 +257,14 @@ void Input::SetupDevice(udev_device* device)
 	if(configured)
 	{
 		devices[numDevices++] = item;
-
-		Controller& controller = controllers[num_controllers++];
-		controller.type = GAMEPAD_EVDEV;
 	}
 	else
 	{
 		close(file);
 		LOG_INFO("input device #%lu closed", deviceNumber);
 	}
+
+	return configured;
 }
 
 #define BIT_COUNT(x) ((((x)-1)/(sizeof(long) * 8))+1)
