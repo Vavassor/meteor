@@ -18,7 +18,7 @@
 #include <Windows.h>
 #endif
 
-#if defined(X11)
+#if defined(__linux__)
 #include "../XLibUtils.h"
 
 #define XK_LATIN1
@@ -45,7 +45,7 @@ namespace Input
 	int mousePosition[2];
 	bool isMouseRelative = true;
 
-#if defined(X11)
+#if defined(__linux__)
 	Display* display;
 	Window window;
 	Cursor invisibleCursor;
@@ -61,7 +61,7 @@ namespace Input
 
 unsigned short Input::GetScanCode(int virtualKey)
 {
-#if defined(X11)
+#if defined(__linux__)
 	return XKeysymToKeycode(display, virtualKey);
 #endif
 	return 0;
@@ -101,7 +101,7 @@ void Input::Initialize()
 	RegisterMonitor();
 #endif
 
-#if defined(X11)
+#if defined(__linux__)
 	display = XOpenDisplay(NULL);
 
 	window = DefaultRootWindow(display);
@@ -149,7 +149,7 @@ void Input::Terminate()
 	UnregisterMonitor();
 #endif
 
-#if defined(X11)
+#if defined(__linux__)
 	XFreeCursor(display, invisibleCursor);
 
 	XCloseDisplay(display);
@@ -223,7 +223,7 @@ void Input::Poll()
 		mousePosition[0] = mouseScreenPosition.x;
 		mousePosition[1] = mouseScreenPosition.y;
 	}
-#elif defined(X11)
+#elif defined(__linux__)
 	{
 		Window root, child;
 		int rootCoords[2];
@@ -243,14 +243,14 @@ void Input::PollKeyboard(char* keyboardState)
 {
 #if defined(_WIN32)
 	GetKeyboardState((PBYTE) keyboardState);
-#elif defined(X11)
+#elif defined(__linux__)
 	XQueryKeymap(display, keyboardState);
 #endif
 }
 
 #if defined(_WIN32)
 #define GET_KEY_STATE(code, keyboard) keyboard[(code)] & 0x80;
-#elif defined(X11)
+#elif defined(__linux__)
 #define GET_KEY_STATE(code, keyboard) keyboard[(code) >> 3] >> ((code) & 0x07) & 0x01;
 #endif
 

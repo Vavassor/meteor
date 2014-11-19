@@ -15,14 +15,12 @@
 #include "../Game.h"
 #include "../ThreadMessages.h"
 
-#if defined(GRAPHICS_OPENGL)
 #include "../gl/GLRenderer.h"
 #include "wgl_extensions.h"
 
 #include <GL/wglext.h>
-#endif
 
-#if defined(GRAPHICS_DIRECTX)
+#if defined(_MSC_VER)
 #include "../dx/DXRenderer.h"
 #endif
 
@@ -44,9 +42,7 @@ namespace
 	bool enable_debugging;
 	ViewportData viewport;
 
-#if defined(GRAPHICS_OPENGL)
 	HGLRC context = NULL;
-#endif
 }
 
 WindowsWindow::WindowsWindow():
@@ -172,7 +168,6 @@ bool WindowsWindow::Create(HINSTANCE instance)
 	}
 
 	// do opengl graphics initialization
-	#if defined(GRAPHICS_OPENGL)
 	if(render_mode == RENDER_GL)
 	{
 		// setup pixel format
@@ -283,10 +278,9 @@ bool WindowsWindow::Create(HINSTANCE instance)
 			}
 		}
 	}
-	#endif
 
 	// go ahead and initialize DirectX in the renderer, since DirectX is windows-only anyways
-	#if defined(GRAPHICS_DIRECTX)
+	#if defined(_MSC_VER)
 	if(render_mode == RENDER_DX)
 	{
 		if(!DXRenderer::Initialize(window, fullscreen, enable_debugging))
@@ -457,25 +451,21 @@ void WindowsWindow::Update()
 	{
 		CameraData cameraData;
 		Game::GetCameraData(&cameraData);
-		#if defined(GRAPHICS_OPENGL)
 		if(render_mode == RENDER_GL)
 		{
 			GLRenderer::SetCameraState(cameraData);
 		}
-		#endif
 	}
 
 	// Render
-	#if defined(GRAPHICS_OPENGL)
 	if(render_mode == RENDER_GL)
 	{
 		GLRenderer::Render();
 
 		SwapBuffers(device);
 	}
-	#endif
 
-	#if defined(GRAPHICS_DIRECTX)
+	#if defined(_MSC_VER)
 	if(render_mode == RENDER_DX)
 	{
 		DXRenderer::Render();
@@ -510,14 +500,12 @@ LRESULT WindowsWindow::OnSize(int dimX, int dimY)
 	width = dimX;
 	height = dimY;
 
-	#if defined(GRAPHICS_OPENGL)
 	if(render_mode == RENDER_GL)
 	{
 		GLRenderer::Resize(dimX, dimY);
 	}
-	#endif
 
-	#if defined(GRAPHICS_DIRECTX)
+	#if defined(_MSC_VER)
 	if(render_mode == RENDER_DX)
 	{
 		DXRenderer::Resize(dimX, dimY);
@@ -589,14 +577,12 @@ void WindowsWindow::Destroy()
 
 	delete[] device_name;
 
-	#if defined(GRAPHICS_OPENGL)
 	if(render_mode == RENDER_GL)
 	{
 		GLRenderer::Terminate();
 
 		wglDeleteContext(context);
 	}
-	#endif
 
 	#if defined(GRAPHICS_DIRECTX)
 	if(render_mode == RENDER_DX)

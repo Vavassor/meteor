@@ -11,12 +11,10 @@
 #include "XPM.h"
 #include "icon.xpm"
 
-#if defined(GRAPHICS_OPENGL)
 #include "../gl/GLRenderer.h"
 #include "glx_extensions.h"
 
 #include <GL/glx.h>
-#endif
 
 #include <unistd.h>
 
@@ -46,9 +44,7 @@ namespace
 	const char* working_directory;
 	float texture_anisotropy;
 
-#if defined(GRAPHICS_OPENGL)
 	GLXContext	glContext;
-#endif
 }
 
 X11Window::X11Window():
@@ -147,7 +143,6 @@ bool X11Window::Create()
 
 	root = DefaultRootWindow(display);
 
-#if defined(GRAPHICS_OPENGL)
 	GLint visualAttributes[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
 	XVisualInfo* visual = glXChooseVisual(display, 0, visualAttributes);
 	if(visual == NULL)
@@ -155,7 +150,6 @@ bool X11Window::Create()
 		LOG_ISSUE("No appropriate visual found for graphics context");
 		return false;
 	}
-#endif
 
 	Colormap colorMap = XCreateColormap(display, root, visual->visual, AllocNone);
 
@@ -193,7 +187,6 @@ bool X11Window::Create()
 
 	XMapWindow(display, window);
 
-#if defined(GRAPHICS_OPENGL)
 	glContext = glXCreateContext(display, visual, NULL, True);
 	if(glContext == nullptr)
 	{
@@ -238,7 +231,6 @@ bool X11Window::Create()
 	{
 		glXSwapIntervalEXT(display, glXGetCurrentDrawable(), enableVSync ? 1 : 0);
 	}
-#endif
 
 	// go ahead and fetch Atoms for any later usage
 	motifWMHints = XInternAtom(display, "_MOTIF_WM_HINTS", true);
@@ -252,12 +244,10 @@ bool X11Window::Create()
 
 void X11Window::Destroy()
 {
-#if defined(GRAPHICS_OPENGL)
 	GLRenderer::Terminate();
 
 	glXMakeCurrent(display, None, NULL);
 	glXDestroyContext(display, glContext);
-#endif
 
 	XCloseDisplay(display);
 }
@@ -347,22 +337,18 @@ void X11Window::Update()
 	{
 		CameraData cameraData;
 		Game::GetCameraData(&cameraData);
-		#if defined(GRAPHICS_OPENGL)
 		if(renderMode == RENDER_GL)
 		{
 			GLRenderer::SetCameraState(cameraData);
 		}
-		#endif
 	}
 
-	#if defined(GRAPHICS_OPENGL)
 	if(renderMode == RENDER_GL)
 	{
 		GLRenderer::Render();
 
 		glXSwapBuffers(display, window);
 	}
-	#endif
 }
 
 bool X11Window::TranslateMessage(const XEvent& event)
@@ -409,12 +395,10 @@ void X11Window::OnSize(int dimX, int dimY)
 	width = dimX;
 	height = dimY;
 
-	#if defined(GRAPHICS_OPENGL)
 	if(renderMode == RENDER_GL)
 	{
 		GLRenderer::Resize(dimX, dimY);
 	}
-	#endif
 
 	viewport.width = dimX;
 	viewport.height = dimY;

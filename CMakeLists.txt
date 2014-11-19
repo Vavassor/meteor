@@ -18,11 +18,9 @@ endif ()
 
 if (WIN32)
 	set (OPENGL TRUE BOOL)
-	
 	if (MSVC)
-	set (DIRECTX TRUE BOOL)
+		set (DIRECTX TRUE BOOL)
 	endif (MSVC)
-	
 elseif (UNIX)
 	set (OPENGL TRUE BOOL)
 endif ()
@@ -40,7 +38,7 @@ elseif (UNIX)
 list (APPEND INCLUDE_PATHS ${FMOD_SDK_PATH}/include${FMODEX_DIR})
 endif ()
 
-if (MSVC AND DIRECTX)
+if (DIRECTX)
 list (APPEND INCLUDE_PATHS ${DIRECTX_SDK_DIR}/Include)
 endif ()
 
@@ -55,8 +53,12 @@ elseif (UNIX)
 list (APPEND LINK_PATHS ${FMOD_SDK_PATH}/lib${FMODEX_DIR})
 endif ()
 
-if (MSVC AND DIRECTX)
-list (APPEND LINK_PATHS ${DIRECTX_SDK_DIR}/Lib/x86)
+if (DIRECTX)
+	if (32_BIT)
+		list (APPEND LINK_PATHS ${DIRECTX_SDK_DIR}/Lib/x86)
+	elseif (64_BIT)
+		list (APPEND LINK_PATHS ${DIRECTX_SDK_DIR}/Lib/x64)
+	endif (32_BIT)
 endif ()
 
 link_directories (${LINK_PATHS})
@@ -207,18 +209,6 @@ set (RELEASE_DEFINITIONS
     NDEBUG
 )
 
-if (OPENGL)
-list (APPEND DEFINITIONS GRAPHICS_OPENGL)
-endif ()
-
-if (DIRECTX)
-list (APPEND DEFINITIONS GRAPHICS_DIRECTX)
-endif ()
-
-if (UNIX)
-list (APPEND DEFINITIONS X11)
-endif ()
-
 set_target_properties (Meteor PROPERTIES COMPILE_DEFINITIONS "${DEFINITIONS}")
 set_target_properties (Meteor PROPERTIES COMPILE_DEFINITIONS_DEBUG "${DEBUG_DEFINITIONS}")
 set_target_properties (Meteor PROPERTIES COMPILE_DEFINITIONS_RELEASE "${RELEASE_DEFINITIONS}")
@@ -241,7 +231,11 @@ set (WINDOWS_LIBRARIES xinput)
 set (LINUX_LIBRARIES X11 udev pthread)
 
 if (MSVC)
-	list (APPEND LIBRARIES fmodex_vc)
+	if (32_BIT)
+		list (APPEND LIBRARIES fmodex_vc)
+	elseif (64_BIT)
+		list (APPEND LIBRARIES fmodex64_vc)
+	endif (32_BIT)
 else ()
 	if (32_BIT)
 		list (APPEND LIBRARIES fmodex)
@@ -268,7 +262,8 @@ if (WIN32)
 list (APPEND LIBRARIES ${WINDOWS_LIBRARIES})
 endif ()
 
-if (UNIX)
+if (APPLE)
+elseif (UNIX)
 list (APPEND LIBRARIES ${LINUX_LIBRARIES})
 endif ()
 
