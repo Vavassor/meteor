@@ -1,6 +1,6 @@
 #include "WindowsWindow.h"
 
-#include "../resource.h"
+#include "resource.h"
 
 #include "../utilities/Textblock.h"
 #include "../utilities/Unicode.h"
