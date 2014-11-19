@@ -17,10 +17,10 @@ namespace Log
 	const char* Get_Text();
 }
 
-#if defined(NDEBUG)
-#define DEBUG_LOG(format, ...) // no operation
-#elif defined(_DEBUG)
+#if defined(_DEBUG)
 #define DEBUG_LOG(format, ...) Log::Add(Log::DEBUG, (format), ##__VA_ARGS__)
+#else
+#define DEBUG_LOG(format, ...) // no operation
 #endif
 
 #define LOG_ISSUE(format, ...) Log::Add(Log::ISSUE, (format), ##__VA_ARGS__)

@@ -225,7 +225,7 @@ void Sound::Set_Volume(float vol)
 
 void Sound::Load_Audio(const String& fileName)
 {
-	if(fileName.Count()) return;
+	if(fileName.Count() == 0) return;
 
 	name = fileName;
 
@@ -233,7 +233,10 @@ void Sound::Load_Audio(const String& fileName)
     s_result = FMOD_Sound_Release(sound);
 	check_error(s_result);
 
-    s_result = FMOD_System_CreateSound(fmodSystem, fileName.Data(),
+	String path("data/sounds/");
+	path.Append(fileName);
+
+    s_result = FMOD_System_CreateSound(fmodSystem, path.Data(),
 		FMOD_SOFTWARE | FMOD_UNICODE, nullptr, &sound);
 	check_error(s_result);
 
@@ -251,9 +254,12 @@ void Sound::Load_Audio(const String& fileName)
 
 void Sound::Load_Stream(const String& fileName) 
 {
-	if(fileName.Count()) return;
+	if(fileName.Count() == 0) return;
 
 	name = fileName;
+
+	String path("data/sounds/");
+	path.Append(fileName);
 
 	FMOD_RESULT s_result = FMOD_OK;
 
@@ -263,7 +269,7 @@ void Sound::Load_Stream(const String& fileName)
 		check_error(s_result);
 	}
 
-    s_result = FMOD_System_CreateSound(fmodSystem, fileName.Data(),
+    s_result = FMOD_System_CreateSound(fmodSystem, path.Data(),
 		FMOD_SOFTWARE | FMOD_UNICODE | FMOD_CREATESTREAM, nullptr, &sound);
 	check_error(s_result);
 
