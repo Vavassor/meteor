@@ -36,7 +36,7 @@ void DXModel::SetDefaults()
 
 void DXModel::LoadAsMesh(const String& filename, ModelUsage usage)
 {
-	String path("meshes/");
+	String path("data/meshes/");
 	path.Append(filename);
 
 	AutoArray<vec4> vertices;

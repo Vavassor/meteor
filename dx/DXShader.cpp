@@ -30,7 +30,7 @@ bool DXShader::Load(const String& vertexFileName, const String& pixelFileName)
 {
 	HRESULT hr = S_OK;
 
-	String vertexFile("shaders/dx/");
+	String vertexFile("data/shaders/dx/");
 	vertexFile.Append(vertexFileName);
 
 	// create vertex shader

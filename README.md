@@ -32,4 +32,4 @@ If you wish to build manually, the requirements are basically as follows:
 // Licensing
 --------------
 
-All code dependent on specific libraries is subject to their licensing restrictions, which are located in Content/docs/. All OTHER code is released under _public domain_, specifically meaning I place NO restrictions on its use at all, whatsoever. Take it and do a thing with it. It will be cool I promise. No need to credit me
+All code dependent on specific libraries is subject to their licensing restrictions, which are located in docs/. All OTHER code is released under _public domain_, specifically meaning I place NO restrictions on its use at all, whatsoever. Take it and do a thing with it. It will be cool I promise. No need to credit me

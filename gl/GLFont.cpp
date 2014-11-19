@@ -36,7 +36,8 @@ GLFont::~GLFont()
 
 void GLFont::LoadBitmapFont(const String& fontFile)
 {
-	String layoutFilePath(fontFile);
+	String layoutFilePath("data/");
+	layoutFilePath.Append(fontFile);
 	layoutFilePath.Append(".fnt");
 
 	ifstream file(layoutFilePath.Data(), ios::in);

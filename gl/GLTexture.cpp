@@ -83,7 +83,7 @@ bool GLTexture::LoadImageData(const String& fileName)
 	errorText.Append(fileName);
 	errorText.Append("! -> ");
 
-	String path("textures/");
+	String path("data/textures/");
 	path.Append(fileName);
 
 	FILE* file = fopen(path.Data(), "rb");

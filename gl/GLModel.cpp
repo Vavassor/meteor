@@ -27,7 +27,7 @@ void GLModel::SetDefaults()
 
 void GLModel::LoadAsMesh(const String& filename)
 {
-	String path("meshes/");
+	String path("data/meshes/");
 	path.Append(filename);
 
 	AutoArray<vec4> vertices;

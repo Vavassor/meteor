@@ -85,7 +85,10 @@ bool DXTexture::LoadTextureData(const String& fileName)
 	errorText.Append(fileName);
 	errorText.Append("! -> ");
 
-	FILE* file = fopen(fileName.Data(), "rb");
+	String path("data/textures/");
+	path.Append(fileName);
+
+	FILE* file = fopen(path.Data(), "rb");
 	if(file == nullptr)
 	{
 		LOG_ISSUE("%s file could not be opened", errorText.Data());

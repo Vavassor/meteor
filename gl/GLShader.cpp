@@ -58,7 +58,7 @@ bool GLShader::Load(const String& vertexFileName, const String& pixelFileName)
 			char* InfoLog = new char[InfoLogLength];
 			int CharsWritten  = 0;
 			glGetProgramInfoLog(program, InfoLogLength, &CharsWritten, InfoLog);
-			Log::Add(Log::ISSUE, "Error linking program (%s, %s)\n%s",
+			LOG_ISSUE("Error linking program (%s, %s)\n%s",
 				vertexFileName.Data(), pixelFileName.Data(), InfoLog);
 			delete[] InfoLog;
 		}
@@ -72,7 +72,7 @@ bool GLShader::Load(const String& vertexFileName, const String& pixelFileName)
 
 GLuint GLShader::LoadShaderGL(GLenum Type, const String& shaderFileName)
 {
-	String path("shaders/gl/");
+	String path("data/shaders/gl/");
 	path.Append(shaderFileName);
 
 	FILE* File = fopen(path.Data(), "rb");
