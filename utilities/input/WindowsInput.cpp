@@ -36,20 +36,20 @@ void Input::InitializeWindow()
 	// make invisible window for receiving raw input messages
 	HINSTANCE instance = GetModuleHandle(NULL);
 
-	WNDCLASSEX classEx = {};
+	WNDCLASSEXW classEx = {};
 	classEx.cbSize = sizeof classEx;
 	classEx.lpfnWndProc = WindowProc;
 	classEx.hInstance = instance;
 	classEx.lpszClassName = L"MeteorInputWindowClass";
 
-	if(RegisterClassEx(&classEx) == 0)
+	if(RegisterClassExW(&classEx) == 0)
 	{
 		LOG_ISSUE("RegisterClassEx failed!");
 		return;
 	}
 
 	// create the actual window
-	window = CreateWindowEx(WS_EX_APPWINDOW, classEx.lpszClassName, NULL, NULL,
+	window = CreateWindowExW(WS_EX_APPWINDOW, classEx.lpszClassName, NULL, NULL,
 		0, 0, 0, 0, NULL, NULL, instance, NULL);
 	if(window == NULL)
 	{

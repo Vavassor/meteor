@@ -16,7 +16,7 @@ public:
 
 	bool Create(HINSTANCE instance);
 	void Show(bool maximized = false);
-	void MessageLoop();
+	int MessageLoop();
 	void Destroy();
 
 	void ToggleFullscreen();
@@ -57,6 +57,10 @@ private:
 // ----------------------------------------------------------------------------------------------------------------------------
 
 LONG WINAPI UnhandledException(LPEXCEPTION_POINTERS exceptionInfo);
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR sCmdLine, int iShow);
+int WINAPI wWinMain(
+	_In_ HINSTANCE hInstance,
+	_In_opt_ HINSTANCE hPrevInstance,
+	_In_ LPWSTR sCmdLine,
+	_In_ int iShow);
 
 #endif

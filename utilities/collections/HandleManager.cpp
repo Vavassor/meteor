@@ -115,8 +115,10 @@ int HandleManager::GetCount() const
 
 void HandleManager::Resize(size_t newCapacity)
 {
+	if(newCapacity < 1) return;
+
 	HandleEntry* temp = new HandleEntry[newCapacity];
-	for(int i = 0; i < capacity - 1; i++)
+	for(size_t i = 0; i < capacity - 1; i++)
 		temp[i] = entries[i];
 	delete[] entries;
 	capacity = newCapacity;

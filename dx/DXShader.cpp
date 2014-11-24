@@ -217,7 +217,7 @@ ShaderConstant* DXShader::GetConstant(const String& name, int shaderType) const
 		for(int i = 0; i < numVertexConstants; i++)
 		{
 			const ShaderConstant* con = &vertexConstants[i];
-			if(con->name == name)
+			if(con->name.Equals(name))
 				return (ShaderConstant*) con;
 		}
 	}
@@ -226,7 +226,7 @@ ShaderConstant* DXShader::GetConstant(const String& name, int shaderType) const
 		for(int i = 0; i < numPixelConstants; i++)
 		{
 			const ShaderConstant* con = &pixelConstants[i];
-			if(con->name == name)
+			if(con->name.Equals(name))
 				return (ShaderConstant*) con;
 		}
 	}

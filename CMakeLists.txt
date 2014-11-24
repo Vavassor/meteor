@@ -25,10 +25,6 @@ elseif (UNIX)
 	set (OPENGL TRUE BOOL)
 endif ()
 
-if (DIRECTX)
-set (DIRECTX_SDK_DIR "C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)")
-endif ()
-
 # ----- INCLUDE DIRECTORIES -----
 set (INCLUDE_PATHS)
 
@@ -36,10 +32,6 @@ if (WIN32)
 list (APPEND INCLUDE_PATHS ${FMOD_SDK_PATH}/inc)
 elseif (UNIX)
 list (APPEND INCLUDE_PATHS ${FMOD_SDK_PATH}/include${FMODEX_DIR})
-endif ()
-
-if (DIRECTX)
-list (APPEND INCLUDE_PATHS ${DIRECTX_SDK_DIR}/Include)
 endif ()
 
 include_directories (${INCLUDE_PATHS})
@@ -53,15 +45,154 @@ elseif (UNIX)
 list (APPEND LINK_PATHS ${FMOD_SDK_PATH}/lib${FMODEX_DIR})
 endif ()
 
-if (DIRECTX)
-	if (32_BIT)
-		list (APPEND LINK_PATHS ${DIRECTX_SDK_DIR}/Lib/x86)
-	elseif (64_BIT)
-		list (APPEND LINK_PATHS ${DIRECTX_SDK_DIR}/Lib/x64)
-	endif (32_BIT)
+link_directories (${LINK_PATHS})
+
+# ----- INCLUDE FILES -----
+set (INCLUDES
+	Camera.h
+	CameraData.h
+	Game.h
+	Message.h
+	PlatformDefines.h
+	RenderPhase.h
+	Sound.h
+	ThreadMessages.h
+)
+source_group ("Header Files" FILES ${INCLUDES})
+
+set (UTILITIES_INCLUDES
+	utilities/BitManipulation.h
+	utilities/CharTypes.h
+	utilities/Collision.h
+	utilities/Conversion.h
+	utilities/DataTypes.h
+	utilities/DeviceGUID.h
+	utilities/FileHandling.h
+	utilities/FileStream.h
+	utilities/GLMath.h
+	utilities/GLUtils.h
+	utilities/Logging.h
+	utilities/Macros.h
+	utilities/Maths.h
+	utilities/MeshLoading.h
+	utilities/Noise.h
+	utilities/Parsing.h
+	utilities/Sorting.h
+	utilities/stb_image.h
+	utilities/String.h
+	utilities/StringUtils.h
+	utilities/Textblock.h
+	utilities/Timer.h
+	utilities/Unicode.h
+)
+source_group ("Header Files\\utilities" FILES ${UTILITIES_INCLUDES})
+
+set (COLLECTIONS_INCLUDES
+	utilities/collections/AutoArray.h
+	utilities/collections/DenseArray.h
+	utilities/collections/HandleManager.h
+	utilities/collections/Queue.h
+)
+source_group ("Header Files\\utilities\\collections" FILES ${COLLECTIONS_INCLUDES})
+
+set (CONCURRENT_INCLUDES
+	utilities/concurrent/Benaphore.h
+	utilities/concurrent/Interlocked.h
+	utilities/concurrent/LinkedQueue.h
+	utilities/concurrent/MemoryFences.h
+	utilities/concurrent/Mutex.h
+	utilities/concurrent/Semaphore.h
+)
+source_group ("Header Files\\utilities\\concurrent" FILES ${CONCURRENT_INCLUDES})
+
+set (INPUT_INCLUDES
+	utilities/input/Input.h
+	utilities/input/InternalGlobals.h
+	utilities/input/WindowsInput.h
+	utilities/input/LinuxInput.h
+	utilities/input/LinuxEvDevUtils.h
+)
+source_group ("Header Files\\utilities\\input" FILES ${INPUT_INCLUDES})
+
+set (GL_INCLUDES
+	gl/gl_core_3_3.h
+	gl/GLFont.h
+	gl/GLGUI.h
+	gl/GLInfo.h
+	gl/GLMesh.h
+	gl/GLModel.h
+	gl/GLPrimitives.h
+	gl/GLRenderer.h
+	gl/GLShader.h
+	gl/GLTexture.h
+	gl/GLUniformBuffer.h
+	gl/Terrain.h
+)
+source_group ("Header Files\\gl" FILES ${GL_INCLUDES})
+
+set (WGL_INCLUDES
+	windows/wgl_extensions.h
+)
+
+set (GLX_INCLUDES
+	x11/glx_extensions.h
+)
+
+set (DX_INCLUDES
+	dx/DXInfo.h
+	dx/DXModel.h
+	dx/DXPrimitives.h
+	dx/DXRenderer.h
+	dx/DXShader.h
+	dx/DXTexture.h
+	dx/DXUtils.h
+	dx/ShaderConstant.h
+)
+source_group ("Header Files\\dx" FILES ${DX_INCLUDES})
+
+set (WINDOWS_INCLUDES
+	windows/resource.h
+	windows/WindowsWindow.h
+)
+
+set (X11_INCLUDES
+	x11/X11Window.h
+	x11/XPM.h
+	x11/XPMNamedColor.h
+)
+
+list (APPEND INCLUDES
+	${UTILITIES_INCLUDES}
+	${COLLECTIONS_INCLUDES}
+	${CONCURRENT_INCLUDES}
+	${INPUT_INCLUDES}
+)
+
+if (OPENGL)
+	list (APPEND INCLUDES ${GL_INCLUDES})
+
+	if (WIN32)
+	list (APPEND WINDOWS_INCLUDES ${WGL_INCLUDES})
+	endif (WIN32)
+
+	if (UNIX)
+	list (APPEND X11_INCLUDES ${GLX_INCLUDES})
+	endif (UNIX)
 endif ()
 
-link_directories (${LINK_PATHS})
+if (DIRECTX)
+list (APPEND INCLUDES ${DX_INCLUDES})
+endif ()
+
+if (WIN32)
+source_group ("Header Files\\windows" FILES ${WINDOWS_INCLUDES})
+list (APPEND INCLUDES ${WINDOWS_INCLUDES})
+endif ()
+
+if (UNIX)
+source_group ("Header Files\\x11" FILES ${X11_INCLUDES})
+list (APPEND INCLUDES ${X11_INCLUDES})
+endif ()
 
 # ----- SOURCE FILES -----
 set (SOURCES
@@ -70,7 +201,7 @@ set (SOURCES
     Camera.cpp
     Sound.cpp
 )
-source_group ("" FILES ${SOURCES})
+source_group ("Source Files" FILES ${SOURCES})
 
 set (UTILITIES_SOURCES
     utilities/String.cpp
@@ -91,18 +222,18 @@ set (UTILITIES_SOURCES
     utilities/Noise.cpp
 	utilities/BitManipulation.cpp
 )
-source_group ("utilities" FILES ${UTILITIES_SOURCES})
+source_group ("Source Files\\utilities" FILES ${UTILITIES_SOURCES})
 
 set (COLLECTIONS_SOURCES
 	utilities/collections/HandleManager.cpp
 )
-source_group ("utilities\\collections" FILES ${COLLECTIONS_SOURCES})
+source_group ("Source Files\\utilities\\collections" FILES ${COLLECTIONS_SOURCES})
 
 set (CONCURRENT_SOURCES
 	utilities/concurrent/Benaphore.cpp
 	utilities/concurrent/Mutex.cpp
 )
-source_group("utilities\\concurrent" FILES ${CONCURRENT_SOURCES})
+source_group("Source Files\\utilities\\concurrent" FILES ${CONCURRENT_SOURCES})
 
 set (INPUT_SOURCES
 	utilities/input/Input.cpp
@@ -110,7 +241,7 @@ set (INPUT_SOURCES
 	utilities/input/LinuxInput.cpp
 	utilities/input/LinuxEvDevUtils.cpp
 )
-source_group ("utilities\\input" FILES ${INPUT_SOURCES})
+source_group ("Source Files\\utilities\\input" FILES ${INPUT_SOURCES})
 
 set (GL_SOURCES
 	gl/gl_core_3_3.c
@@ -125,9 +256,14 @@ set (GL_SOURCES
     gl/GLGUI.cpp
     gl/GLRenderer.cpp
 )
+source_group ("Source Files\\gl" FILES ${GL_SOURCES})
 
 set (WGL_SOURCES
 	windows/wgl_extensions.c
+)
+
+set (GLX_SOURCES
+	x11/glx_extensions.c
 )
 
 set (DX_SOURCES
@@ -139,13 +275,10 @@ set (DX_SOURCES
     dx/DXPrimitives.cpp
     dx/DXRenderer.cpp
 )
+source_group ("Source Files\\dx" FILES ${DX_SOURCES})
 
 set (WINDOWS_SOURCES
     windows/WindowsWindow.cpp
-)
-
-set (GLX_SOURCES
-	x11/glx_extensions.c
 )
 
 set (X11_SOURCES
@@ -161,7 +294,6 @@ list (APPEND SOURCES
 )
 
 if (OPENGL)
-	source_group ("gl" FILES ${GL_SOURCES})
 	list (APPEND SOURCES ${GL_SOURCES})
 	
 	if (WIN32)
@@ -174,21 +306,20 @@ if (OPENGL)
 endif ()
 
 if (DIRECTX)
-source_group ("dx" FILES ${DX_SOURCES})
 list (APPEND SOURCES ${DX_SOURCES})
 endif ()
 
 if (WIN32)
-source_group ("windows" FILES ${WINDOWS_SOURCES})
+source_group ("Source Files\\windows" FILES ${WINDOWS_SOURCES})
 list (APPEND SOURCES ${WINDOWS_SOURCES})
 endif ()
 
 if (UNIX)
-source_group ("x11" FILES ${X11_SOURCES})
+source_group ("Source Files\\x11" FILES ${X11_SOURCES})
 list (APPEND SOURCES ${X11_SOURCES})
 endif ()
 
-add_executable (Meteor ${SOURCES})
+add_executable (Meteor ${SOURCES} ${INCLUDES})
 
 # ----- DEFINES -----
 if (CMAKE_COMPILER_IS_GNUCXX)
@@ -198,10 +329,8 @@ if (MSVC)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
 endif ()
 
-set (DEFINITIONS
-    _UNICODE
-    UNICODE
-)
+set (DEFINITIONS)
+
 set (DEBUG_DEFINITIONS
     _DEBUG
 )
@@ -227,7 +356,7 @@ endif ()
 # ----- LIBRARIES -----
 set (LIBRARIES)
 set (DX_LIBRARIES d3d11 dxgi)
-set (WINDOWS_LIBRARIES xinput)
+set (WINDOWS_LIBRARIES xinput9_1_0)
 set (LINUX_LIBRARIES X11 udev pthread)
 
 if (MSVC)

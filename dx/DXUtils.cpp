@@ -31,28 +31,27 @@ String dxerr_text(HRESULT hr)
 
 String hresult_text(HRESULT hr)
 {
-	LPTSTR errorText = NULL;
+	String output;
 
-	FormatMessage(
+	LPWSTR errorText = NULL;
+	if(FormatMessageW(
 		FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
 		NULL, // unused with FORMAT_MESSAGE_FROM_SYSTEM
 		hr,
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		errorText,
+		(LPWSTR) &errorText,
 		0, // minimum size for output buffer
-		NULL);
-
-	String output;
-	if(errorText != NULL)
+		NULL))
 	{
 		char* buffer = nullptr;
-		utf16_to_utf8(&buffer, (char16_t*) errorText);
+		utf16_to_utf8(&buffer, (char16_t*)errorText);
 		output.Append(buffer);
 		delete[] buffer;
 
 		LocalFree(errorText);
 		errorText = NULL;
 	}
+	
 	return output;
 }
 
@@ -251,12 +250,21 @@ void get_tex_image(void* data, ID3D11Texture2D* texture)
 	textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 	textureDesc.BindFlags = 0;
 
-	ID3D11Texture2D* stageTexture;
-	_Device->CreateTexture2D(&textureDesc, NULL, &stageTexture);
+	HRESULT result = S_OK;
+
+	ID3D11Texture2D* stageTexture = NULL;
+	result = _Device->CreateTexture2D(&textureDesc, NULL, &stageTexture);
+	if(FAILED(result)) return;
+
 	_DeviceContext->CopyResource(stageTexture, texture);
 
 	D3D11_MAPPED_SUBRESOURCE mappedSubResource;
-	_DeviceContext->Map(stageTexture, 0, D3D11_MAP_READ, 0, &mappedSubResource);
+	result = _DeviceContext->Map(stageTexture, 0, D3D11_MAP_READ, 0, &mappedSubResource);
+	if(FAILED(result))
+	{
+		stageTexture->Release();
+		return;
+	}
 
 	size_t dataWidth = size_of_format(textureDesc.Format) * textureDesc.Width * textureDesc.Height;
 	memcpy(data, mappedSubResource.pData, dataWidth);

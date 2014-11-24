@@ -44,7 +44,7 @@ bool GLTexture::Load(const String& fileName)
 		GLTexture* tex = loadedTextures[i].record;
 		if(tex == nullptr) continue;
 
-		if(tex->textureID != 0 && loadedTextures[i].fileName == fileName)
+		if(tex->textureID != 0 && loadedTextures[i].fileName.Equals(fileName))
 		{
 			id = tex->textureID;
 			width = tex->width;
@@ -90,7 +90,6 @@ bool GLTexture::LoadImageData(const String& fileName)
 	if(file == nullptr)
 	{
 		LOG_ISSUE("%s : file could not be opened", errorText.Data());
-		fclose(file);
 		return false;
 	}
 

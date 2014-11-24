@@ -84,9 +84,9 @@ THREAD_RETURN_TYPE Game::Main(void* param)
 			#if defined(_DEBUG)
 			{
 				#if defined(_MSC_VER)
-					wchar_t out[64];
-					wsprintf(out, L"Game Thread : %i TPS\n", fpsSample);
-					OutputDebugString(out);
+					char out[64];
+					sprintf(out, "Game Thread : %i TPS\n", fpsSample);
+					OutputDebugStringA(out);
 				#else
 					printf("Game Thread : %i TPS\n", fpsSample);
 				#endif

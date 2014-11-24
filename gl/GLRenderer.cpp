@@ -70,12 +70,17 @@ namespace GLRenderer
 bool GLRenderer::Initialize()
 {
 	// get OpenGL version info
-	int major, minor;
-	sscanf((char*)glGetString(GL_VERSION), "%d.%d", &major, &minor);
-	gl_version = major * 10 + minor;
+	gl_version = ogl_GetMajorVersion() * 10 + ogl_GetMinorVersion();
 
-	sscanf((char*)glGetString(GL_SHADING_LANGUAGE_VERSION), "%d.%d", &major, &minor);
-	glsl_version = major * 100 + minor;
+	{
+		int minor, major;
+		const char* version_string = (const char*) glGetString(GL_SHADING_LANGUAGE_VERSION);
+		int parsed = sscanf(version_string, "%d.%d", &major, &minor);
+		if(parsed > 0)
+		{
+			glsl_version = major * 100 + minor;
+		}
+	}
 
 	// get OpenGL metrics
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &gl_max_texture_size);

@@ -112,6 +112,7 @@ void DXModel::BufferData(const vec4* vertices, const vec2* texcoords, const unsi
 	D3D11_USAGE bufferUsage;
 	switch(usage)
 	{
+		default:
 		case USAGE_STATIC:
 			bufferUsage = D3D11_USAGE_IMMUTABLE; break;
 		case USAGE_DYNAMIC:

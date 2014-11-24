@@ -15,7 +15,6 @@ CMake can be used to build the project using the CMakeLists.txt file in the root
 If you wish to build manually, the requirements are basically as follows:
 
 -   exclude source subdirectories that conflict with the platform compiled under, like the directx /dx directory should be excluded under linux builds because DirectX is a microsoft-owned windows-only thing.
--   compile with _UNICODE and UNICODE flags
 -   Dependencies, headers and static libraries (.lib or .a) needed for:
       * DirectX SDK for windows builds (currently only when compiled in MSVC)
       * FMOD Ex for Sound.h and Sound.cpp

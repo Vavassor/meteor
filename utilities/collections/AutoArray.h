@@ -46,10 +46,10 @@ public:
 		new(last++) T(element);
 	}
 
-	bool Pop(T* element)
+	bool Pop()
 	{
 		if(last == buffer) return false;
-		*element = *--last;
+		--last;
 		last->~T();
 		return true;
 	}
@@ -71,12 +71,12 @@ public:
 
 	void Resize(size_t newSize)
 	{
-		if(newSize == 0) return;
+		if(newSize < 1) return;
 
 		// make a new buffer and copy over elements
 		T* newArray = (T*) ::operator new[](newSize * sizeof(T));
 		size_t count = Count();
-		size_t minSize = (newSize < count) ? newSize : count;
+		size_t minSize = (newSize < count)? newSize : count;
 		for(size_t i = 0; i < minSize; ++i)
 			new(&newArray[i]) T(buffer[i]);
 
@@ -89,6 +89,21 @@ public:
 		// reallocation invalidated these, so reset them
 		last = buffer + minSize;
 		end = buffer + newSize;
+	}
+
+	void Clear_And_Resize(size_t new_size)
+	{
+		if(new_size == 0) return;
+
+		// clear and free buffer memory
+		for(T *it = buffer, *stop = last; it != stop; ++it)
+			it->~T();
+		::operator delete[](buffer);
+
+		// reallocate new buffer
+		buffer = (T*) ::operator new[](new_size * sizeof(T));
+		last = buffer;
+		end = buffer + new_size;
 	}
 
 	void Contract()

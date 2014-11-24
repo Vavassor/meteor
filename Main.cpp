@@ -59,7 +59,11 @@ __declspec(noreturn) __declspec(nothrow) void termination_handler()
 typedef LPTHREAD_START_ROUTINE ThreadStartRoutine;
 typedef void (*ThreadQuitRoutine)(void);
 
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR sCmdLine, int iShow)
+int WINAPI wWinMain(
+	_In_ HINSTANCE hInstance,
+	_In_opt_ HINSTANCE hPrevInstance,
+	_In_ LPWSTR sCmdLine,
+	_In_ int iShow)
 {
 	SetUnhandledExceptionFilter(UnhandledException);
 
@@ -67,22 +71,35 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR sCmdLin
 	set_terminate(termination_handler);
 #endif
 
+	// reset log file so initialization errors can be recorded
+	Log::Clear_File();
+
 	// create threads
 	ThreadStartRoutine start_routines[MAX_THREADS] =
 	{
 		Game::Main,
 	};
-	for(int i = 0; i < MAX_THREADS; i++)
-		threads[i] = CreateThread(NULL, 0, start_routines[i], NULL, 0, &threadIDs[i]);
+	for(int i = 0; i < MAX_THREADS; ++i)
+	{
+		HANDLE thread = CreateThread(NULL, 0, start_routines[i], NULL, 0, &threadIDs[i]);
+		if(thread == NULL)
+		{
+			MessageBoxA(NULL, "thread failed to spawn", "Error", MB_OK | MB_ICONERROR);
+			return 0;
+		}
+		threads[i] = thread;
+	}
 
 	// create window and begin render loop
+	int main_return = 0;
+
 	WindowsWindow window;
 	if(window.Create(hInstance))
 	{
 		if(window.fullscreen)
 			window.ToggleFullscreen();
 		window.Show();
-		window.MessageLoop();
+		main_return = window.MessageLoop();
 	}
 	else
 	{
@@ -104,7 +121,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR sCmdLin
 	for(int i = 0; i < MAX_THREADS; i++)
 		CloseHandle(threads[i]);
 
-	return 0;
+	// flush remaining log messages
+	Log::Output(PRINT_TO_CONSOLE);
+
+	return main_return;
 }
 
 #endif // defined(OS_WINDOWS)

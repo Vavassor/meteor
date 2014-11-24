@@ -21,20 +21,13 @@ public:
 
 	String& operator = (const String& s);
 	String& operator = (const char* s);
-	String& operator += (const char* other);
-	String& operator += (const String& other);
-
-	friend String operator + (const String& a, const char* b);
-	friend String operator + (const char* a, const String& b);
-	friend String operator + (const String& a, const String& b);
-
-	bool operator == (const String& other) const;
-	bool operator != (const String& other) const;
 
 	void Append(const String& other);
 	void Append(const char* s, size_t n);
 	void Append(const char* s);
 	void Append(const char* first, const char* last);
+	
+	bool Equals(const String& other) const;
 
 	void Reserve(size_t newSize);
 	void Clear();

@@ -56,47 +56,9 @@ String& String::operator = (const char* s)
 	return *this;
 }
 
-String& String::operator += (const String& other)
-{
-	Append(other.sequence, other.size);
-	return *this;
-}
-
-String& String::operator += (const char* other)
-{
-	Append(other);
-	return *this;
-}
-
-String operator + (const String& a, const char* b)
-{
-	String str(a);
-	str += b;
-	return str;
-}
-
-String operator + (const char* a, const String& b)
-{
-	String str(a);
-	str += b;
-	return str;
-}
-
-String operator + (const String& a, const String& b)
-{
-	String str(a);
-	str += b;
-	return str;
-}
-
-bool String::operator == (const String& other) const
+bool String::Equals(const String& other) const
 {
 	return compare_strings(sequence, other.sequence) == 0;
-}
-
-bool String::operator != (const String& other) const
-{
-	return !operator==(other);
 }
 
 void String::Append(const char* s, size_t n)

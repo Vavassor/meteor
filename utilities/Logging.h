@@ -3,7 +3,7 @@
 
 namespace Log
 {
-	enum LogLevel
+	enum Level
 	{
 		ISSUE,
 		INFO,
@@ -13,17 +13,17 @@ namespace Log
 	void Clear_File();
 	void Inc_Time();
 	void Output(bool printToConsole = false);
-	void Add(LogLevel level, const char* format, ...);
+	void Add(Level level, const char* format, ...);
 	const char* Get_Text();
 }
 
 #if defined(_DEBUG)
-#define DEBUG_LOG(format, ...) Log::Add(Log::DEBUG, (format), ##__VA_ARGS__)
+#define DEBUG_LOG(format, ...) Log::Add(Log::Level::DEBUG, (format), ##__VA_ARGS__)
 #else
 #define DEBUG_LOG(format, ...) // no operation
 #endif
 
-#define LOG_ISSUE(format, ...) Log::Add(Log::ISSUE, (format), ##__VA_ARGS__)
-#define LOG_INFO(format, ...) Log::Add(Log::INFO, (format), ##__VA_ARGS__)
+#define LOG_ISSUE(format, ...) Log::Add(Log::Level::ISSUE, (format), ##__VA_ARGS__)
+#define LOG_INFO(format, ...) Log::Add(Log::Level::INFO, (format), ##__VA_ARGS__)
 
 #endif

@@ -65,19 +65,25 @@ WindowsWindow::WindowsWindow():
 	alt_pressed(false)
 {
 	// get module directory
-	wchar_t wide_path[MAX_PATH];
-	GetModuleFileName(NULL, wide_path, MAX_PATH);
-	*(wcsrchr(wide_path, '\\') + 1) = 0;
+	{
+		wchar_t wide_path[MAX_PATH];
+		if(GetModuleFileNameW(NULL, wide_path, ARRAY_COUNT(wide_path)))
+		{
+			wchar_t* slash = 1 + wcsrchr(wide_path, '\\');
+			if(slash) *slash = L'\0';
+		}
 
-	char* file_path = new char[MAX_PATH];
-	wcs_to_utf8(file_path, wide_path, MAX_PATH);
-	module_directory = file_path;
-
+		char* file_path = new char[MAX_PATH];
+		wcs_to_utf8(file_path, wide_path, MAX_PATH);
+		module_directory = file_path;
+	}
+	
 	// get current working directory
-	char* utf8_path = new char[MAX_PATH];
-	_getcwd(utf8_path, MAX_PATH);
-	working_directory = utf8_path;
-
+	{
+		char* utf8_path = new char[MAX_PATH];
+		working_directory = _getcwd(utf8_path, MAX_PATH);
+	}
+	
 #if defined(_DEBUG)
 	enable_debugging = true;
 #else
@@ -96,9 +102,6 @@ WindowsWindow::~WindowsWindow()
 
 bool WindowsWindow::Create(HINSTANCE instance)
 {
-	// reset log file so initialization errors can be recorded
-	Log::Clear_File();
-
 	// initialize defaults
 	bool create_forward_compatible_context = false;
 
@@ -115,8 +118,8 @@ bool WindowsWindow::Create(HINSTANCE instance)
 			block.Get_Attribute_As_Strings("renderer", &values);
 
 			String& renderName = values[0];
-			if(renderName == "DIRECTX") render_mode = RENDER_DX;
-			if(renderName == "OPENGL")  render_mode = RENDER_GL;
+			if(renderName.Equals("DIRECTX")) render_mode = RENDER_DX;
+			if(renderName.Equals("OPENGL"))  render_mode = RENDER_GL;
 		}
 		block.Get_Attribute_As_Bool("is_fullscreen", &fullscreen);
 		block.Get_Attribute_As_Bool("vertical_synchronization", &vertical_synchronization);
@@ -132,7 +135,7 @@ bool WindowsWindow::Create(HINSTANCE instance)
 	}
 
 	// setup window class
-	WNDCLASSEX classEx = {};
+	WNDCLASSEXW classEx = {};
 	classEx.cbSize = sizeof classEx;
 	classEx.style = CS_HREDRAW | CS_VREDRAW;
 	classEx.lpfnWndProc = WindowProc;
@@ -143,14 +146,14 @@ bool WindowsWindow::Create(HINSTANCE instance)
 	classEx.lpszClassName = L"MeteorWindowClass";
 	classEx.cbWndExtra = sizeof(WindowsWindow*);
 
-	if(RegisterClassEx(&classEx) == 0)
+	if(RegisterClassExW(&classEx) == 0)
 	{
 		LOG_ISSUE("RegisterClassEx failed!");
 		return false;
 	}
 
 	// create the actual window
-	window = CreateWindowEx(WS_EX_APPWINDOW, classEx.lpszClassName, window_name, WS_OVERLAPPEDWINDOW,
+	window = CreateWindowExW(WS_EX_APPWINDOW, classEx.lpszClassName, window_name, WS_OVERLAPPEDWINDOW,
 		0, 0, width, height, NULL, NULL, instance, NULL);
 	if(window == NULL)
 	{
@@ -294,9 +297,9 @@ bool WindowsWindow::Create(HINSTANCE instance)
 	ShowCursor(FALSE);
 	SetCursor(NULL);
 
-	DISPLAY_DEVICE dd = {};
+	DISPLAY_DEVICEW dd = {};
 	dd.cb = sizeof dd;
-	BOOL gotGPUName = EnumDisplayDevices(NULL, 0, &dd, 0);
+	BOOL gotGPUName = EnumDisplayDevicesW(NULL, 0, &dd, 0);
 	if(gotGPUName)
 	{
 		char* gpuName = new char[sizeof dd.DeviceString];
@@ -357,7 +360,7 @@ void WindowsWindow::ToggleFullscreen()
 		//--- Enter Fullscreen ---//
 
 		// save position/dimensions of window prior to entering full screen mode
-		ZeroMemory(&placement, sizeof placement);
+		CLEAR_STRUCT(placement);
 		placement.length = sizeof placement;
 		GetWindowPlacement(window, &placement);
 
@@ -422,17 +425,17 @@ void WindowsWindow::Update()
 	ThreadMessageLoop();
 
 	// update frame-rate counters
-	static DWORD last_fps_time = GetTickCount();
+	static DWORD last_fps_time = GetTickCount64();
 	static int fps = 0;
 	static int fps_sample = 0;
 
-	DWORD time = GetTickCount();
+	DWORD time = GetTickCount64();
 
 	if(time - last_fps_time > 1000)
 	{
 		wchar_t out[64];
-		wsprintf(out, L"%s - %i FPS", window_name, fps_sample);
-		SetWindowText(window, out);
+		wsprintfW(out, L"%ls - %i FPS", window_name, fps_sample);
+		SetWindowTextW(window, out);
 
 		bool print_to_console = enable_debugging;
 		Log::Output(print_to_console);
@@ -544,7 +547,7 @@ void WindowsWindow::KeyUp(USHORT key)
 	}
 }
 
-void WindowsWindow::MessageLoop()
+int WindowsWindow::MessageLoop()
 {
 	MSG msg = {};
 	bool quit = false;
@@ -567,6 +570,8 @@ void WindowsWindow::MessageLoop()
 			last_tick_time = Timer::GetTime();
 		}
 	}
+
+	return msg.wParam;
 }
 
 void WindowsWindow::Destroy()
@@ -657,7 +662,7 @@ LONG WINAPI UnhandledException(LPEXCEPTION_POINTERS exceptionInfo)
 		(DWORD)exceptionInfo->ExceptionRecord->ExceptionAddress - codeBase,
 		codeBase);
 
-	MessageBox(0, message, L"Error!", MB_OK);
+	MessageBoxW(0, message, L"Error!", MB_OK);
 	LONG filterMode = (enable_debugging)? EXCEPTION_CONTINUE_SEARCH : EXCEPTION_EXECUTE_HANDLER;
     return filterMode;
 }

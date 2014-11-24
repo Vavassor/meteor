@@ -43,7 +43,7 @@ bool DXTexture::Load(const String& fileName)
 		DXTexture* tex = loadedTextures[i].record;
 		if(tex == nullptr) continue;
 
-		if(loadedTextures[i].fileName == fileName)
+		if(loadedTextures[i].fileName.Equals(fileName))
 		{
 			existingTexture = tex;
 
@@ -92,7 +92,6 @@ bool DXTexture::LoadTextureData(const String& fileName)
 	if(file == nullptr)
 	{
 		LOG_ISSUE("%s file could not be opened", errorText.Data());
-		fclose(file);
 		return false;
 	}
 

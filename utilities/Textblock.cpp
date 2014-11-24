@@ -35,9 +35,9 @@ void Textblock::Add_Attribute(const String& name, String values[], int numValues
 {
 	Attribute attribute;
 	attribute.key = name;
-	String* vals = new String[numValues];
-	COPY(values, vals, numValues);
-	attribute.values = vals;
+	String* new_values = new String[numValues];
+	COPY(values, new_values, numValues);
+	attribute.values = new_values;
 	attribute.numValues = numValues;
 	attributes.Push(attribute);
 }
@@ -45,7 +45,7 @@ void Textblock::Add_Attribute(const String& name, String values[], int numValues
 Attribute* Textblock::Get_Attribute(const String& name) const
 {
 	FOR_ALL(attributes)
-		if(it->key == name) return it;
+		if(it->key.Equals(name)) return it;
 
 	return nullptr;
 }
@@ -60,7 +60,7 @@ bool Textblock::Get_Attribute_As_Bool(const String& name, bool* value) const
 	Attribute* attribute = Get_Attribute(name);
 	if(attribute != nullptr && value != nullptr)
 	{
-		*value = attribute->values[0] == "true";
+		*value = attribute->values[0].Equals("true");
 		return true;
 	}
 	return false;
@@ -183,7 +183,7 @@ void Textblock::Remove_Child(const String& name)
 	FOR_ALL(children)
 	{
 		Textblock* child = *it;
-		if(child->name == name)
+		if(child->name.Equals(name))
 		{
 			delete child;
 			*it = nullptr;
@@ -201,7 +201,7 @@ Textblock* Textblock::Get_Child_By_Name(const String& name) const
 	FOR_ALL(children)
 	{
 		Textblock* child = *it;
-		if(child->name == name) return child;
+		if(child->name.Equals(name)) return child;
 	}
 	return nullptr;
 }

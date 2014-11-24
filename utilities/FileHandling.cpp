@@ -74,7 +74,7 @@ static HANDLE open_file(const char* filePath, FileWriteMode writeMode)
 		}
 	}
 
-	HANDLE file = CreateFile(widePath, access, shareMode, NULL, disposition, flags | attributes, NULL);
+	HANDLE file = CreateFileW(widePath, access, shareMode, NULL, disposition, flags | attributes, NULL);
 	if(file == INVALID_HANDLE_VALUE)
 	{
 		LOG_ISSUE("could not open file: %s", filePath);

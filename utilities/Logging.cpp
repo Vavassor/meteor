@@ -23,21 +23,6 @@ namespace Log
 {
 	String stream;
 	long ticks;
-
-	enum ParseSizeParameter
-	{
-		PARSE_MEDIAN,
-		PARSE_BYTE,
-		PARSE_SHORT,
-		PARSE_LONG,
-		PARSE_LONG_LONG,
-	};
-
-	enum ParseMode
-	{
-		MODE_APPEND,
-		MODE_INSERT,
-	};
 }
 
 void Log::Clear_File()
@@ -70,13 +55,13 @@ void Log::Output(bool printToConsole)
 	stream.Clear();
 }
 
-static const char* log_level_name(Log::LogLevel level)
+static const char* log_level_name(Log::Level level)
 {
 	switch(level)
 	{
-		case Log::ISSUE: return "ERROR";
-		case Log::INFO:  return "INFO";
-		case Log::DEBUG: return "DEBUG";
+		case Log::Level::ISSUE: return "ERROR";
+		case Log::Level::INFO:  return "INFO";
+		case Log::Level::DEBUG: return "DEBUG";
 	}
 	return '\0';
 }
@@ -89,10 +74,10 @@ static const char* log_level_name(Log::LogLevel level)
 		break;											\
 	}
 
-void Log::Add(LogLevel level, const char* format, ...)
+void Log::Add(Level level, const char* format, ...)
 {
 	// append log header to line
-	stream.Reserve(stream.Size() + 80);
+	stream.Reserve(stream.Size() + 100);
 	stream.Append("LOG-");
 
 	time_t signature = time(nullptr);
@@ -100,30 +85,45 @@ void Log::Add(LogLevel level, const char* format, ...)
 
 	char timeStr[20];
 	int_to_string(t->tm_hour, timeStr);
-	stream += timeStr;
-	stream += ":";
+	stream.Append(timeStr);
+	stream.Append(":");
 
 	int_to_string(t->tm_min, timeStr);
-	stream += timeStr;
-	stream += ":";
+	stream.Append(timeStr);
+	stream.Append(":");
 
 	int_to_string(t->tm_sec, timeStr);
-	stream += timeStr;
-	stream += "/";
+	stream.Append(timeStr);
+	stream.Append("/");
 
 	int_to_string(ticks, timeStr);
-	stream += timeStr;
-	stream += " ";
+	stream.Append(timeStr);
+	stream.Append(" ");
 
 	stream.Append(log_level_name(level));
-	stream += ": ";
+	stream.Append(": ");
 
 	// write parameter data to log
 	va_list arguments;
 	va_start(arguments, format);
 
-	ParseMode mode = MODE_APPEND;
-	ParseSizeParameter sizeType = PARSE_MEDIAN;
+	enum ArgumentSize
+	{
+		MEDIAN,
+		BYTE,
+		SHORT,
+		LONG,
+		LONG_LONG,
+	} sizeType;
+
+	enum Mode
+	{
+		APPEND,
+		INSERT,
+	} mode;
+
+	mode = Mode::APPEND;
+	sizeType = ArgumentSize::MEDIAN;
 
 	char* s = (char*) format;
 	char* f = s;
@@ -131,7 +131,7 @@ void Log::Add(LogLevel level, const char* format, ...)
 	{
 		switch(mode)
 		{
-			case MODE_APPEND:
+			case Mode::APPEND:
 			{
 				// go through string until '%' is found, which
 				// signifies a sequence to be replaced
@@ -141,13 +141,13 @@ void Log::Add(LogLevel level, const char* format, ...)
 					{
 						stream.Append(f, s);
 					}
-					mode = MODE_INSERT;
-					sizeType = PARSE_MEDIAN;
+					mode = Mode::INSERT;
+					sizeType = ArgumentSize::MEDIAN;
 				}
 				break;
 			}
 
-			case MODE_INSERT:
+			case Mode::INSERT:
 			{
 				// determine type of argument in parameter list and replace
 				// the '%' sub-sequence with the parsed string as directed
@@ -159,12 +159,12 @@ void Log::Add(LogLevel level, const char* format, ...)
 				}
 				else if(*s == 'h')
 				{
-					sizeType = (sizeType == PARSE_SHORT) ? PARSE_BYTE : PARSE_SHORT;
+					sizeType = (sizeType == ArgumentSize::SHORT)? ArgumentSize::BYTE : ArgumentSize::SHORT;
 					break;
 				}
 				else if(*s == 'l')
 				{
-					sizeType = (sizeType == PARSE_LONG) ? PARSE_LONG : PARSE_LONG_LONG;
+					sizeType = (sizeType == ArgumentSize::LONG)? ArgumentSize::LONG : ArgumentSize::LONG_LONG;
 					break;
 				}
 
@@ -174,11 +174,11 @@ void Log::Add(LogLevel level, const char* format, ...)
 					char str[20];
 					switch(sizeType)
 					{
-						LOG_CASE(PARSE_BYTE, char, int_to_string)
-						LOG_CASE(PARSE_SHORT, short, int_to_string)
-						LOG_CASE(PARSE_MEDIAN, int, int_to_string)
-						LOG_CASE(PARSE_LONG, long, int_to_string)
-						LOG_CASE(PARSE_LONG_LONG, long long, int_to_string)
+						LOG_CASE(ArgumentSize::BYTE, char, int_to_string)
+						LOG_CASE(ArgumentSize::SHORT, short, int_to_string)
+						LOG_CASE(ArgumentSize::MEDIAN, int, int_to_string)
+						LOG_CASE(ArgumentSize::LONG, long, int_to_string)
+						LOG_CASE(ArgumentSize::LONG_LONG, long long, int_to_string)
 					}
 					stream.Append(str);
 				}
@@ -187,11 +187,11 @@ void Log::Add(LogLevel level, const char* format, ...)
 					char str[20];
 					switch(sizeType)
 					{
-						LOG_CASE(PARSE_BYTE, unsigned char, int_to_string)
-						LOG_CASE(PARSE_SHORT, unsigned short, int_to_string)
-						LOG_CASE(PARSE_MEDIAN, unsigned int, int_to_string)
-						LOG_CASE(PARSE_LONG, unsigned long, int_to_string)
-						LOG_CASE(PARSE_LONG_LONG, unsigned long long, int_to_string)
+						LOG_CASE(ArgumentSize::BYTE, char, int_to_string)
+						LOG_CASE(ArgumentSize::SHORT, short, int_to_string)
+						LOG_CASE(ArgumentSize::MEDIAN, int, int_to_string)
+						LOG_CASE(ArgumentSize::LONG, long, int_to_string)
+						LOG_CASE(ArgumentSize::LONG_LONG, long long, int_to_string)
 					}
 					stream.Append(str);
 				}
@@ -207,11 +207,11 @@ void Log::Add(LogLevel level, const char* format, ...)
 					char str[32];
 					switch(sizeType)
 					{
-						case PARSE_BYTE:
-						case PARSE_SHORT:
-						case PARSE_MEDIAN:
-						case PARSE_LONG:
-						case PARSE_LONG_LONG:
+						case ArgumentSize::BYTE:
+						case ArgumentSize::SHORT:
+						case ArgumentSize::MEDIAN:
+						case ArgumentSize::LONG:
+						case ArgumentSize::LONG_LONG:
 						{
 							double param = va_arg(arguments, double);
 							float_to_string(param, str);
@@ -228,7 +228,7 @@ void Log::Add(LogLevel level, const char* format, ...)
 				}
 
 				f = s + 1;
-				mode = MODE_APPEND;
+				mode = Mode::APPEND;
 
 				break;
 			}
