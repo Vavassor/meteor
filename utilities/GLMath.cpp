@@ -20,7 +20,7 @@ mat4x4::mat4x4(const mat4x4& matrix)
 		M[i] = matrix[i];
 }
 
-mat4x4::mat4x4(const quaternion& quat)
+mat4x4::mat4x4(quaternion quat)
 {
 	float x2 = quat.x * quat.x;
 	float y2 = quat.y * quat.y;
@@ -105,7 +105,7 @@ mat4x4 mat4x4::operator * (const mat4x4& matrix) const
 	return out;
 }
 
-vec4 mat4x4::operator * (const vec4& u) const
+vec4 mat4x4::operator * (vec4 u) const
 {
 	return vec4(
 		M[0] * u.x + M[4] * u.y + M[8]  * u.z + M[12] * u.w,
@@ -116,7 +116,7 @@ vec4 mat4x4::operator * (const vec4& u) const
 
 // ----------------------------------------------------------------------------------------------------------------------------
 
-quaternion quaternion::operator * (const quaternion &rq) const
+quaternion quaternion::operator * (quaternion rq) const
 {
 	return quaternion(
 		w * rq.x + x * rq.w + y * rq.z - z * rq.y,
@@ -125,13 +125,13 @@ quaternion quaternion::operator * (const quaternion &rq) const
 		w * rq.w - x * rq.x - y * rq.y - z * rq.z);
 }
 
-quaternion& quaternion::operator *= (const quaternion &rq)
+quaternion& quaternion::operator *= (quaternion rq)
 {
 	*this = *this * rq;
 	return *this;
 }
 
-vec3 quaternion::operator * (const vec3 &v) const
+vec3 quaternion::operator * (vec3 v) const
 {
 	vec3 u(x, y, z);
 	float s = w;
@@ -142,27 +142,27 @@ vec3 quaternion::operator * (const vec3 &v) const
 
 // ----------------------------------------------------------------------------------------------------------------------------
 
-float dot(const vec2& u, const vec2& v)
+float dot(vec2 u, vec2 v)
 {
 	return u.x * v.x + u.y * v.y;
 }
 
-float length(const vec2& u)
+float length(vec2 u)
 {
 	return sqrt(u.x * u.x + u.y * u.y);
 }
 
-vec2 normalize(const vec2& u)
+vec2 normalize(vec2 u)
 {
 	return u / sqrt(u.x * u.x + u.y * u.y);
 }
 
-vec2 reflect(const vec2& i, const vec2& n)
+vec2 reflect(vec2 i, vec2 n)
 {
 	return i - 2.0f * dot(n, i) * n;
 }
 
-vec2 refract(const vec2& i, const vec2& n, float eta)
+vec2 refract(vec2 i, vec2 n, float eta)
 {
 	float ndoti = dot(n, i);
 	float k = 1.0f - eta * eta * (1.0f - ndoti * ndoti);
@@ -173,7 +173,7 @@ vec2 refract(const vec2& i, const vec2& n, float eta)
 	return r;
 }
 
-vec2 rotate(const vec2& u, float angle)
+vec2 rotate(vec2 u, float angle)
 {
 	float cs = cos(angle);
 	float sn = sin(angle);
@@ -184,7 +184,7 @@ vec2 rotate(const vec2& u, float angle)
 
 // ----------------------------------------------------------------------------------------------------------------------------
 
-vec3 cross(const vec3& u, const vec3& v)
+vec3 cross(vec3 u, vec3 v)
 {
 	return vec3(
 		u.y * v.z - u.z * v.y,
@@ -192,37 +192,37 @@ vec3 cross(const vec3& u, const vec3& v)
 		u.x * v.y - u.y * v.x);
 }
 
-float dot(const vec3& u, const vec3& v)
+float dot(vec3 u, vec3 v)
 {
 	return u.x * v.x + u.y * v.y + u.z * v.z;
 }
 
-vec3 triple_product(const vec3& u, const vec3& v, const vec3& w)
+vec3 triple_product(vec3 u, vec3 v, vec3 w)
 {
 	return -u * dot(v, w) + v * dot(u, w);
 }
 
-float length(const vec3& u)
+float length(vec3 u)
 {
 	return sqrt(u.x * u.x + u.y * u.y + u.z * u.z);
 }
 
-vec3 mix(const vec3& u, const vec3& v, float a)
+vec3 mix(vec3 u, vec3 v, float a)
 {
 	return u * (1.0f - a) + v * a;
 }
 
-vec3 normalize(const vec3& u)
+vec3 normalize(vec3 u)
 {
 	return u / sqrt(u.x * u.x + u.y * u.y + u.z * u.z);
 }
 
-vec3 reflect(const vec3& i, const vec3& n)
+vec3 reflect(vec3 i, vec3 n)
 {
 	return i - 2.0f * dot(n, i) * n;
 }
 
-vec3 refract(const vec3& i, const vec3& n, float eta)
+vec3 refract(vec3 i, vec3 n, float eta)
 {
 	float ndoti = dot(n, i);
 	float k = 1.0f - eta * eta * (1.0f - ndoti * ndoti);
@@ -234,14 +234,14 @@ vec3 refract(const vec3& i, const vec3& n, float eta)
 	return r;
 }
 
-vec3 rotate(const vec3& u, float angle, const vec3& axis)
+vec3 rotate(vec3 u, float angle, vec3 axis)
 {
 	return quat_from_axis_angle(axis, angle) * u;
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------
 
-quaternion normalize(const quaternion& q)
+quaternion normalize(quaternion q)
 {
 	float mag2 = q.w * q.w + q.x * q.x + q.y * q.y + q.z * q.z;
 
@@ -257,7 +257,7 @@ quaternion normalize(const quaternion& q)
 	return out;
 }
 
-quaternion quat_from_axis_angle(const vec3& v, float angle)
+quaternion quat_from_axis_angle(vec3 v, float angle)
 {
 	angle *= 0.5f;
 	vec3 vn = normalize(v);
@@ -312,7 +312,7 @@ quaternion quat_from_matrix(mat4x4& m)
 	return quat;
 }
 
-quaternion invert_quat(const quaternion& quat)
+quaternion invert_quat(quaternion quat)
 {
 	float dot = quat.x * quat.x + quat.y * quat.y + quat.z * quat.z + quat.w * quat.w;
 
@@ -323,7 +323,7 @@ quaternion invert_quat(const quaternion& quat)
 		quat.w / dot);
 }
 
-quaternion slerp(const quaternion& from, const quaternion& to, float t)
+quaternion slerp(quaternion from, quaternion to, float t)
 {
 	// calc cosine
 	float to1[4];
@@ -370,7 +370,7 @@ quaternion slerp(const quaternion& from, const quaternion& to, float t)
 					  scale0 * from.w + scale1 * to1[3]);
 }
 
-quaternion rotation_to(const vec3& from, const vec3& to, const vec3& fallbackAxis)
+quaternion rotation_to(vec3 from, vec3 to, vec3 fallbackAxis)
 {
 	vec3 v0 = normalize(from);
 	vec3 v1 = normalize(to);
@@ -459,7 +459,7 @@ mat4x4 bias_matrix_inverse()
 	return BI;
 }
 
-mat4x4 look_at_matrix(const vec3& eyePosition, const vec3& lookAt, const vec3& upVector)
+mat4x4 look_at_matrix(vec3 eyePosition, vec3 lookAt, vec3 upVector)
 {
 	vec3 e = eyePosition;
 	vec3 up = normalize(upVector);
@@ -494,7 +494,7 @@ mat4x4 look_at_matrix(const vec3& eyePosition, const vec3& lookAt, const vec3& u
 	return look;
 }
 
-mat4x4 view_matrix(const vec3 &x, const vec3 &y, const vec3 &z, const vec3 &position)
+mat4x4 view_matrix(vec3 x, vec3 y, vec3 z, vec3 position)
 {
 	mat4x4 v;
 
@@ -632,7 +632,7 @@ mat4x4 perspective_projection_matrix_inverse(const mat4x4& m)
 	return inverse;
 }
 
-mat4x4 rotation_matrix(float angle, const vec3& u)
+mat4x4 rotation_matrix(float angle, vec3 u)
 {
 	angle = angle / 180.0f * (float)M_PI;
 

@@ -124,19 +124,19 @@ GLuint GLShader::LoadShaderGL(GLenum Type, const String& shaderFileName)
 void GLShader::Unload()
 {
 	// delete all existing shader data
-	if(program != 0)
+	if(program)
 	{
-		if(vertexShader != 0)
+		if(vertexShader)
 			glDetachShader(program, vertexShader);
-		if(fragmentShader != 0)
+		if(fragmentShader)
 			glDetachShader(program, fragmentShader);
 
 		glDeleteProgram(program);
 	}
 
-	if(vertexShader != 0)
+	if(vertexShader)
 		glDeleteShader(vertexShader);
-	if(fragmentShader != 0)
+	if(fragmentShader)
 		glDeleteShader(fragmentShader);
 
 	// reset to defaults

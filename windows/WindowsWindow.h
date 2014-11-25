@@ -41,7 +41,7 @@ private:
 	};
 
 	HWND window;
-	const wchar_t* window_name;
+	const char* window_name;
 	int width, height;
 
 	HDC device;

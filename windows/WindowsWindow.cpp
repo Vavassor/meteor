@@ -52,7 +52,7 @@ WindowsWindow::WindowsWindow():
 	vertical_synchronization(true),
 
 	window(NULL),
-	window_name(L"METEOR"),
+	window_name("METEOR"),
 	width(1280),
 	height(720),
 
@@ -135,7 +135,7 @@ bool WindowsWindow::Create(HINSTANCE instance)
 	}
 
 	// setup window class
-	WNDCLASSEXW classEx = {};
+	WNDCLASSEXA classEx = {};
 	classEx.cbSize = sizeof classEx;
 	classEx.style = CS_HREDRAW | CS_VREDRAW;
 	classEx.lpfnWndProc = WindowProc;
@@ -143,17 +143,17 @@ bool WindowsWindow::Create(HINSTANCE instance)
 	classEx.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ICON1));
 	classEx.hIconSm = (HICON)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, 16, 16, 0);
 	classEx.hCursor = LoadCursor(NULL, IDC_ARROW);
-	classEx.lpszClassName = L"MeteorWindowClass";
+	classEx.lpszClassName = "MeteorWindowClass";
 	classEx.cbWndExtra = sizeof(WindowsWindow*);
 
-	if(RegisterClassExW(&classEx) == 0)
+	if(RegisterClassExA(&classEx) == 0)
 	{
 		LOG_ISSUE("RegisterClassEx failed!");
 		return false;
 	}
 
 	// create the actual window
-	window = CreateWindowExW(WS_EX_APPWINDOW, classEx.lpszClassName, window_name, WS_OVERLAPPEDWINDOW,
+	window = CreateWindowExA(WS_EX_APPWINDOW, classEx.lpszClassName, window_name, WS_OVERLAPPEDWINDOW,
 		0, 0, width, height, NULL, NULL, instance, NULL);
 	if(window == NULL)
 	{
@@ -433,9 +433,9 @@ void WindowsWindow::Update()
 
 	if(time - last_fps_time > 1000)
 	{
-		wchar_t out[64];
-		wsprintfW(out, L"%ls - %i FPS", window_name, fps_sample);
-		SetWindowTextW(window, out);
+		char out[64];
+		wsprintf(out, "%s - %i FPS", window_name, fps_sample);
+		SetWindowTextA(window, out);
 
 		bool print_to_console = enable_debugging;
 		Log::Output(print_to_console);

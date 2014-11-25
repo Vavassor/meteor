@@ -284,18 +284,6 @@ void GLRenderer::Render()
 	RenderFinal();
 }
 
-struct CompareMeshes
-{
-	bool operator()(const GLMesh& lhs, const GLMesh& rhs) const
-	{
-		return lhs.viewportLayer < rhs.viewportLayer
-			|| lhs.phase < rhs.phase
-			|| lhs.sortingLayer < rhs.sortingLayer
-			|| lhs.depth < rhs.depth
-			|| lhs.material < rhs.material;
-	}
-};
-
 void GLRenderer::RenderScene()
 {
 	// set depth to read/write
@@ -303,7 +291,7 @@ void GLRenderer::RenderScene()
 	glDepthMask(GL_TRUE);
 
 	// clear framebuffer
-	const float clearDepth = (cameraData.isOrtho) ? 0.0f : 1.0f;
+	const float clearDepth = (cameraData.isOrtho)? 0.0f : 1.0f;
 	glClearBufferfv(GL_DEPTH, 0, &clearDepth);
 
 	const float clearColor[] = { 0.0f, 1.0f, 1.0f, 1.0f };
@@ -312,7 +300,15 @@ void GLRenderer::RenderScene()
 	cull_frustum_obb_list(frustum, boundingBoxes, NUM_MODELS * NUM_SUBMESHES, boundsVisible);
 	
 	// sort meshes
-	//renderQueue.Sort(CompareMeshes());
+	/*
+	renderQueue.Sort([](const GLMesh& a, const GLMesh& b) -> bool {
+		return a.viewportLayer < b.viewportLayer
+			|| a.phase < b.phase
+			|| a.sortingLayer < b.sortingLayer
+			|| a.depth < b.depth
+			|| a.material < b.material;
+	});
+	*/
 	
 	// loop through and draw meshes
 	mat4x4 view = view_matrix(cameraData.viewX, cameraData.viewY, cameraData.viewZ, cameraData.position);

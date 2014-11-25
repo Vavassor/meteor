@@ -8,7 +8,7 @@
 
 namespace GLPrimitives
 {
-	static const int BUFFER_MAX = 2096;
+	const int BUFFER_MAX = 2048;
 	GLuint vertexBuffer = 0;
 	GLuint vertexArray = 0;
 	int bufferFilled = 0;

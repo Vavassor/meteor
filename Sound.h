@@ -20,7 +20,6 @@ public:
 
 	FMOD_SOUND* sound;
 	FMOD_CHANNEL* channel;
-	bool isLooping, onlyPlayOnce;
 	String name;
 	Type type;
 
@@ -34,6 +33,7 @@ public:
 	void Play(bool pause = false);
 	void Set_Pause(bool pause);
 	void Toggle_Pause();
+	void Loop(bool enable);
 	bool Is_Playing() const;
 };
 

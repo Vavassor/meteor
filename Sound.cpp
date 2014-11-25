@@ -1,6 +1,8 @@
 #include "Sound.h"
 
 #include "utilities/Logging.h"
+#include "utilities/Macros.h"
+#include "utilities/collections/AutoArray.h"
 
 #include <cstring>
 
@@ -10,9 +12,7 @@ namespace
 	FMOD_SYSTEM* fmodSystem;
 	FMOD_SOUNDGROUP *musicGroup, *noiseGroup;
 
-	static const int MAX_SOUNDS = 32;
-	Sound* sounds[MAX_SOUNDS];
-	int numSounds = 0;
+	AutoArray<Sound*> sounds;
 
 	void check_error(FMOD_RESULT result);
 	const char* fmoderr_text(FMOD_RESULT errorCode);
@@ -82,17 +82,13 @@ void Sound::Initialize()
 	check_error(result);
 	result = FMOD_System_CreateSoundGroup(fmodSystem, "Sound Effects", &noiseGroup);
 	check_error(result);
-
-	numSounds = 0;
-	for(int i = 0; i < MAX_SOUNDS; i++)
-		sounds[i] = nullptr;
 }
 
 void Sound::Terminate()
 {
-	for(int i = 0; i < MAX_SOUNDS; i++)
+	FOR_ALL(sounds)
 	{
-		Sound* sound = sounds[i];
+		Sound* sound = *it;
 		if(sound == nullptr) continue;
 		delete sound;
 	}
@@ -110,35 +106,24 @@ void Sound::Terminate()
 	check_error(s_result);
 }
 
-Sound* Sound::Create_Sound(Type type) 
+Sound* Sound::Create_Sound(Type type)
 {
-	if(numSounds < MAX_SOUNDS)
-	{
-		Sound* sound = new Sound();
-		for(int i = 0; i < MAX_SOUNDS; i++)
-		{
-			if(sounds[i] == nullptr)
-			{
-				sounds[i] = sound;
-				break;
-			}
-		}
-		numSounds++;
-		sound->type = type;
-		return sound;
-	}
-	return nullptr;
+	Sound* sound = new Sound();
+	sound->type = type;
+
+	sounds.Push(sound);
+
+	return sound;
 }
 
 void Sound::Destroy_Sound(Sound* sound)
 {
-	for(int i = 0; i < MAX_SOUNDS; i++)
+	FOR_ALL(sounds)
 	{
-		if(sounds[i] == sound)
+		if(*it == sound)
 		{
-			sounds[i] = nullptr;
 			delete sound;
-			numSounds--;
+			*it = nullptr;
 			break;
 		}
 	}
@@ -147,15 +132,6 @@ void Sound::Destroy_Sound(Sound* sound)
 void Sound::Update()
 {
 	FMOD_System_Update(fmodSystem);
-
-	for(int i = 0; i < MAX_SOUNDS; i++)
-	{
-		Sound* sound = sounds[i];
-		if(sound == nullptr) continue;
-
-		if(sound->onlyPlayOnce && !sound->Is_Playing())
-			Destroy_Sound(sound);
-	}
 }
 
 void Sound::Set_Group_Volume(float volume, Type channelType)
@@ -203,8 +179,6 @@ float Sound::Get_Group_Volume(Type channelType)
 Sound::Sound():
 	sound(nullptr),
 	channel(nullptr),
-	isLooping(false),
-	onlyPlayOnce(false),
 	type(SOUND_EFFECT)
 {
 	FMOD_Channel_SetVolume(channel, 0.0f);
@@ -295,8 +269,6 @@ void Sound::Play(bool pause)
 {
 	FMOD_RESULT s_result = FMOD_OK;
 	s_result = FMOD_System_PlaySound(fmodSystem, FMOD_CHANNEL_FREE, sound, pause, &channel);
-	if(s_result == FMOD_OK && isLooping)
-		FMOD_Channel_SetMode(channel, FMOD_LOOP_NORMAL);
 }
 
 void Sound::Set_Pause(bool pause)
@@ -309,6 +281,11 @@ void Sound::Toggle_Pause()
     FMOD_BOOL p;
     FMOD_Channel_GetPaused(channel, &p);
     FMOD_Channel_SetPaused(channel, !p);
+}
+
+void Sound::Loop(bool enable)
+{
+	FMOD_Channel_SetMode(channel, (enable)? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
 }
 
 bool Sound::Is_Playing() const

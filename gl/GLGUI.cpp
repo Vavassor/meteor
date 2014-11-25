@@ -6,6 +6,7 @@
 #include "GLTexture.h"
 
 #include "../utilities/Macros.h"
+#include "../utilities/collections/AutoArray.h"
 
 using namespace std;
 
@@ -14,7 +15,7 @@ namespace GUI
 	static const int MAX_FONTS = 8;
 	static const int MAX_LAYERS = 8;
 
-	GLFont fonts[MAX_FONTS];
+	AutoArray<GLFont> fonts;
 
 	mat4x4 screenProjection;
 
@@ -30,6 +31,7 @@ void GUI::Initialize()
 
 	GLFont::Initialize();
 
+	fonts.Push(GLFont());
 	fonts[0].LoadBitmapFont("fonts/GatsbyFLF");
 
 	panelShader.Load("default_vertex.vert", "default_frag.frag");
@@ -50,8 +52,8 @@ void GUI::Terminate()
 	panelShader.Unload();
 	fontShader.Unload();
 
-	for(int i = 0; i < MAX_FONTS; i++)
-		fonts[i].Unload();
+	FOR_ALL(fonts)
+		it->Unload();
 
 	GLFont::Terminate();
 }
