@@ -7,23 +7,12 @@
 Camera::Camera():
 	mode(PERSPECTIVE),
 
-	view(MAT_I),
-	projection(MAT_I),
-	scale(scale_matrix(1.0f, 1.0f, 1.0f)),
-
-	viewX(UNIT_X),
-	viewY(UNIT_Y),
-	viewZ(UNIT_Z),
-
 	focus(VEC3_ZERO),
 	position(VEC3_ZERO),
 
 	orientation(quat_from_euler(M_PI / 6.0f, 0.0f, 0.0f)),
 	targetOrientation(QUAT_I),
 	rotation(QUAT_I),
-
-	screenWidth(0),
-	screenHeight(0),
 
 	fov(90.0f),
 	nearPlane(0.1f),
@@ -34,13 +23,6 @@ Camera::Camera():
 	velocity(VEC3_ZERO),
 	acceleration(VEC3_ZERO)
 {}
-
-void Camera::LookAt(vec3 reference, vec3 position)
-{
-	viewZ = normalize(position - reference);
-	viewX = normalize(cross(UNIT_Y, viewZ));
-	viewY = cross(viewZ, viewX);
-}
 
 void Camera::SwitchToPerspective(float nearClip, float farClip, float fieldOfView)
 {
@@ -88,59 +70,23 @@ void Camera::SetFocus(vec3 focusPosition)
 
 void Camera::Zoom(float zDelta)
 {
-	switch(mode)
-	{
-		case ORTHOGRAPHIC:
-		{
-			float zoom = zDelta * 0.012f + 1.0f;
-			scale = scale_matrix(zoom, zoom, 1.0f);
-			projection = scale * projection;
-			break;
-		}
-		case PERSPECTIVE:
-		{
-			float zoom = -zDelta * 0.012f + 1.0f;
-			perspOffset *= zoom;
-			break;
-		}
-	}
+	float zoom = -zDelta * 0.012f + 1.0f;
+	perspOffset *= zoom;
 }
 
 void Camera::ResetZoom()
 {
-	switch(mode)
-	{
-		case ORTHOGRAPHIC:
-			projection = orthogonal_projection_matrix(0, screenWidth, 0, screenHeight, -4.0f * screenHeight, 4.0f * screenHeight); break;
-		case PERSPECTIVE:
-			projection = perspective_projection_matrix(fov, screenWidth, screenHeight, nearPlane, farPlane); break;
-	}
+	perspOffset = vec3(0.0f, 75.0f, -100.0f);
 }
 
 void Camera::ResetPosition(vec3 pos)
 {
 	focus = pos;
-	if(mode == ORTHOGRAPHIC)
-	{
-		float halfHypotenuse = 0.5f * sqrt((screenWidth * screenWidth / 4.0f) + (screenWidth * screenWidth / 4.0f));
-		position = focus - vec3(halfHypotenuse, screenHeight / 2.0f, halfHypotenuse);
-	}
+	position = pos;
 }
 
-void Camera::Resize(int width, int height)
+CameraData Camera::Update(double deltaTime)
 {
-	screenWidth = width;
-	screenHeight = height;
-	if(mode == ORTHOGRAPHIC)
-	{
-		position = focus - vec3(screenWidth / 2.0f, screenHeight, 0.0f);
-	}
-}
-
-void Camera::Tick(double deltaTime)
-{
-	view = view_matrix(viewX, viewY, viewZ, position);
-
 	//rotation, physics
 	const float t = 1.1f;
 	const int MIN_VELOCITY = 1;
@@ -151,8 +97,7 @@ void Camera::Tick(double deltaTime)
 	{
 		case ORTHOGRAPHIC:
 		{
-			float halfHypotenuse = 0.5f * sqrt((screenWidth * screenWidth / 4.0f) + (screenWidth * screenWidth / 4.0f));
-			focusMove = rotation * vec3(halfHypotenuse, screenHeight / 2.0f, halfHypotenuse);
+			focusMove = rotation * perspOffset;
 			focusMove += position;
 			break;
 		}
@@ -171,5 +116,25 @@ void Camera::Tick(double deltaTime)
 		
 	vec3 direction = orientation * UNIT_Z;
 	if(mode == ORTHOGRAPHIC) direction = -direction;
-	LookAt(position + direction, position);
+
+	// output resulting data for renderer use
+	CameraData out = {};
+	out.position = position;
+	out.nearPlane = nearPlane;
+	out.farPlane = farPlane;
+	out.fov = fov;
+	out.isOrtho = mode == ORTHOGRAPHIC;
+
+	{
+		vec3 reference = position + direction;
+		vec3 viewZ = normalize(position - reference);
+		vec3 viewX = normalize(cross(UNIT_Y, viewZ));
+		vec3 viewY = cross(viewZ, viewX);
+
+		out.viewX = viewX;
+		out.viewY = viewY;
+		out.viewZ = viewZ;
+	}
+
+	return out;
 }

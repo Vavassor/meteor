@@ -1,6 +1,8 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include "CameraData.h"
+
 #include "utilities/GLMath.h"
 
 class Camera
@@ -10,10 +12,8 @@ private:
 	Mode mode;
 
 public:
-	mat4x4 view, projection, scale;
-	vec3 viewX, viewY, viewZ, focus, position;
-	quaternion orientation, targetOrientation, rotation;
-	int screenWidth, screenHeight;
+	vec3 focus, position;
+	quaternion orientation, rotation;
 	float fov, nearPlane, farPlane;
 
 	Camera();
@@ -28,15 +28,13 @@ public:
 	void Zoom(float zDelta);
 	void ResetZoom();
 	void ResetPosition(vec3 pos);
-	void Resize(int width, int height);
-	void Tick(double deltaTime);
+	CameraData Update(double deltaTime);
 
 private:
-	float rotationTime;
+	quaternion targetOrientation;
 	vec3 velocity, acceleration;
 	vec3 perspOffset;
-
-	void LookAt(vec3 reference, vec3 position);
+	float rotationTime;
 };
 
 #endif

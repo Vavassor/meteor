@@ -25,8 +25,8 @@ public:
 	LRESULT OnSize(int width, int height);
 	LRESULT OnGainedFocus();
 	LRESULT OnLostFocus();
-	void KeyDown(USHORT key);
-	void KeyUp(USHORT key);
+	LRESULT KeyDown(USHORT key);
+	LRESULT KeyUp(USHORT key);
 	void ThreadMessageLoop();
 	void Update();
 

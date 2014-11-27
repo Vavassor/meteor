@@ -52,11 +52,9 @@ set (INCLUDES
 	Camera.h
 	CameraData.h
 	Game.h
-	Message.h
 	PlatformDefines.h
 	RenderPhase.h
 	Sound.h
-	ThreadMessages.h
 )
 source_group ("Header Files" FILES ${INCLUDES})
 

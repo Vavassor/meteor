@@ -5,7 +5,6 @@
 
 struct CameraData
 {
-	mat4x4 projection;
 	vec3 position;
 	vec3 viewX, viewY, viewZ;
 	float nearPlane, farPlane;

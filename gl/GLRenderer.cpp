@@ -42,8 +42,10 @@ namespace GLRenderer
 
 	int width, height;
 	mat4x4 screenViewProjection;
-	CameraData cameraData;
+	
+	mat4x4 view, projection;
 	Frustum frustum;
+	bool is_orthographic;
 
 	GLModel wonk;
 
@@ -172,11 +174,12 @@ bool GLRenderer::Initialize()
 	// terrain initialization
 	Terrain::Initialize();
 
-	// camera init
-	cameraData.projection = MAT_I;
-	cameraData.isOrtho = false;
-
+	// view init
 	screenViewProjection = MAT_I;
+
+	// camera initialization
+	view = projection = MAT_I;
+	is_orthographic = true;
 
 	GLPrimitives::Initialize();
 	GUI::Initialize();
@@ -257,12 +260,18 @@ void GLRenderer::Resize(int dimX, int dimY)
 
 void GLRenderer::SetCameraState(const CameraData& camera)
 {
-	if(camera.isOrtho != cameraData.isOrtho)
+	if(camera.isOrtho != is_orthographic)
 	{
-		glDepthFunc(camera.isOrtho ? GL_GEQUAL : GL_LEQUAL);
-		glCullFace(camera.isOrtho ? GL_FRONT : GL_BACK);
+		glDepthFunc((camera.isOrtho)? GL_GEQUAL : GL_LEQUAL);
+		glCullFace((camera.isOrtho)? GL_FRONT : GL_BACK);
+
+		is_orthographic = camera.isOrtho;
 	}
-	cameraData = camera;
+
+	view = view_matrix(camera.viewX, camera.viewY, camera.viewZ, camera.position);
+	projection = (camera.isOrtho)?
+		orthogonal_projection_matrix(0, width, 0, height, -4.0f * height, 4.0f * height) :
+		perspective_projection_matrix(camera.fov, width, height, camera.nearPlane, camera.farPlane);
 
 	frustum = Frustum(
 		camera.position,
@@ -291,7 +300,7 @@ void GLRenderer::RenderScene()
 	glDepthMask(GL_TRUE);
 
 	// clear framebuffer
-	const float clearDepth = (cameraData.isOrtho)? 0.0f : 1.0f;
+	const float clearDepth = (is_orthographic)? 0.0f : 1.0f;
 	glClearBufferfv(GL_DEPTH, 0, &clearDepth);
 
 	const float clearColor[] = { 0.0f, 1.0f, 1.0f, 1.0f };
@@ -311,8 +320,7 @@ void GLRenderer::RenderScene()
 	*/
 	
 	// loop through and draw meshes
-	mat4x4 view = view_matrix(cameraData.viewX, cameraData.viewY, cameraData.viewZ, cameraData.position);
-	mat4x4 viewProjection = cameraData.projection * view;
+	mat4x4 viewProjection = projection * view;
 
 	RenderPhase phase = PHASE_TRANSPARENT;
 	int material = 0;

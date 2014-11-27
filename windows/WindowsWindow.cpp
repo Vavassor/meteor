@@ -308,6 +308,7 @@ bool WindowsWindow::Create(HINSTANCE instance)
 	}
 
 	Sound::Initialize();
+	Game::Start();
 
 	last_tick_time = Timer::GetTime();
 
@@ -407,23 +408,8 @@ void WindowsWindow::ToggleBorderlessMode()
 	borderless = !borderless;
 }
 
-void WindowsWindow::ThreadMessageLoop()
-{
-	Message message;
-	while(Game::PumpMessage(message))
-	{
-		switch(message.type)
-		{
-
-		}
-	}
-}
-
 void WindowsWindow::Update()
 {
-	// poll message queue
-	ThreadMessageLoop();
-
 	// update frame-rate counters
 	static DWORD last_fps_time = GetTickCount64();
 	static int fps = 0;
@@ -450,10 +436,16 @@ void WindowsWindow::Update()
 	}
 	Log::Inc_Time();
 
+	// Update Systems
+	double delta_time = Timer::GetTime() - last_tick_time;
+	last_tick_time = Timer::GetTime();
+
+	Sound::Update();
+	Game::Update(delta_time);
+
 	// Update render data
 	{
-		CameraData cameraData;
-		Game::GetCameraData(&cameraData);
+		CameraData cameraData = Game::Get_Camera_Data();
 		if(render_mode == RENDER_GL)
 		{
 			GLRenderer::SetCameraState(cameraData);
@@ -464,7 +456,6 @@ void WindowsWindow::Update()
 	if(render_mode == RENDER_GL)
 	{
 		GLRenderer::Render();
-
 		SwapBuffers(device);
 	}
 
@@ -474,9 +465,6 @@ void WindowsWindow::Update()
 		DXRenderer::Render();
 	}
 	#endif
-
-	// Update Systems
-	Sound::Update();
 }
 
 LRESULT WindowsWindow::OnGainedFocus()
@@ -517,12 +505,11 @@ LRESULT WindowsWindow::OnSize(int dimX, int dimY)
 
 	viewport.width = dimX;
 	viewport.height = dimY;
-	Game::GiveMessage(MESSAGE_RESIZE, &viewport, sizeof viewport);
 
 	return 0;
 }
 
-void WindowsWindow::KeyDown(USHORT key)
+LRESULT WindowsWindow::KeyDown(USHORT key)
 {
 	switch(key)
 	{
@@ -531,9 +518,11 @@ void WindowsWindow::KeyDown(USHORT key)
 		case VK_F11:    ToggleFullscreen();                 break;
 		case VK_RETURN: if(alt_pressed) ToggleFullscreen(); break;
 	}
+
+	return 0;
 }
 
-void WindowsWindow::KeyUp(USHORT key)
+LRESULT WindowsWindow::KeyUp(USHORT key)
 {
 	switch(key)
 	{
@@ -545,6 +534,8 @@ void WindowsWindow::KeyUp(USHORT key)
 			break;
 		}
 	}
+
+	return 0;
 }
 
 int WindowsWindow::MessageLoop()
@@ -561,14 +552,6 @@ int WindowsWindow::MessageLoop()
 		}
 
 		Update();
-
-		const double oneFrameLimit = 1000.0 / 60.0;
-		double timeLeft = Timer::GetTime() - last_tick_time;
-		if(timeLeft >= oneFrameLimit || vertical_synchronization)
-		{
-			Game::Signal();
-			last_tick_time = Timer::GetTime();
-		}
 	}
 
 	return msg.wParam;
@@ -579,13 +562,13 @@ void WindowsWindow::Destroy()
 	OnLostFocus();
 
 	Sound::Terminate();
+	Game::Quit();
 
 	delete[] device_name;
 
 	if(render_mode == RENDER_GL)
 	{
 		GLRenderer::Terminate();
-
 		wglDeleteContext(context);
 	}
 
@@ -619,6 +602,12 @@ LRESULT CALLBACK WindowsWindow::WindowProc(HWND hWnd, UINT uiMsg, WPARAM wParam,
 
 		case WM_SIZE:
 			return window->OnSize(LOWORD(lParam), HIWORD(lParam));
+
+		case WM_KEYDOWN:
+			return window->KeyDown(wParam);
+
+		case WM_KEYUP:
+			return window->KeyUp(wParam);
 	}
 	return DefWindowProc(hWnd, uiMsg, wParam, lParam);
 }

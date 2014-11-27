@@ -36,20 +36,20 @@ void Input::InitializeWindow()
 	// make invisible window for receiving raw input messages
 	HINSTANCE instance = GetModuleHandle(NULL);
 
-	WNDCLASSEXW classEx = {};
+	WNDCLASSEXA classEx = {};
 	classEx.cbSize = sizeof classEx;
 	classEx.lpfnWndProc = WindowProc;
 	classEx.hInstance = instance;
-	classEx.lpszClassName = L"MeteorInputWindowClass";
+	classEx.lpszClassName = "MeteorInputWindowClass";
 
-	if(RegisterClassExW(&classEx) == 0)
+	if(RegisterClassEx(&classEx) == 0)
 	{
 		LOG_ISSUE("RegisterClassEx failed!");
 		return;
 	}
 
 	// create the actual window
-	window = CreateWindowExW(WS_EX_APPWINDOW, classEx.lpszClassName, NULL, NULL,
+	window = CreateWindowExA(WS_EX_APPWINDOW, classEx.lpszClassName, NULL, NULL,
 		0, 0, 0, 0, NULL, NULL, instance, NULL);
 	if(window == NULL)
 	{
@@ -80,7 +80,7 @@ void Input::InitializeWindow()
 
 		devices[1].usUsagePage = HID_USAGE_PAGE_GENERIC;
 		devices[1].usUsage = HID_USAGE_GENERIC_KEYBOARD;
-		devices[1].dwFlags = RIDEV_NOLEGACY | RIDEV_NOHOTKEYS;
+		devices[1].dwFlags = RIDEV_NOHOTKEYS;
 		devices[1].hwndTarget = window;
 
 		BOOL registered = RegisterRawInputDevices(devices, ARRAYSIZE(devices),

@@ -326,7 +326,6 @@ bool DXRenderer::Initialize(HWND hWnd, bool isFullscreen, bool enableDebugging)
 	// init models
 	wonk.LoadAsMesh("Fiona.obj");
 
-	cameraData.projection = MAT_I;
 	cameraData.isOrtho = false;
 
 	DXPrimitives::Initialize();
@@ -551,7 +550,6 @@ void DXRenderer::SetVSync(bool enable)
 
 void DXRenderer::SetCameraState(mat4x4 view, mat4x4 projection, bool isOrthographic)
 {
-	cameraData.projection = projection;
 	cameraData.isOrtho = isOrthographic;
 }
 
@@ -574,7 +572,9 @@ void DXRenderer::Render()
 void DXRenderer::RenderScene()
 {
 	const mat4x4 view = view_matrix(cameraData.viewX, cameraData.viewY, cameraData.viewZ, cameraData.position);
-	const mat4x4 projection = cameraData.projection;
+	const mat4x4 projection = (cameraData.isOrtho)?
+		orthogonal_projection_matrix(0, width, 0, height, -4.0f * height, 4.0f * height) :
+		perspective_projection_matrix(cameraData.fov, width, height, cameraData.nearPlane, cameraData.farPlane);
 	const bool isOrtho = cameraData.isOrtho;
 	
 	ClearScreen(isOrtho);
