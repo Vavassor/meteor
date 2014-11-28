@@ -6,10 +6,10 @@
 struct CameraData
 {
 	vec3 position;
-	vec3 viewX, viewY, viewZ;
-	float nearPlane, farPlane;
-	float fov;
-	bool isOrtho;
+	vec3 right, up, forward;
+	float near_plane, far_plane;
+	float field_of_view;
+	bool orthographic;
 };
 
 #endif

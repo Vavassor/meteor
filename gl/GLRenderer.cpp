@@ -260,28 +260,28 @@ void GLRenderer::Resize(int dimX, int dimY)
 
 void GLRenderer::SetCameraState(const CameraData& camera)
 {
-	if(camera.isOrtho != is_orthographic)
+	if(camera.orthographic != is_orthographic)
 	{
-		glDepthFunc((camera.isOrtho)? GL_GEQUAL : GL_LEQUAL);
-		glCullFace((camera.isOrtho)? GL_FRONT : GL_BACK);
+		glDepthFunc((camera.orthographic)? GL_GEQUAL : GL_LEQUAL);
+		glCullFace((camera.orthographic)? GL_FRONT : GL_BACK);
 
-		is_orthographic = camera.isOrtho;
+		is_orthographic = camera.orthographic;
 	}
 
-	view = view_matrix(camera.viewX, camera.viewY, camera.viewZ, camera.position);
-	projection = (camera.isOrtho)?
+	view = view_matrix(camera.right, camera.up, camera.forward, camera.position);
+	projection = (camera.orthographic)?
 		orthogonal_projection_matrix(0, width, 0, height, -4.0f * height, 4.0f * height) :
-		perspective_projection_matrix(camera.fov, width, height, camera.nearPlane, camera.farPlane);
+		perspective_projection_matrix(camera.field_of_view, width, height, camera.near_plane, camera.far_plane);
 
 	frustum = Frustum(
 		camera.position,
-		camera.viewX,
-		camera.viewY,
-		camera.viewZ,
-		camera.fov,
+		camera.right,
+		camera.up,
+		camera.forward,
+		camera.field_of_view,
 		float(width) / float(height),
-		camera.nearPlane,
-		camera.farPlane);
+		camera.near_plane,
+		camera.far_plane);
 }
 
 void GLRenderer::Render()

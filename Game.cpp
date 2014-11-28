@@ -10,7 +10,6 @@ namespace Game
 	bool paused = true;
 
 	Camera camera;
-	CameraData camera_data;
 }
 
 void Game::Start()
@@ -56,13 +55,13 @@ void Game::Update(double delta_time)
 
 	// update camera
 	{
-		camera_data = camera.Update(delta_time);
+		camera.Update(delta_time);
 	}
 }
 
 CameraData Game::Get_Camera_Data()
 {
-	return camera_data;
+	return camera.Get_Camera_Data();
 }
 
 void Game::Toggle_Pause()

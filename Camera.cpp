@@ -24,7 +24,7 @@ Camera::Camera():
 	acceleration(VEC3_ZERO)
 {}
 
-void Camera::SwitchToPerspective(float nearClip, float farClip, float fieldOfView)
+void Camera::Switch_To_Perspective(float nearClip, float farClip, float fieldOfView)
 {
 	fov = fieldOfView;
 	nearPlane = nearClip;
@@ -34,16 +34,16 @@ void Camera::SwitchToPerspective(float nearClip, float farClip, float fieldOfVie
 	position = focus + perspOffset;
 	orientation = quat_from_euler(M_PI / 6.0f, 0.0f, 0.0f);
 	
-	ResetZoom();
+	Reset_Zoom();
 }
 
-void Camera::SwitchToOrtho()
+void Camera::Switch_To_Orthographic()
 {
 	mode = ORTHOGRAPHIC;
 	orientation = quat_from_euler(atan(1.0f / 2.0f), -M_PI / 4.0f, 0.0f);
 
-	ResetPosition(focus);
-	ResetZoom();
+	Reset_Position(focus);
+	Reset_Zoom();
 }
 
 void Camera::Move(vec3 movement)
@@ -63,7 +63,7 @@ void Camera::Rotate(vec2 xyDelta)
 	orientation = turnX * orientation * turnY;
 }
 
-void Camera::SetFocus(vec3 focusPosition)
+void Camera::Set_Focus(vec3 focusPosition)
 {
 	focus = focusPosition;
 }
@@ -74,24 +74,20 @@ void Camera::Zoom(float zDelta)
 	perspOffset *= zoom;
 }
 
-void Camera::ResetZoom()
+void Camera::Reset_Zoom()
 {
 	perspOffset = vec3(0.0f, 75.0f, -100.0f);
 }
 
-void Camera::ResetPosition(vec3 pos)
+void Camera::Reset_Position(vec3 pos)
 {
 	focus = pos;
 	position = pos;
 }
 
-CameraData Camera::Update(double deltaTime)
+void Camera::Update(double deltaTime)
 {
 	//rotation, physics
-	const float t = 1.1f;
-	const int MIN_VELOCITY = 1;
-	const float Camera_MaxDelta[] = { 16, 16, 16, -16, -16, -16 };
-	
 	vec3 focusMove = VEC3_ZERO;
 	switch(mode)
 	{
@@ -108,33 +104,37 @@ CameraData Camera::Update(double deltaTime)
 		}
 	}
 
+    const float t = 1.1f;
 	vec3 delta = focus - focusMove;
 	acceleration = (2 * (delta - velocity * t)) / (t * t);
 
 	velocity += acceleration * deltaTime * 0.00625f;
 	position += velocity * deltaTime * 0.00625f;
-		
-	vec3 direction = orientation * UNIT_Z;
-	if(mode == ORTHOGRAPHIC) direction = -direction;
+}
 
-	// output resulting data for renderer use
-	CameraData out = {};
-	out.position = position;
-	out.nearPlane = nearPlane;
-	out.farPlane = farPlane;
-	out.fov = fov;
-	out.isOrtho = mode == ORTHOGRAPHIC;
+CameraData Camera::Get_Camera_Data() const
+{
+    vec3 direction = orientation * UNIT_Z;
+    if(mode == ORTHOGRAPHIC) direction = -direction;
 
-	{
-		vec3 reference = position + direction;
-		vec3 viewZ = normalize(position - reference);
-		vec3 viewX = normalize(cross(UNIT_Y, viewZ));
-		vec3 viewY = cross(viewZ, viewX);
+    // output for renderer use
+    CameraData out = {};
+    out.position = position;
+    out.near_plane = nearPlane;
+    out.far_plane = farPlane;
+    out.field_of_view = fov;
+    out.orthographic = mode == ORTHOGRAPHIC;
 
-		out.viewX = viewX;
-		out.viewY = viewY;
-		out.viewZ = viewZ;
-	}
+    {
+        vec3 reference = position + direction;
+        vec3 view_z = normalize(position - reference);
+        vec3 view_x = normalize(cross(UNIT_Y, view_z));
+        vec3 view_y = cross(view_z, view_x);
 
-	return out;
+        out.right = view_x;
+        out.up = view_y;
+        out.forward = view_z;
+    }
+
+    return out;
 }

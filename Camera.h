@@ -18,17 +18,18 @@ public:
 
 	Camera();
 
-	bool GetIsOrtho() const { return mode == ORTHOGRAPHIC; }
+	bool Is_Orthographic() const { return mode == ORTHOGRAPHIC; }
+    CameraData Get_Camera_Data() const;
 
-	void SwitchToPerspective(float nearClip, float farClip, float fieldOfView = 90.0f);
-	void SwitchToOrtho();
+	void Switch_To_Perspective(float nearClip, float farClip, float fieldOfView = 90.0f);
+	void Switch_To_Orthographic();
 	void Move(vec3 movement);
 	void Rotate(vec2 xyDelta);
-	void SetFocus(vec3 focusPosition);
+	void Set_Focus(vec3 focusPosition);
 	void Zoom(float zDelta);
-	void ResetZoom();
-	void ResetPosition(vec3 pos);
-	CameraData Update(double deltaTime);
+	void Reset_Zoom();
+	void Reset_Position(vec3 pos);
+	void Update(double deltaTime);
 
 private:
 	quaternion targetOrientation;
