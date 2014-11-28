@@ -13,7 +13,6 @@
 // engine
 #include "../Sound.h"
 #include "../Game.h"
-#include "../ThreadMessages.h"
 
 #include "../gl/GLRenderer.h"
 #include "wgl_extensions.h"
@@ -29,8 +28,6 @@
 
 // general
 #include <cstdio>
-#include <stddef.h>
-#include <wchar.h>
 
 namespace
 {
@@ -40,7 +37,6 @@ namespace
 	float texture_anisotropy;
 
 	bool enable_debugging;
-	ViewportData viewport;
 
 	HGLRC context = NULL;
 }
@@ -235,7 +231,6 @@ bool WindowsWindow::Create(HINSTANCE instance)
 		// get OpenGL version info
 		int major = ogl_GetMajorVersion();
 		int minor = ogl_GetMinorVersion();
-		int glVersion = major * 10 + minor;
 
 		// create forward compatible context if desired/possible
 		if(create_forward_compatible_context && wgl_ext_ARB_create_context != wgl_LOAD_FAILED)
@@ -411,11 +406,11 @@ void WindowsWindow::ToggleBorderlessMode()
 void WindowsWindow::Update()
 {
 	// update frame-rate counters
-	static DWORD last_fps_time = GetTickCount64();
+	static DWORD last_fps_time = GetTickCount();
 	static int fps = 0;
 	static int fps_sample = 0;
 
-	DWORD time = GetTickCount64();
+	DWORD time = GetTickCount();
 
 	if(time - last_fps_time > 1000)
 	{
@@ -502,9 +497,6 @@ LRESULT WindowsWindow::OnSize(int dimX, int dimY)
 		DXRenderer::Resize(dimX, dimY);
 	}
 	#endif
-
-	viewport.width = dimX;
-	viewport.height = dimY;
 
 	return 0;
 }

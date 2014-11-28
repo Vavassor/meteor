@@ -1,10 +1,8 @@
 #include "Game.h"
 
 #include "Camera.h"
-#include "CameraData.h"
 
 #include "utilities/Maths.h"
-#include "utilities/Logging.h"
 #include "utilities/input/Input.h"
 
 namespace Game
@@ -27,7 +25,7 @@ void Game::Quit()
 	Input::Terminate();
 }
 
-void Game::Update(double deltaTime)
+void Game::Update(double delta_time)
 {
 	// do input logic
 	Input::Poll();
@@ -40,8 +38,8 @@ void Game::Update(double deltaTime)
 
 		camera.Rotate(CAMERA_TURN_SPEED * vec2(-input->rightAnalog[0], input->rightAnalog[1]));
 
-		vec3 cameraMovement = camera.rotation * vec3(-input->leftAnalog[0], 0.0f, input->leftAnalog[1]);
-		camera.Move(CAMERA_MOVE_SPEED * cameraMovement);
+		vec3 translation = camera.rotation * vec3(-input->leftAnalog[0], 0.0f, input->leftAnalog[1]);
+		camera.Move(CAMERA_MOVE_SPEED * translation);
 
 		float zoom = input->rightTrigger - input->leftTrigger;
 		camera.Zoom(zoom);
@@ -58,7 +56,7 @@ void Game::Update(double deltaTime)
 
 	// update camera
 	{
-		camera_data = camera.Update(deltaTime);
+		camera_data = camera.Update(delta_time);
 	}
 }
 

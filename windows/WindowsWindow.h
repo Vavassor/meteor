@@ -21,13 +21,11 @@ public:
 
 	void ToggleFullscreen();
 	void ToggleBorderlessMode();
-	void SetMouseMode(bool relative);
 	LRESULT OnSize(int width, int height);
 	LRESULT OnGainedFocus();
 	LRESULT OnLostFocus();
 	LRESULT KeyDown(USHORT key);
 	LRESULT KeyUp(USHORT key);
-	void ThreadMessageLoop();
 	void Update();
 
 	static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam);

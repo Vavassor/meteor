@@ -1,6 +1,8 @@
 #ifndef MACROS_H
 #define MACROS_H
 
+#include <cstring>
+
 #define ARRAY_COUNT(x) \
 	((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
 
