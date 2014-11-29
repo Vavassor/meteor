@@ -32,7 +32,7 @@
 
 // WINDOWING SYSTEMS
 //----------------------------------------------------------------------------------------------------
-#if defined(__linux__)
+#if defined(OS_LINUX)
 
 #if defined(X11)
 #define	WINDOW_SYSTEM_X
@@ -41,8 +41,17 @@
 #define WINDOW_SYSTEM_MIR
 #endif
 
-#elif defined(__APPLE__) && defined(__MACH__)
+#elif defined(OS_OSX)
 #define	WINDOW_SYSTEM_QUARTZ
+#endif
+
+// RENDERING API TYPES
+//----------------------------------------------------------------------------------------------------
+#if defined(OS_WINDOWS)
+#define GRAPHICS_OPENGL
+#define GRAPHICS_DIRECTX
+#elif defined(OS_LINUX)
+#define GRAPHICS_OPENGL
 #endif
 
 #endif

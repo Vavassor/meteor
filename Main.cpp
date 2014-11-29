@@ -69,9 +69,9 @@ int WINAPI wWinMain(
 	WindowsWindow window;
 	if(window.Create(hInstance))
 	{
+		window.Show(iShow);
 		if(window.fullscreen)
 			window.ToggleFullscreen();
-		window.Show();
 		main_return = window.MessageLoop();
 	}
 	else

@@ -326,7 +326,7 @@ bool DXRenderer::Initialize(HWND hWnd, bool isFullscreen, bool enableDebugging)
 	// init models
 	wonk.LoadAsMesh("Fiona.obj");
 
-	cameraData.isOrtho = false;
+	cameraData.orthographic = false;
 
 	DXPrimitives::Initialize();
 
@@ -550,7 +550,7 @@ void DXRenderer::SetVSync(bool enable)
 
 void DXRenderer::SetCameraState(mat4x4 view, mat4x4 projection, bool isOrthographic)
 {
-	cameraData.isOrtho = isOrthographic;
+	cameraData.orthographic = isOrthographic;
 }
 
 void DXRenderer::Render()
@@ -571,11 +571,11 @@ void DXRenderer::Render()
 
 void DXRenderer::RenderScene()
 {
-	const mat4x4 view = view_matrix(cameraData.viewX, cameraData.viewY, cameraData.viewZ, cameraData.position);
-	const mat4x4 projection = (cameraData.isOrtho)?
+	const mat4x4 view = view_matrix(cameraData.right, cameraData.up, cameraData.forward, cameraData.position);
+	const mat4x4 projection = (cameraData.orthographic)?
 		orthogonal_projection_matrix(0, width, 0, height, -4.0f * height, 4.0f * height) :
-		perspective_projection_matrix(cameraData.fov, width, height, cameraData.nearPlane, cameraData.farPlane);
-	const bool isOrtho = cameraData.isOrtho;
+		perspective_projection_matrix(cameraData.field_of_view, width, height, cameraData.near_plane, cameraData.far_plane);
+	const bool isOrtho = cameraData.orthographic;
 	
 	ClearScreen(isOrtho);
 	SetDepthState(DEPTH_RW, isOrtho);
@@ -648,7 +648,7 @@ void DXRenderer::RenderScreen()
 	defaultShader.SetConstantMatrix("model", SHADER_VERT, MAT_I);
 
 	//*** GUI SCREEN PASS ***//
-	bool isOrtho = cameraData.isOrtho;
+	bool isOrtho = cameraData.orthographic;
 	SetDepthState(DEPTH_OFF, isOrtho);
 }
 

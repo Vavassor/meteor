@@ -15,7 +15,7 @@ public:
 	~WindowsWindow();
 
 	bool Create(HINSTANCE instance);
-	void Show(bool maximized = false);
+	void Show(int show_mode);
 	int MessageLoop();
 	void Destroy();
 
@@ -24,8 +24,8 @@ public:
 	LRESULT OnSize(int width, int height);
 	LRESULT OnGainedFocus();
 	LRESULT OnLostFocus();
-	LRESULT KeyDown(USHORT key);
-	LRESULT KeyUp(USHORT key);
+	LRESULT OnKeyDown(USHORT key);
+	LRESULT OnKeyUp(USHORT key);
 	void Update();
 
 	static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam);

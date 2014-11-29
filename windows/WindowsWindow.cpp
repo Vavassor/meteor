@@ -13,13 +13,16 @@
 // engine
 #include "../Sound.h"
 #include "../Game.h"
+#include "../PlatformDefines.h"
 
+#if defined(GRAPHICS_OPENGL)
 #include "../gl/GLRenderer.h"
 #include "wgl_extensions.h"
 
 #include <GL/wglext.h>
+#endif
 
-#if defined(_MSC_VER)
+#if defined(GRAPHICS_DIRECTX)
 #include "../dx/DXRenderer.h"
 #endif
 
@@ -167,6 +170,7 @@ bool WindowsWindow::Create(HINSTANCE instance)
 	}
 
 	// do opengl graphics initialization
+	#if defined(GRAPHICS_OPENGL)
 	if(render_mode == RENDER_GL)
 	{
 		// setup pixel format
@@ -276,9 +280,10 @@ bool WindowsWindow::Create(HINSTANCE instance)
 			}
 		}
 	}
+	#endif
 
 	// go ahead and initialize DirectX in the renderer, since DirectX is windows-only anyways
-	#if defined(_MSC_VER)
+	#if defined(GRAPHICS_DIRECTX)
 	if(render_mode == RENDER_DX)
 	{
 		if(!DXRenderer::Initialize(window, fullscreen, enable_debugging))
@@ -310,7 +315,7 @@ bool WindowsWindow::Create(HINSTANCE instance)
 	return true;
 }
 
-void WindowsWindow::Show(bool maximized)
+void WindowsWindow::Show(int show_mode)
 {
 	int desktopWidth = GetSystemMetrics(SM_CXSCREEN);
 	int desktopHeight = GetSystemMetrics(SM_CYSCREEN);
@@ -329,7 +334,7 @@ void WindowsWindow::Show(bool maximized)
 	wRect.top = desktopHeight / 2 - wRect.bottom / 2;
 
 	MoveWindow(window, wRect.left, wRect.top, wRect.right, wRect.bottom, FALSE);
-	ShowWindow(window, (maximized)? SW_MAXIMIZE : SW_SHOW);
+	ShowWindow(window, show_mode);
 }
 
 void WindowsWindow::ToggleFullscreen()
@@ -441,20 +446,24 @@ void WindowsWindow::Update()
 	// Update render data
 	{
 		CameraData cameraData = Game::Get_Camera_Data();
+		#if defined(GRAPHICS_OPENGL)
 		if(render_mode == RENDER_GL)
 		{
 			GLRenderer::SetCameraState(cameraData);
 		}
+		#endif
 	}
 
 	// Render
+	#if defined(GRAPHICS_OPENGL)
 	if(render_mode == RENDER_GL)
 	{
 		GLRenderer::Render();
 		SwapBuffers(device);
 	}
+	#endif
 
-	#if defined(_MSC_VER)
+	#if defined(GRAPHICS_DIRECTX)
 	if(render_mode == RENDER_DX)
 	{
 		DXRenderer::Render();
@@ -486,12 +495,14 @@ LRESULT WindowsWindow::OnSize(int dimX, int dimY)
 	width = dimX;
 	height = dimY;
 
+	#if defined(GRAPHICS_OPENGL)
 	if(render_mode == RENDER_GL)
 	{
 		GLRenderer::Resize(dimX, dimY);
 	}
+	#endif
 
-	#if defined(_MSC_VER)
+	#if defined(GRAPHICS_DIRECTX)
 	if(render_mode == RENDER_DX)
 	{
 		DXRenderer::Resize(dimX, dimY);
@@ -501,7 +512,7 @@ LRESULT WindowsWindow::OnSize(int dimX, int dimY)
 	return 0;
 }
 
-LRESULT WindowsWindow::KeyDown(USHORT key)
+LRESULT WindowsWindow::OnKeyDown(USHORT key)
 {
 	switch(key)
 	{
@@ -514,16 +525,14 @@ LRESULT WindowsWindow::KeyDown(USHORT key)
 	return 0;
 }
 
-LRESULT WindowsWindow::KeyUp(USHORT key)
+LRESULT WindowsWindow::OnKeyUp(USHORT key)
 {
 	switch(key)
 	{
 		case VK_MENU: alt_pressed = false; break;
 		case VK_F4:
 		{
-			if(alt_pressed)
-				PostMessage(window, WM_DESTROY, 0, 0);
-			break;
+			if(alt_pressed) DestroyWindow(window); break;
 		}
 	}
 
@@ -558,11 +567,13 @@ void WindowsWindow::Destroy()
 
 	delete[] device_name;
 
+	#if defined(GRAPHICS_OPENGL)
 	if(render_mode == RENDER_GL)
 	{
 		GLRenderer::Terminate();
 		wglDeleteContext(context);
 	}
+	#endif
 
 	#if defined(GRAPHICS_DIRECTX)
 	if(render_mode == RENDER_DX)
@@ -596,10 +607,10 @@ LRESULT CALLBACK WindowsWindow::WindowProc(HWND hWnd, UINT uiMsg, WPARAM wParam,
 			return window->OnSize(LOWORD(lParam), HIWORD(lParam));
 
 		case WM_KEYDOWN:
-			return window->KeyDown(wParam);
+			return window->OnKeyDown(wParam);
 
 		case WM_KEYUP:
-			return window->KeyUp(wParam);
+			return window->OnKeyUp(wParam);
 	}
 	return DefWindowProc(hWnd, uiMsg, wParam, lParam);
 }
