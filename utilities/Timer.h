@@ -3,8 +3,10 @@
 
 namespace Timer
 {
-	double GetTime();
-	unsigned long GetMilliseconds();
+	void Initialize();
+	double Get_Time();
+	unsigned long Get_Milliseconds();
+	unsigned long long Cycle_Count();
 }
 
 #endif

@@ -48,8 +48,8 @@ void Game::Update(double delta_time)
 		{
 			Toggle_Pause();
 
-			bool mouseRelative = !paused;
-			Input::SetMouseMode(mouseRelative);
+			bool mouse_relative = !paused;
+			Input::Set_Mouse_Mode(mouse_relative);
 		}
 	}
 

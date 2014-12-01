@@ -26,7 +26,7 @@ static HANDLE open_file(const char* filePath, FileWriteMode writeMode)
 {
 	// convert file path to utf-16 for windows
 	wchar_t* widePath = nullptr;
-	size_t size = utf8_to_utf16((char16_t**) &widePath, filePath);
+	size_t size = utf8_to_utf16(filePath, (char16_t**) &widePath);
 	if(size <= 0)
 	{
 		LOG_ISSUE("could not convert file path to open file: %s", filePath);

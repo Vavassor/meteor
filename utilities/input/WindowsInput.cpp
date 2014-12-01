@@ -136,7 +136,7 @@ int Input::DetectDevices(ControllerType types[])
 	return numControllers;
 }
 
-void Input::CaptureMouse(bool enable)
+void Input::Capture_Mouse(bool enable)
 {
 	if(enable)
 	{

@@ -9,7 +9,7 @@
 class WindowsWindow
 {
 public:
-	bool paused, fullscreen, borderless, vertical_synchronization;
+	bool paused, fullscreen, vertical_synchronization;
 
 	WindowsWindow();
 	~WindowsWindow();
@@ -20,7 +20,6 @@ public:
 	void Destroy();
 
 	void ToggleFullscreen();
-	void ToggleBorderlessMode();
 	LRESULT OnSize(int width, int height);
 	LRESULT OnGainedFocus();
 	LRESULT OnLostFocus();
@@ -31,23 +30,27 @@ public:
 	static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam);
 
 private:
-	enum RenderMode
-	{
-		RENDER_NONE,
-		RENDER_GL,
-		RENDER_DX,
-	};
-
 	HWND window;
 	const char* window_name;
 	int width, height;
 
 	HDC device;
-	const char* device_name;
-	RenderMode render_mode;
+	char* device_name;
 
-	WINDOWPLACEMENT placement;
-	HCURSOR old_cursor;
+	enum
+	{
+		RENDER_NONE,
+		RENDER_GL,
+		RENDER_DX,
+	} render_mode;
+
+	struct
+	{
+		LONG style;
+		LONG ex_style;
+		WINDOWPLACEMENT placement;
+	} saved_info;
+
 	double last_tick_time;
 	bool alt_pressed;
 };

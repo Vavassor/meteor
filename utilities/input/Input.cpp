@@ -170,12 +170,12 @@ void Input::GetMousePosition(int point[2])
 	point[1] = mousePosition[1];
 }
 
-void Input::SetMouseMode(bool relative)
+void Input::Set_Mouse_Mode(bool relative)
 {
 	if(relative != isMouseRelative)
 	{
 #if defined(_WIN32)
-		CaptureMouse(relative);
+		Capture_Mouse(relative);
 #endif
 	}
 	isMouseRelative = relative;

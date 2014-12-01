@@ -9,6 +9,9 @@
 #include "GLShader.h"
 #include "Terrain.h"
 
+#include "../CameraData.h"
+#include "../Game.h"
+
 #include "../utilities/Macros.h"
 #include "../utilities/Logging.h"
 #include "../utilities/GLMath.h"
@@ -258,34 +261,35 @@ void GLRenderer::Resize(int dimX, int dimY)
 	GUI::Resize(dimX, dimY);
 }
 
-void GLRenderer::SetCameraState(const CameraData& camera)
-{
-	if(camera.orthographic != is_orthographic)
-	{
-		glDepthFunc((camera.orthographic)? GL_GEQUAL : GL_LEQUAL);
-		glCullFace((camera.orthographic)? GL_FRONT : GL_BACK);
-
-		is_orthographic = camera.orthographic;
-	}
-
-	view = view_matrix(camera.right, camera.up, camera.forward, camera.position);
-	projection = (camera.orthographic)?
-		orthogonal_projection_matrix(0, width, 0, height, -4.0f * height, 4.0f * height) :
-		perspective_projection_matrix(camera.field_of_view, width, height, camera.near_plane, camera.far_plane);
-
-	frustum = Frustum(
-		camera.position,
-		camera.right,
-		camera.up,
-		camera.forward,
-		camera.field_of_view,
-		float(width) / float(height),
-		camera.near_plane,
-		camera.far_plane);
-}
-
 void GLRenderer::Render()
 {
+	// update camera information
+	{
+		CameraData camera = Game::Get_Camera_Data();
+		if(camera.orthographic != is_orthographic)
+		{
+			glDepthFunc((camera.orthographic)? GL_GEQUAL : GL_LEQUAL);
+			glCullFace((camera.orthographic)? GL_FRONT : GL_BACK);
+
+			is_orthographic = camera.orthographic;
+		}
+
+		view = view_matrix(camera.right, camera.up, camera.forward, camera.position);
+		projection = (camera.orthographic)?
+			orthogonal_projection_matrix(0, width, 0, height, -4.0f * height, 4.0f * height) :
+			perspective_projection_matrix(camera.field_of_view, width, height, camera.near_plane, camera.far_plane);
+
+		frustum = Frustum(
+			camera.position,
+			camera.right,
+			camera.up,
+			camera.forward,
+			camera.field_of_view,
+			float(width) / float(height),
+			camera.near_plane,
+			camera.far_plane);
+	}
+
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
 	RenderScene();
 

@@ -1,4 +1,4 @@
-#include "WindowsWindow.h"
+﻿#include "WindowsWindow.h"
 
 #include "resource.h"
 
@@ -34,8 +34,7 @@
 
 namespace
 {
-	const char* module_directory;
-	const char* working_directory;
+	char* working_directory;
 	bool enable_capture_render_statistics;
 	float texture_anisotropy;
 
@@ -47,7 +46,6 @@ namespace
 WindowsWindow::WindowsWindow():
 	paused(false),
 	fullscreen(false),
-	borderless(false),
 	vertical_synchronization(true),
 
 	window(NULL),
@@ -59,28 +57,14 @@ WindowsWindow::WindowsWindow():
 	device_name(nullptr),
 	render_mode(RENDER_GL),
 
-	old_cursor(NULL),
 	last_tick_time(0.0),
 	alt_pressed(false)
 {
-	// get module directory
-	{
-		wchar_t wide_path[MAX_PATH];
-		if(GetModuleFileNameW(NULL, wide_path, ARRAY_COUNT(wide_path)))
-		{
-			wchar_t* slash = 1 + wcsrchr(wide_path, '\\');
-			if(slash) *slash = L'\0';
-		}
-
-		char* file_path = new char[MAX_PATH];
-		wcs_to_utf8(file_path, wide_path, MAX_PATH);
-		module_directory = file_path;
-	}
-	
 	// get current working directory
 	{
-		char* utf8_path = new char[MAX_PATH];
-		working_directory = _getcwd(utf8_path, MAX_PATH);
+		wchar_t wide_path[MAX_PATH];
+		_wgetcwd(wide_path, MAX_PATH);
+		utf16_to_utf8(reinterpret_cast<char16_t*>(wide_path), &working_directory);
 	}
 	
 #if defined(_DEBUG)
@@ -95,7 +79,6 @@ WindowsWindow::WindowsWindow():
 
 WindowsWindow::~WindowsWindow()
 {
-	delete[] module_directory;
 	delete[] working_directory;
 }
 
@@ -292,48 +275,49 @@ bool WindowsWindow::Create(HINSTANCE instance)
 	}
 	#endif
 
-	// initialize everything else
-	old_cursor = LoadCursor(instance, IDC_ARROW);
-	ShowCursor(FALSE);
-	SetCursor(NULL);
-
-	DISPLAY_DEVICEW dd = {};
-	dd.cb = sizeof dd;
-	BOOL gotGPUName = EnumDisplayDevicesW(NULL, 0, &dd, 0);
-	if(gotGPUName)
+	// fetch display device name
 	{
-		char* gpuName = new char[sizeof dd.DeviceString];
-		wcs_to_utf8(gpuName, dd.DeviceString, sizeof dd.DeviceString);
-		device_name = gpuName;
+		DISPLAY_DEVICEW display = {};
+		display.cb = sizeof display;
+		if(EnumDisplayDevicesW(NULL, 0, &display, 0))
+		{
+			utf16_to_utf8(reinterpret_cast<char16_t*>(display.DeviceString), &device_name);
+		}
 	}
 
+	// initialize systems and timer
 	Sound::Initialize();
 	Game::Start();
 
-	last_tick_time = Timer::GetTime();
+	Timer::Initialize();
+	last_tick_time = Timer::Get_Time();
 
 	return true;
 }
 
 void WindowsWindow::Show(int show_mode)
 {
-	int desktopWidth = GetSystemMetrics(SM_CXSCREEN);
-	int desktopHeight = GetSystemMetrics(SM_CYSCREEN);
+	MONITORINFO monitor = {};
+	monitor.cbSize = sizeof monitor;
+	GetMonitorInfo(MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST), &monitor);
 
-	RECT wRect, cRect;
-	GetWindowRect(window, &wRect);
-	GetClientRect(window, &cRect);
+	int desktop_width = monitor.rcMonitor.right - monitor.rcMonitor.left;
+	int desktop_height = monitor.rcMonitor.bottom - monitor.rcMonitor.top;
 
-	wRect.right += width - cRect.right;
-	wRect.bottom += height - cRect.bottom;
+	RECT window_rect, client_rect;
+	GetWindowRect(window, &window_rect);
+	GetClientRect(window, &client_rect);
 
-	wRect.right -= wRect.left;
-	wRect.bottom -= wRect.top;
+	int border_width = window_rect.right + (width - client_rect.right);
+	int border_height = window_rect.bottom + (height - client_rect.bottom);
 
-	wRect.left = desktopWidth / 2 - wRect.right / 2;
-	wRect.top = desktopHeight / 2 - wRect.bottom / 2;
+	border_width -= window_rect.left;
+	border_height -= window_rect.top;
 
-	MoveWindow(window, wRect.left, wRect.top, wRect.right, wRect.bottom, FALSE);
+	int x = desktop_width / 2 - border_width / 2;
+	int y = desktop_height / 2 - border_height / 2;
+
+	MoveWindow(window, x, y, border_width, border_height, FALSE);
 	ShowWindow(window, show_mode);
 }
 
@@ -343,116 +327,63 @@ void WindowsWindow::ToggleFullscreen()
 	{
 		//--- Exit Fullscreen ---//
 
-		// set display settings back to default
-		ChangeDisplaySettings(NULL, 0);
-
-		// change window style back to bordered and load
-		// window position/dimensions from before the program
+		// load window position/dimensions/styles from before the program
 		// entered fullscreen
-		SetWindowLongPtr(window, GWL_STYLE, WS_OVERLAPPEDWINDOW);
-		SetWindowPlacement(window, &placement);
+		SetWindowLongPtr(window, GWL_STYLE, saved_info.style);
+		SetWindowLongPtr(window, GWL_EXSTYLE, saved_info.ex_style);
+
 		SetWindowPos(window, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE
 			| SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
-
-		borderless = false;
+		SetWindowPlacement(window, &saved_info.placement);
 	}
 	else
 	{
 		//--- Enter Fullscreen ---//
 
-		// save position/dimensions of window prior to entering full screen mode
-		CLEAR_STRUCT(placement);
-		placement.length = sizeof placement;
-		GetWindowPlacement(window, &placement);
+		// save window position/dimensions and styles prior to entering full screen mode
+		CLEAR_STRUCT(saved_info);
+		saved_info.placement.length = sizeof saved_info.placement;
+		GetWindowPlacement(window, &saved_info.placement);
+
+		saved_info.style = GetWindowLongPtr(window, GWL_STYLE);
+		saved_info.ex_style = GetWindowLongPtr(window, GWL_EXSTYLE);
+
+		// change window style to remove all borders, frames, and bars
+		SetWindowLongPtr(window, GWL_STYLE, saved_info.style & ~(WS_CAPTION | WS_THICKFRAME));
+		SetWindowLongPtr(window, GWL_EXSTYLE, saved_info.ex_style & 
+			~(WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE));
 
 		// get current monitor's screen size
-		MONITORINFO mi = {};
-		mi.cbSize = sizeof mi;
-		GetMonitorInfo(MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST), &mi);
+		MONITORINFO monitor = {};
+		monitor.cbSize = sizeof monitor;
+		GetMonitorInfo(MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST), &monitor);
 
-		// change window style and position/dimensions
-		SetWindowLongPtr(window, GWL_STYLE, WS_POPUP);
-		SetWindowPos(window, HWND_TOPMOST, 0, 0,
-			mi.rcMonitor.right - mi.rcMonitor.left,
-			mi.rcMonitor.bottom - mi.rcMonitor.top,
+		int screen_x = monitor.rcMonitor.left;
+		int screen_y = monitor.rcMonitor.top;
+		int screen_width = monitor.rcMonitor.right - monitor.rcMonitor.left;
+		int screen_height = monitor.rcMonitor.bottom - monitor.rcMonitor.top;
+
+		// change window position/dimensions and flag the style change so windows
+		// can take care of it
+		SetWindowPos(window, HWND_TOPMOST, screen_x, screen_y, screen_width, screen_height,
 			SWP_FRAMECHANGED | SWP_SHOWWINDOW);
-
-		// set display settings to desired screen size and resolution
-		DEVMODE newSettings = {};
-		newSettings.dmSize = sizeof newSettings;
-		newSettings.dmBitsPerPel = 32;
-		newSettings.dmPelsWidth = mi.rcMonitor.right - mi.rcMonitor.left;
-		newSettings.dmPelsHeight = mi.rcMonitor.bottom - mi.rcMonitor.top;
-		newSettings.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
-		if(ChangeDisplaySettings(&newSettings, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
-		{
-			LOG_ISSUE("Display Mode change failed! Could not enter fullscreen mode");
-		}
-
-		borderless = true;
 	}
 
 	fullscreen = !fullscreen;
 }
 
-void WindowsWindow::ToggleBorderlessMode()
-{
-	if(fullscreen) return;
-
-	LONG style = (borderless)? WS_OVERLAPPEDWINDOW : WS_POPUP;
-	SetWindowLongPtr(window, GWL_STYLE, style);
-
-	SetWindowPos(window, NULL, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER 
-		| SWP_FRAMECHANGED | SWP_SHOWWINDOW);
-
-	borderless = !borderless;
-}
-
 void WindowsWindow::Update()
 {
-	// update frame-rate counters
-	static DWORD last_fps_time = GetTickCount();
-	static int fps = 0;
-	static int fps_sample = 0;
-
-	DWORD time = GetTickCount();
-
-	if(time - last_fps_time > 1000)
-	{
-		char out[64];
-		wsprintf(out, "%s - %i FPS", window_name, fps_sample);
-		SetWindowTextA(window, out);
-
-		bool print_to_console = enable_debugging;
-		Log::Output(print_to_console);
-
-		fps_sample = fps;
-		last_fps_time = time;
-		fps = 0;
-	}
-	else
-	{
-		fps++;
-	}
 	Log::Inc_Time();
 
-	// Update Systems
-	double delta_time = Timer::GetTime() - last_tick_time;
-	last_tick_time = Timer::GetTime();
+	// Update time counter
+	double time = Timer::Get_Time();
+	double delta_time = time - last_tick_time;
+	last_tick_time = time;
 
+	// Update Systems
 	Sound::Update();
 	Game::Update(delta_time);
-
-	// Update render data
-	{
-		CameraData cameraData = Game::Get_Camera_Data();
-		#if defined(GRAPHICS_OPENGL)
-		if(render_mode == RENDER_GL)
-		{
-			GLRenderer::SetCameraState(cameraData);
-		}
-		#endif
-	}
 
 	// Render
 	#if defined(GRAPHICS_OPENGL)
@@ -474,19 +405,12 @@ void WindowsWindow::Update()
 LRESULT WindowsWindow::OnGainedFocus()
 {
 	paused = false;
-
-	SetWindowPos(window, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-
 	return 0;
 }
 
 LRESULT WindowsWindow::OnLostFocus()
 {
 	paused = true;
-
-	SetCursor(old_cursor);
-	SetWindowPos(window, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-
 	return 0;
 }
 
@@ -517,7 +441,6 @@ LRESULT WindowsWindow::OnKeyDown(USHORT key)
 	switch(key)
 	{
 		case VK_MENU:   alt_pressed = true;                 break;
-		case VK_F2:     ToggleBorderlessMode();             break;
 		case VK_F11:    ToggleFullscreen();                 break;
 		case VK_RETURN: if(alt_pressed) ToggleFullscreen(); break;
 	}

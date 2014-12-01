@@ -5,11 +5,11 @@
 
 #include <stddef.h>
 
-wchar_t* utf8_to_wcs(wchar_t* buffer, const char* ostr, int n);
-char* wcs_to_utf8(char* buffer, const wchar_t* str, int n);
+wchar_t* utf8_to_wcs(const char* str, wchar_t* buffer, int count);
+char* wcs_to_utf8(const wchar_t* str, char* buffer, int count);
 
-size_t utf8_to_utf16(char16_t** data, const char* str);
-size_t utf16_to_utf8(char** data, const char16_t* str);
+size_t utf8_to_utf16(const char* str, char16_t** data);
+size_t utf16_to_utf8(const char16_t* str, char** data);
 
 size_t utf8_surrogate_count(const char* s);
 size_t utf16_octet_count(const char16_t* s);

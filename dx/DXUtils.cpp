@@ -44,7 +44,7 @@ String hresult_text(HRESULT hr)
 		NULL))
 	{
 		char* buffer = nullptr;
-		utf16_to_utf8(&buffer, (char16_t*)errorText);
+		utf16_to_utf8((char16_t*)errorText, &buffer);
 		output.Append(buffer);
 		delete[] buffer;
 

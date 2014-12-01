@@ -1,14 +1,14 @@
 #include "Unicode.h"
 
-wchar_t* utf8_to_wcs(wchar_t* buffer, const char* ostr, int n)
+wchar_t* utf8_to_wcs(const char* s, wchar_t* buffer, int count)
 {
-	unsigned char* str = (unsigned char*) ostr;
+	unsigned char* str = (unsigned char*) s;
 	
-	--n;
+	--count;
 	int i = 0;
 	while(*str)
 	{
-		if(i >= n) return nullptr;
+		if(i >= count) return nullptr;
 
 		uint32_t c;
 
@@ -52,7 +52,7 @@ wchar_t* utf8_to_wcs(wchar_t* buffer, const char* ostr, int n)
 			if(c >= 0x10000)
 			{
 				c -= 0x10000;
-				if(i + 2 > n) return nullptr;
+				if(i + 2 > count) return nullptr;
 				buffer[i++] = 0xD800 | (0x3FF & (c >> 10));
 				buffer[i++] = 0xDC00 | (0x3FF & c);
 			}
@@ -67,20 +67,20 @@ wchar_t* utf8_to_wcs(wchar_t* buffer, const char* ostr, int n)
 	return buffer;
 }
 
-char* wcs_to_utf8(char* buffer, const wchar_t* str, int n)
+char* wcs_to_utf8(const wchar_t* str, char* buffer, int count)
 {
-	--n;
+	--count;
 	int i = 0;
 	while(*str)
 	{
 		if(*str < 0x80)
 		{
-			if(i + 1 > n) return nullptr;
+			if(i + 1 > count) return nullptr;
 			buffer[i++] = (char) *str++;
 		}
 		else if(*str < 0x800)
 		{
-			if(i + 2 > n) return nullptr;
+			if(i + 2 > count) return nullptr;
 			buffer[i++] = 0xC0 + (*str >> 6);
 			buffer[i++] = 0x80 + (*str & 0x3F);
 			str += 1;
@@ -88,7 +88,7 @@ char* wcs_to_utf8(char* buffer, const wchar_t* str, int n)
 		else if(*str >= 0xD800 && *str < 0xDC00)
 		{
 			uint32_t c;
-			if(i + 4 > n) return nullptr;
+			if(i + 4 > count) return nullptr;
 			c = ((str[0] - 0xD800) << 10) + ((str[1]) - 0xDC00) + 0x10000;
 			buffer[i++] = 0xF0 +  (c >> 18);
 			buffer[i++] = 0x80 + ((c >> 12) & 0x3F);
@@ -102,7 +102,7 @@ char* wcs_to_utf8(char* buffer, const wchar_t* str, int n)
 		}
 		else
 		{
-			if(i + 3 > n) return nullptr;
+			if(i + 3 > count) return nullptr;
 			buffer[i++] = 0xE0 + (*str >> 12);
 			buffer[i++] = 0x80 + (*str >> 6 & 0x3F);
 			buffer[i++] = 0x80 + (*str & 0x3F);
@@ -113,7 +113,7 @@ char* wcs_to_utf8(char* buffer, const wchar_t* str, int n)
 	return buffer;
 }
 
-size_t utf8_to_utf16(char16_t** data, const char* str)
+size_t utf8_to_utf16(const char* str, char16_t** data)
 {
 	// determine what the size of string will be after transcoding
 	// to make a buffer large enough
@@ -121,13 +121,13 @@ size_t utf8_to_utf16(char16_t** data, const char* str)
 	char16_t* buffer = new char16_t[bufferSize];
 
 	// transcode from utf-8 str to utf-16 buffer
-	utf8_to_wcs((wchar_t*) buffer, str, bufferSize);
+	utf8_to_wcs(str, (wchar_t*) buffer, bufferSize);
 
 	*data = buffer;
 	return bufferSize;
 }
 
-size_t utf16_to_utf8(char** data, const char16_t* str)
+size_t utf16_to_utf8(const char16_t* str, char** data)
 {
 	// determine what the size of string will be after transcoding
 	// to make a buffer large enough
@@ -135,7 +135,7 @@ size_t utf16_to_utf8(char** data, const char16_t* str)
 	char* buffer = new char[bufferSize];
 
 	// transcode from utf-16 str to utf-8 buffer
-	wcs_to_utf8(buffer, (wchar_t*) str, bufferSize);
+	wcs_to_utf8((wchar_t*)str, buffer, bufferSize);
 
 	*data = buffer;
 	return bufferSize;

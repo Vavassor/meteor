@@ -7,7 +7,7 @@ namespace Input
 {
 	void InitializeWindow();
 	void TerminateWindow();
-	void CaptureMouse(bool enable);
+	void Capture_Mouse(bool enable);
 	void MessageLoop();
 	void PollXInputDevice(int deviceNum, Controller* pad);
 }

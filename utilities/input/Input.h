@@ -22,7 +22,7 @@ namespace Input
 
 	Controller* GetController(PlayerSlot slot);
 	void GetMousePosition(int point[2]);
-	void SetMouseMode(bool relative);
+	void Set_Mouse_Mode(bool relative);
 
 	void Poll();
 
