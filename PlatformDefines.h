@@ -49,7 +49,9 @@
 //----------------------------------------------------------------------------------------------------
 #if defined(OS_WINDOWS)
 #define GRAPHICS_OPENGL
-#define GRAPHICS_DIRECTX
+    #if defined(_MSC_VER)
+    #define GRAPHICS_DIRECTX
+    #endif
 #elif defined(OS_LINUX)
 #define GRAPHICS_OPENGL
 #endif
