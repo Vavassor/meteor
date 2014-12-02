@@ -21,19 +21,18 @@ public:
 	void MessageLoop();
 
 private:
-	enum RenderMode
+	enum
 	{
 		RENDER_NONE,
 		RENDER_GL,
-	};
+	} render_mode;
 
-	RenderMode renderMode;
 	bool enableVSync;
 	bool fullscreen, borderless;
 
 	bool enableDebugging;
 
-	double lastTickTime;
+	double last_tick_time;
 
 	void ToggleBorderlessMode();
 	void ToggleFullscreen();

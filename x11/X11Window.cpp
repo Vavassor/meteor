@@ -5,8 +5,8 @@
 #include "../utilities/Textblock.h"
 #include "../utilities/Macros.h"
 
-#include "../ThreadMessages.h"
 #include "../Game.h"
+#include "../Sound.h"
 
 #include "XPM.h"
 #include "icon.xpm"
@@ -38,9 +38,6 @@ namespace
 	Atom wmState;
 	Atom wmStateFullscreen;
 
-	ViewportData viewport;
-
-	const char* module_directory;
 	const char* working_directory;
 	float texture_anisotropy;
 
@@ -56,28 +53,13 @@ X11Window::X11Window():
 	width(1280),
 	height(720),
 
-	renderMode(RENDER_GL),
+	render_mode(RENDER_GL),
 	enableVSync(true),
 	fullscreen(false),
 	borderless(false),
 
-	lastTickTime(0.0)
+	last_tick_time(0.0)
 {
-	// get module directory
-	char buffer[1024];
-	ssize_t size = readlink("/proc/self/exe", buffer, sizeof buffer);
-	if(size != -1)
-	{
-		char* pathEnd = strrchr(buffer, '/') + 1;
-		size_t length = pathEnd - buffer;
-
-		char* path = new char[length + 1];
-		memcpy(path, buffer, length);
-		path[length] = '\0';
-
-		module_directory = path;
-	}
-
 	// get working directory
 	{
 		char* path = new char[1024];
@@ -93,7 +75,6 @@ X11Window::X11Window():
 
 X11Window::~X11Window()
 {
-	delete[] module_directory;
 	delete[] working_directory;
 }
 
@@ -116,8 +97,8 @@ bool X11Window::Create()
 		{
 			String* values;
 			block.Get_Attribute_As_Strings("renderer", &values);
-			String& renderName = values[0];
-			if(renderName == "OPENGL") renderMode = RENDER_GL;
+			String& renderer = values[0];
+			if(renderer.Equals("OPENGL")) render_mode = RENDER_GL;
 		}
 
 		block.Get_Attribute_As_Bool("is_fullscreen", &fullscreen);
@@ -237,33 +218,27 @@ bool X11Window::Create()
 	wmState = XInternAtom(display, "_NET_WM_STATE", False);
 	wmStateFullscreen = XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", True);
 
-	lastTickTime = Timer::GetTime();
+	// initialize systems and timer
+	Sound::Initialize();
+	Game::Start();
+
+	Timer::Initialize();
+	last_tick_time = Timer::Get_Time();
 
 	return true;
 }
 
 void X11Window::Destroy()
 {
+	Sound::Terminate();
+	Game::Quit();
+
 	GLRenderer::Terminate();
 
 	glXMakeCurrent(display, None, NULL);
 	glXDestroyContext(display, glContext);
 
 	XCloseDisplay(display);
-}
-
-void X11Window::ToggleBorderlessMode()
-{
-	if(fullscreen) return;
-
-	borderless = !borderless;
-
-	MotifHints hints = {};
-	hints.flags = 2;
-	hints.decorations = (borderless) ? 0 : 1;
-	XChangeProperty(display, window, motifWMHints, motifWMHints, 32,
-		PropModeReplace, (unsigned char*) &hints, 5);
-	XMapWindow(display, window);
 }
 
 void X11Window::ToggleFullscreen()
@@ -299,54 +274,40 @@ void X11Window::MessageLoop()
 		}
 
 		Update();
-
-		const double oneFrameLimit = 1000.0 / 60.0;
-		double timeLeft = Timer::GetTime() - lastTickTime;
-		if(timeLeft >= oneFrameLimit || enableVSync)
-		{
-			Game::Signal();
-			lastTickTime = Timer::GetTime();
-		}
 	}
 }
 
 void X11Window::Update()
 {
-	// update time counters
-	static unsigned long lastFPSTime = Timer::GetMilliseconds();
-	static int fps = 0;
-
-	unsigned long time = Timer::GetMilliseconds();
-
-	if(time - lastFPSTime > 1000)
+	// update log output
 	{
-		bool printToConsole = enableDebugging;
-		Log::Output(printToConsole);
+		static unsigned long last_print_time = Timer::Get_Milliseconds();
 
-		lastFPSTime = time;
-		fps = 0;
-	}
-	else
-	{
-		++fps;
+		unsigned long milliseconds = Timer::Get_Milliseconds();
+		if(milliseconds - last_print_time > 1000)
+		{
+			bool printToConsole = enableDebugging;
+			Log::Output(printToConsole);
+
+			last_print_time = milliseconds;
+		}
 	}
 
 	Log::Inc_Time();
 
-	// Update render data
-	{
-		CameraData cameraData;
-		Game::GetCameraData(&cameraData);
-		if(renderMode == RENDER_GL)
-		{
-			GLRenderer::SetCameraState(cameraData);
-		}
-	}
+	// Update time counter
+	double time = Timer::Get_Time();
+	double delta_time = time - last_tick_time;
+	last_tick_time = time;
 
-	if(renderMode == RENDER_GL)
+	// Update Systems
+	Sound::Update();
+	Game::Update(delta_time);
+
+	// Render
+	if(render_mode == RENDER_GL)
 	{
 		GLRenderer::Render();
-
 		glXSwapBuffers(display, window);
 	}
 }
@@ -395,22 +356,17 @@ void X11Window::OnSize(int dimX, int dimY)
 	width = dimX;
 	height = dimY;
 
-	if(renderMode == RENDER_GL)
+	if(render_mode == RENDER_GL)
 	{
 		GLRenderer::Resize(dimX, dimY);
 	}
-
-	viewport.width = dimX;
-	viewport.height = dimY;
-	Game::GiveMessage(MESSAGE_RESIZE, &viewport, sizeof viewport);
 }
 
 void X11Window::OnKeyPress(unsigned long keyCode, unsigned int modifierMask)
 {
 	switch(keyCode)
 	{
-		case XK_F2:	ToggleBorderlessMode(); break;
-		case XK_F11:	ToggleFullscreen(); break;
+		case XK_F11: ToggleFullscreen(); break;
 	}
 }
 
