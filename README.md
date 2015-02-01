@@ -1,3 +1,5 @@
+NOTICE: this codebase has been abandoned as of January 31, 2015. I'm sorry, but it isn't in a particularly complete or functional state, but anyone is free to scrap it for parts or use it as they see fit.
+
 METEOR
 ======
 
